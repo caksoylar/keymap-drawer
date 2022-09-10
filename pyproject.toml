@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "keymap-drawer"
+version = "0.1.0"
+description = ""
+authors = ["Cem Aksoylar <caksoylar@gmail.com>"]
+readme = "README.md"
+packages = [{include = "keymap_drawer"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+"ruamel.yaml" = "^0.17.21"
+pydantic = "^1.10.2"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^0.971"
+pylint = "^2.15.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
