@@ -3,7 +3,7 @@ from typing import Literal, Sequence, Mapping, Union
 
 from pydantic import BaseModel, validator, root_validator
 
-from .physical_layout import PhysicalLayout
+from .physical_layout import layout_factory, PhysicalLayout
 
 
 class LayoutKey(BaseModel):
@@ -32,9 +32,6 @@ class Layer(BaseModel):
     keys: Sequence[LayoutKey]
     combos: Sequence[ComboSpec] = []
 
-    class Config:
-        allow_population_by_field_name = True
-
     @validator("keys", pre=True)
     def parse_keys(cls, vals):
         return [
@@ -50,7 +47,8 @@ class KeymapData(BaseModel):
 
     @validator("layout", pre=True)
     def create_layout(cls, val):
-        pass
+        assert "ltype" in val
+        return layout_factory(**val)
 
     @root_validator(skip_on_failure=True)
     def assign_combos_to_layers(cls, vals):
@@ -71,14 +69,8 @@ class KeymapData(BaseModel):
 
     @root_validator(skip_on_failure=True)
     def check_dimensions(cls, vals):
-        nrows, ncols, nthumbs = vals["layout"].rows, vals["layout"].columns, vals["layout"].thumbs
         for name, layer in vals["layers"].items():
-            assert len(layer) == len(vals["layout"]) and (
-                not layer.right or len(layer.right) == nrows
-            ), f"Number of rows do not match layout specification in layer {name}"
-            for row in chain(layer.left, layer.right):
-                assert len(row) == ncols, f"Number of columns do not match layout specification in layer {name}"
-            assert (
-                len(layer.left_thumbs) == len(layer.right_thumbs) == nthumbs
-            ), f"Number of thumb keys do not match layout specification in layer {name}"
+            assert len(layer) == len(
+                vals["layout"]
+            ), f"Number of keys do not match layout specification in layer {name}"
         return vals

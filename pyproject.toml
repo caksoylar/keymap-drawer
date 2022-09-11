@@ -32,3 +32,11 @@ build-backend = "poetry.core.masonry.api"
 [tool.pylint.MASTER]
 extension-pkg-whitelist = "pydantic"
 load-plugins = "pylint_pydantic"
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = """
+    too-few-public-methods,
+"""
+
+[tool.pylint.BASIC]
+good-names="x,y,w,h"

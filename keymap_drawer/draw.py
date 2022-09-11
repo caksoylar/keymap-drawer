@@ -1,6 +1,5 @@
 from itertools import chain
 from html import escape
-from typing import Optional
 
 from .keymap import KeymapData, KeyRow, KeyBlock, Key, ComboSpec, Layer
 
@@ -77,12 +76,12 @@ class KeymapDrawer:
         self.board_h = len(self.layers) * self.layer_h + (len(self.layers) + 1) * OUTER_PAD_H
 
     @staticmethod
-    def _draw_rect(x: float, y: float, w: float, h: float, cls: Optional[str] = None) -> None:
+    def _draw_rect(x: float, y: float, w: float, h: float, cls: str | None = None) -> None:
         class_str = f' class="{cls}"' if cls is not None else ""
         print(f'<rect rx="{KEY_RX}" ry="{KEY_RY}" x="{x}" y="{y}" width="{w}" height="{h}"{class_str}/>')
 
     @staticmethod
-    def _draw_text(x: float, y: float, text: str, cls: Optional[str] = None) -> None:
+    def _draw_text(x: float, y: float, text: str, cls: str | None = None) -> None:
         class_str = f' class="{cls}"' if cls is not None else ""
         words = text.split()
         if not words:
