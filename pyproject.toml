@@ -40,5 +40,8 @@ disable = """
 """
 
 [tool.pylint.BASIC]
-good-names="x,y,w,h,f"
+good-names = "x,y,w,h,f"
 max-line-length = 120
+
+[tool.mypy]
+plugins = "pydantic.mypy"
