@@ -12,7 +12,9 @@ class LayoutKey(BaseModel):
     type: Literal[None, "held", "combo", "ghost"] = None
 
     @classmethod
-    def from_key_spec(cls, key_spec: Union[str, "LayoutKey"]) -> "LayoutKey":
+    def from_key_spec(cls, key_spec: Union[str, "LayoutKey", None]) -> "LayoutKey":
+        if key_spec is None:
+            return cls(tap="")
         if isinstance(key_spec, str):
             return cls(tap=key_spec)
         return key_spec
@@ -24,7 +26,7 @@ class ComboSpec(BaseModel):
     layers: Sequence[str] = []
 
     @validator("key", pre=True)
-    def get_key(cls, val):
+    def get_key(cls, val) -> LayoutKey:
         return LayoutKey.from_key_spec(val)
 
 
@@ -33,10 +35,12 @@ class Layer(BaseModel):
     combos: Sequence[ComboSpec] = []
 
     @validator("keys", pre=True)
-    def parse_keys(cls, vals):
+    def parse_keys(cls, vals) -> Sequence[LayoutKey]:
         return [
             LayoutKey.from_key_spec(val)
-            for val in chain.from_iterable(v if isinstance(v, Sequence) else [v] for v in vals)
+            for val in chain.from_iterable(
+                v if isinstance(v, Sequence) and not isinstance(v, str) else [v] for v in vals
+            )
         ]
 
 
@@ -46,8 +50,8 @@ class KeymapData(BaseModel):
     combos: Sequence[ComboSpec] = []
 
     @validator("layout", pre=True)
-    def create_layout(cls, val):
-        assert "ltype" in val
+    def create_layout(cls, val) -> PhysicalLayout:
+        assert "ltype" in val, 'Specifying a layout type key "ltype" is mandatory under "layout"'
         return layout_factory(**val)
 
     @root_validator(skip_on_failure=True)
@@ -70,7 +74,7 @@ class KeymapData(BaseModel):
     @root_validator(skip_on_failure=True)
     def check_dimensions(cls, vals):
         for name, layer in vals["layers"].items():
-            assert len(layer) == len(
+            assert len(layer.keys) == len(
                 vals["layout"]
             ), f"Number of keys do not match layout specification in layer {name}"
         return vals

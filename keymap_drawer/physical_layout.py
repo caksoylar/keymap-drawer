@@ -12,6 +12,7 @@ INNER_PAD_W = 2
 INNER_PAD_H = 2
 KEYSPACE_W = KEY_W + 2 * INNER_PAD_W
 KEYSPACE_H = KEY_H + 2 * INNER_PAD_H
+SPLIT_GAP = KEY_W / 2
 
 
 class PhysicalKey(BaseModel):
@@ -33,22 +34,19 @@ class PhysicalLayout(BaseModel, ABC):
         arbitrary_types_allowed = True
         keep_untouched = (cached_property,)
 
-    def __getitem__(self, i):
-        return self.keys[i]
-
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.keys)
 
     @cached_property
-    def width(self):
+    def width(self) -> float:
         return max(k.x_pos + k.width for k in self.keys)
 
     @cached_property
-    def height(self):
+    def height(self) -> float:
         return max(k.y_pos + k.height for k in self.keys)
 
 
-def layout_factory(ltype: Literal, **kwargs) -> PhysicalLayout:
+def layout_factory(ltype: LayoutType, **kwargs) -> PhysicalLayout:
     match ltype:
         case "ortho":
             return OrthoLayout(**kwargs)
@@ -94,16 +92,14 @@ class OrthoLayout(PhysicalLayout):
                 keys.append(PhysicalKey(x_pos=x, y_pos=y))
                 x += KEYSPACE_W
 
-        def create_block(x: float, y: float) -> None:
-            for _ in range(nrows):
-                create_row(x, y)
-                y += KEYSPACE_H
-
-        create_block(0.0, 0.0)
-        if vals["split"]:
-            create_block(ncols * KEYSPACE_W + KEY_W / 2, 0.0)
+        x, y = 0.0, 0.0
+        for _ in range(nrows):
+            create_row(x, y)
+            if vals["split"]:
+                create_row(x + ncols * KEYSPACE_W + SPLIT_GAP, y)
+            y += KEYSPACE_H
         if nthumbs:
             create_row((ncols - nthumbs) * KEYSPACE_W, nrows * KEYSPACE_H, nthumbs)
-            create_row(ncols * KEYSPACE_W + KEY_W / 2, nrows * KEYSPACE_H, nthumbs)
+            create_row(ncols * KEYSPACE_W + SPLIT_GAP, nrows * KEYSPACE_H, nthumbs)
 
         return vals | {"keys": keys}

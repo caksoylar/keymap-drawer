@@ -1,7 +1,7 @@
-from itertools import chain
 from html import escape
 
-from .keymap import KeymapData, KeyRow, KeyBlock, Key, ComboSpec, Layer
+from .keymap import KeymapData, ComboSpec, Layer, LayoutKey
+from .physical_layout import PhysicalKey
 
 
 KEY_W = 55
@@ -64,16 +64,9 @@ STYLE = """
 
 class KeymapDrawer:
     def __init__(self, **kwargs) -> None:
-        kd = KeymapData(**kwargs)
-        self.layout = kd.layout
-        self.layers = kd.layers
-
-        self.block_w = self.layout.columns * KEYSPACE_W
-        self.block_h = (self.layout.rows + (1 if self.layout.thumbs else 0)) * KEYSPACE_H
-        self.layer_w = (2 if self.layout.split else 1) * self.block_w + OUTER_PAD_W
-        self.layer_h = self.block_h
-        self.board_w = self.layer_w + 2 * OUTER_PAD_W
-        self.board_h = len(self.layers) * self.layer_h + (len(self.layers) + 1) * OUTER_PAD_H
+        data = KeymapData(**kwargs)
+        self.layout = data.layout
+        self.layers = data.layers
 
     @staticmethod
     def _draw_rect(x: float, y: float, w: float, h: float, cls: str | None = None) -> None:
@@ -95,75 +88,46 @@ class KeymapDrawer:
             print(f'<tspan x="{x}" dy="1.2em">{escape(word)}</tspan>')
         print("</text>")
 
-    def print_key(self, x: float, y: float, key: Key, width: int = 1) -> None:
-        key_width = (width * KEY_W) + 2 * (width - 1) * INNER_PAD_W
-        self._draw_rect(x + INNER_PAD_W, y + INNER_PAD_H, key_width, KEY_H, key.type)
-        self._draw_text(x + INNER_PAD_W + key_width / 2, y + KEYSPACE_H / 2, key.tap)
-        self._draw_text(x + INNER_PAD_W + key_width / 2, y + KEYSPACE_H - LINE_SPACING / 2, key.hold, cls="small")
+    @classmethod
+    def print_key(cls, x_0: float, y_0: float, p_key: PhysicalKey, l_key: LayoutKey) -> None:
+        x, y, w, h = x_0 + p_key.x_pos, y_0 + p_key.y_pos, p_key.width, p_key.height
+        cls._draw_rect(x, y, w, h, l_key.type)
+        cls._draw_text(x + w / 2, y + h / 2, l_key.tap)
+        cls._draw_text(x + w / 2, y + h - LINE_SPACING / 2, l_key.hold, cls="small")
 
-    def print_combo(self, x: float, y: float, combo_spec: ComboSpec) -> None:
+    def print_combo(self, x_0: float, y_0: float, combo_spec: ComboSpec) -> None:
         pos_idx = combo_spec.positions
 
-        cols = [self.layout.pos_to_col(p) for p in pos_idx]
-        rows = [self.layout.pos_to_row(p) for p in pos_idx]
-        x_pos = [
-            x + c * KEYSPACE_W + (OUTER_PAD_W if self.layout.split and c >= self.layout.columns else 0) for c in cols
-        ]
-        y_pos = [y + r * KEYSPACE_H for r in rows]
+        p_keys = [self.layout.keys[p] for p in pos_idx]
+        x_pos = [k.x_pos + k.width / 2 for k in p_keys]
+        y_pos = [k.y_pos + k.height / 2 for k in p_keys]
 
-        x_mid, y_mid = sum(x_pos) / len(pos_idx), sum(y_pos) / len(pos_idx)
+        x_mid, y_mid = x_0 + sum(x_pos) / len(pos_idx), y_0 + sum(y_pos) / len(pos_idx)
 
-        self._draw_rect(x_mid + INNER_PAD_W + KEY_W / 4, y_mid + INNER_PAD_H + KEY_H / 4, KEY_W / 2, KEY_H / 2, "combo")
-        self._draw_text(x_mid + KEYSPACE_W / 2, y_mid + INNER_PAD_H + KEY_H / 2, combo_spec.key.tap, cls="small")
+        self._draw_rect(x_mid - KEY_W / 4, y_mid - KEY_H / 4, KEY_W / 2, KEY_H / 2, "combo")
+        self._draw_text(x_mid + INNER_PAD_W / 2, y_mid, combo_spec.key.tap, cls="small")
 
-    def print_row(self, x: float, y: float, row: KeyRow) -> None:
-        prev_key, width = None, 0
-        for i, key in enumerate(chain(row, [None])):
-            if i > 0 and (prev_key is None or key != prev_key or i == len(row)):
-                self.print_key(x, y, prev_key or Key(tap=""), width=width)
-
-                x += width * KEYSPACE_W
-                width = 0
-
-            prev_key = key
-            width += 1
-
-    def print_block(self, x: float, y: float, block: KeyBlock) -> None:
-        for row in block:
-            self.print_row(x, y, row)
-            y += KEYSPACE_H
-
-    def print_layer(self, x: float, y: float, name: str, layer: Layer) -> None:
-        self._draw_text(KEY_W / 2, y - KEY_H / 2, f"{name}:", cls="label")
-        self.print_block(x, y, layer.left)
-        if layer.right:
-            self.print_block(
-                x + self.block_w + OUTER_PAD_W,
-                y,
-                layer.right,
-            )
-        if self.layout.thumbs and layer.left_thumbs and layer.right_thumbs:
-            self.print_row(
-                x + (self.layout.columns - self.layout.thumbs) * KEYSPACE_W,
-                y + self.layout.rows * KEYSPACE_H,
-                layer.left_thumbs,
-            )
-            self.print_row(x + self.block_w + OUTER_PAD_W, y + self.layout.rows * KEYSPACE_H, layer.right_thumbs)
+    def print_layer(self, x_0: float, y_0: float, name: str, layer: Layer) -> None:
+        self._draw_text(KEY_W / 2, y_0 - KEY_H / 2, f"{name}:", cls="label")
+        for p_key, l_key in zip(self.layout.keys, layer.keys):
+            self.print_key(x_0, y_0, p_key, l_key)
         if layer.combos:
             for combo_spec in layer.combos:
-                self.print_combo(x, y, combo_spec)
+                self.print_combo(x_0, y_0, combo_spec)
 
     def print_board(self) -> None:
+        board_w = self.layout.width + 2 * OUTER_PAD_W
+        board_h = len(self.layers) * self.layout.height + (len(self.layers) + 1) * OUTER_PAD_H
         print(
-            f'<svg width="{self.board_w}" height="{self.board_h}" viewBox="0 0 {self.board_w} {self.board_h}" '
+            f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" '
             'xmlns="http://www.w3.org/2000/svg">'
         )
         print(f"<style>{STYLE}</style>")
 
-        x, y = OUTER_PAD_W, 0
+        x, y = OUTER_PAD_W, 0.0
         for name, layer in self.layers.items():
             y += OUTER_PAD_H
             self.print_layer(x, y, name, layer)
-            y += self.layer_h
+            y += self.layout.height
 
         print("</svg>")

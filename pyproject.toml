@@ -11,19 +11,20 @@ python = "^3.10"
 "ruamel.yaml" = "^0.17.21"
 pydantic = "^1.10.2"
 
-
 [tool.poetry.group.dev.dependencies]
 mypy = "^0.971"
 pylint = "^2.15.2"
 black = "^22.8.0"
 pylint-pydantic = "^0.1.4"
 
-
 [tool.poetry.group.lsp]
 optional = true
 
 [tool.poetry.group.lsp.dependencies]
 python-lsp-server = {extras = ["all"], version = "^1.5.0"}
+
+[tool.poetry.scripts]
+draw-keymap = 'keymap_drawer.__main__:main'
 
 [build-system]
 requires = ["poetry-core"]
@@ -39,4 +40,5 @@ disable = """
 """
 
 [tool.pylint.BASIC]
-good-names="x,y,w,h"
+good-names="x,y,w,h,f"
+max-line-length = 120
