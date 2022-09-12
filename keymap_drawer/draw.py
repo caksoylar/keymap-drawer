@@ -71,7 +71,7 @@ class KeymapDrawer:
     @staticmethod
     def _draw_rect(x: float, y: float, w: float, h: float, cls: str | None = None) -> None:
         class_str = f' class="{cls}"' if cls is not None else ""
-        print(f'<rect rx="{KEY_RX}" ry="{KEY_RY}" x="{x}" y="{y}" width="{w}" height="{h}"{class_str}/>')
+        print(f'<rect rx="{KEY_RX}" ry="{KEY_RY}" x="{x - w / 2}" y="{y - h / 2}" width="{w}" height="{h}"{class_str}/>')
 
     @staticmethod
     def _draw_text(x: float, y: float, text: str, cls: str | None = None) -> None:
@@ -91,7 +91,7 @@ class KeymapDrawer:
     @classmethod
     def print_key(cls, x_0: float, y_0: float, p_key: PhysicalKey, l_key: LayoutKey) -> None:
         x, y, w, h = x_0 + p_key.x_pos, y_0 + p_key.y_pos, p_key.width, p_key.height
-        cls._draw_rect(x, y, w, h, l_key.type)
+        cls._draw_rect(x + w/2, y + h/2, w, h, l_key.type)
         cls._draw_text(x + w / 2, y + h / 2, l_key.tap)
         cls._draw_text(x + w / 2, y + h - LINE_SPACING / 2, l_key.hold, cls="small")
 
@@ -104,7 +104,7 @@ class KeymapDrawer:
 
         x_mid, y_mid = x_0 + sum(x_pos) / len(pos_idx), y_0 + sum(y_pos) / len(pos_idx)
 
-        self._draw_rect(x_mid - KEY_W / 4, y_mid - KEY_H / 4, KEY_W / 2, KEY_H / 2, "combo")
+        self._draw_rect(x_mid, y_mid, KEY_W / 2, KEY_H / 2, "combo")
         self._draw_text(x_mid + INNER_PAD_W / 2, y_mid, combo_spec.key.tap, cls="small")
 
     def print_layer(self, x_0: float, y_0: float, name: str, layer: Layer) -> None:
