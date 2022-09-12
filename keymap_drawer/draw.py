@@ -6,14 +6,14 @@ from .physical_layout import PhysicalKey
 
 KEY_W = 55
 KEY_H = 50
+COMBO_W = KEY_W / 2
+COMBO_H = KEY_H / 2
 KEY_RX = 6
 KEY_RY = 6
 INNER_PAD_W = 2
 INNER_PAD_H = 2
 OUTER_PAD_W = KEY_W / 2
 OUTER_PAD_H = KEY_H
-KEYSPACE_W = KEY_W + 2 * INNER_PAD_W
-KEYSPACE_H = KEY_H + 2 * INNER_PAD_H
 LINE_SPACING = 18
 
 STYLE = """
@@ -91,21 +91,21 @@ class KeymapDrawer:
     @classmethod
     def print_key(cls, x_0: float, y_0: float, p_key: PhysicalKey, l_key: LayoutKey) -> None:
         x, y, w, h = x_0 + p_key.x_pos, y_0 + p_key.y_pos, p_key.width, p_key.height
-        cls._draw_rect(x + w/2, y + h/2, w, h, l_key.type)
-        cls._draw_text(x + w / 2, y + h / 2, l_key.tap)
-        cls._draw_text(x + w / 2, y + h - LINE_SPACING / 2, l_key.hold, cls="small")
+        cls._draw_rect(x, y, w - 2 * INNER_PAD_W, h - 2 * INNER_PAD_H, l_key.type)
+        cls._draw_text(x, y, l_key.tap)
+        cls._draw_text(x, y + h / 2 - LINE_SPACING / 2, l_key.hold, cls="small")
 
     def print_combo(self, x_0: float, y_0: float, combo_spec: ComboSpec) -> None:
         pos_idx = combo_spec.positions
 
         p_keys = [self.layout.keys[p] for p in pos_idx]
-        x_pos = [k.x_pos + k.width / 2 for k in p_keys]
-        y_pos = [k.y_pos + k.height / 2 for k in p_keys]
+        x_pos = [k.x_pos for k in p_keys]
+        y_pos = [k.y_pos for k in p_keys]
 
         x_mid, y_mid = x_0 + sum(x_pos) / len(pos_idx), y_0 + sum(y_pos) / len(pos_idx)
 
-        self._draw_rect(x_mid, y_mid, KEY_W / 2, KEY_H / 2, "combo")
-        self._draw_text(x_mid + INNER_PAD_W / 2, y_mid, combo_spec.key.tap, cls="small")
+        self._draw_rect(x_mid, y_mid, COMBO_W, COMBO_H, "combo")
+        self._draw_text(x_mid, y_mid, combo_spec.key.tap, cls="small")
 
     def print_layer(self, x_0: float, y_0: float, name: str, layer: Layer) -> None:
         self._draw_text(KEY_W / 2, y_0 - KEY_H / 2, f"{name}:", cls="label")

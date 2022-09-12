@@ -4,14 +4,8 @@ from typing import Sequence, ClassVar, Literal
 
 from pydantic import BaseModel, validator, root_validator
 
-KEY_W = 55
-KEY_H = 50
-KEY_RX = 6
-KEY_RY = 6
-INNER_PAD_W = 2
-INNER_PAD_H = 2
-KEYSPACE_W = KEY_W + 2 * INNER_PAD_W
-KEYSPACE_H = KEY_H + 2 * INNER_PAD_H
+KEY_W = 59
+KEY_H = 54
 SPLIT_GAP = KEY_W / 2
 
 
@@ -39,11 +33,11 @@ class PhysicalLayout(BaseModel, ABC):
 
     @cached_property
     def width(self) -> float:
-        return max(k.x_pos + k.width for k in self.keys)
+        return max(k.x_pos + k.width / 2 for k in self.keys)
 
     @cached_property
     def height(self) -> float:
-        return max(k.y_pos + k.height for k in self.keys)
+        return max(k.y_pos + k.height / 2 for k in self.keys)
 
 
 def layout_factory(ltype: LayoutType, **kwargs) -> PhysicalLayout:
@@ -89,17 +83,17 @@ class OrthoLayout(PhysicalLayout):
 
         def create_row(x: float, y: float, ncols: int = ncols) -> None:
             for _ in range(ncols):
-                keys.append(PhysicalKey(x_pos=x, y_pos=y))
-                x += KEYSPACE_W
+                keys.append(PhysicalKey(x_pos=x + KEY_W / 2, y_pos=y + KEY_H / 2))
+                x += KEY_W
 
         x, y = 0.0, 0.0
         for _ in range(nrows):
             create_row(x, y)
             if vals["split"]:
-                create_row(x + ncols * KEYSPACE_W + SPLIT_GAP, y)
-            y += KEYSPACE_H
+                create_row(x + ncols * KEY_W + SPLIT_GAP, y)
+            y += KEY_H
         if nthumbs:
-            create_row((ncols - nthumbs) * KEYSPACE_W, nrows * KEYSPACE_H, nthumbs)
-            create_row(ncols * KEYSPACE_W + SPLIT_GAP, nrows * KEYSPACE_H, nthumbs)
+            create_row((ncols - nthumbs) * KEY_W, nrows * KEY_H, nthumbs)
+            create_row(ncols * KEY_W + SPLIT_GAP, nrows * KEY_H, nthumbs)
 
         return vals | {"keys": keys}
