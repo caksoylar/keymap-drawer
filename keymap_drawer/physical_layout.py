@@ -95,18 +95,21 @@ class OrthoLayout(PhysicalLayout):
         thumbs = vals["thumbs"]
         if thumbs:
             if isinstance(thumbs, int):
-                assert thumbs <= vals["columns"], "Number of thumbs should not be greater than columns"
+                assert (
+                    thumbs <= vals["columns"]
+                ), "Number of thumbs should not be greater than columns"
                 assert vals["split"], "Cannot process non-split layout with thumb keys"
             else:
-                assert not vals["split"], (
-                    "Non-integer thumb specs (MIT/2x2u) can only be used with non-split layout"
-                )
-                assert thumbs in ("MIT", "2x2u"), (
-                    'Only "MIT" or "2x2u" supported for "thumbs" for non-splits'
-                )
-                assert vals["columns"] % 2 == 0, (
-                    "Cannot use MIT or 2x2u bottom row layout with odd number of columns"
-                )
+                assert not vals[
+                    "split"
+                ], "Non-integer thumb specs (MIT/2x2u) can only be used with non-split layout"
+                assert thumbs in (
+                    "MIT",
+                    "2x2u",
+                ), 'Only "MIT" or "2x2u" supported for "thumbs" for non-splits'
+                assert (
+                    vals["columns"] % 2 == 0
+                ), "Cannot use MIT or 2x2u bottom row layout with odd number of columns"
         return vals
 
     @root_validator(pre=True, skip_on_failure=True)
@@ -116,6 +119,7 @@ class OrthoLayout(PhysicalLayout):
         ncols = vals["columns"]
         thumbs = vals.get("thumbs", 0)
         keys = []
+        vals["keys"] = keys
 
         def create_row(x: float, y: float, ncols: int = ncols) -> None:
             for _ in range(ncols):
@@ -129,19 +133,26 @@ class OrthoLayout(PhysicalLayout):
                 create_row(x + ncols * KEY_W + SPLIT_GAP, y)
             y += KEY_H
 
-        if thumbs:
-            if isinstance(thumbs, int):  # implies split
-                create_row((ncols - thumbs) * KEY_W, y, thumbs)
-                create_row(ncols * KEY_W + SPLIT_GAP, y, thumbs)
-            else:  # implies non-split
-                if thumbs == "MIT":
-                    create_row(0.0, y, ncols // 2 - 1)
-                    keys.append(PhysicalKey(x_pos=(ncols / 2) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W))
-                    create_row((ncols / 2 + 1) * KEY_W, y, ncols // 2 - 1)
-                else:  # "2x2u"
-                    create_row(0.0, y, ncols // 2 - 2)
-                    keys.append(PhysicalKey(x_pos=(ncols / 2 - 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W))
-                    keys.append(PhysicalKey(x_pos=(ncols / 2 + 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W))
-                    create_row((ncols / 2 + 2) * KEY_W, y, ncols // 2 - 2)
+        if not thumbs:
+            return vals
 
-        return vals | {"keys": keys}
+        if isinstance(thumbs, int):  # implies split
+            create_row((ncols - thumbs) * KEY_W, y, thumbs)
+            create_row(ncols * KEY_W + SPLIT_GAP, y, thumbs)
+        elif thumbs == "MIT":
+            create_row(0.0, y, ncols // 2 - 1)
+            keys.append(
+                PhysicalKey(x_pos=(ncols / 2) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W)
+            )
+            create_row((ncols / 2 + 1) * KEY_W, y, ncols // 2 - 1)
+        else:  # "2x2u"
+            create_row(0.0, y, ncols // 2 - 2)
+            keys.append(
+                PhysicalKey(x_pos=(ncols / 2 - 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W)
+            )
+            keys.append(
+                PhysicalKey(x_pos=(ncols / 2 + 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W)
+            )
+            create_row((ncols / 2 + 2) * KEY_W, y, ncols // 2 - 2)
+
+        return vals
