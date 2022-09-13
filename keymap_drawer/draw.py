@@ -71,7 +71,7 @@ class KeymapDrawer:
     """Class that draws a keyboard representation in SVG."""
 
     def __init__(self, **kwargs) -> None:
-        data = KeymapData(**kwargs)
+        data = KeymapData.parse_obj(kwargs)
         self.layout = data.layout
         self.layers = data.layers
 
