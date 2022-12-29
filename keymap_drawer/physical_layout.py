@@ -21,7 +21,7 @@ class PhysicalKey(BaseModel):
     rotation: float = 0
 
 
-LayoutType = Literal["ortho", "raw"]
+LayoutType = Literal["ortho", "qmk", "raw"]
 
 
 class PhysicalLayout(BaseModel):
