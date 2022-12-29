@@ -8,9 +8,7 @@ from typing import Sequence, Literal
 
 from pydantic import BaseModel, root_validator
 
-KEY_W = 59
-KEY_H = 54
-SPLIT_GAP = KEY_W / 2
+from .style import KEY_W, KEY_H, SPLIT_GAP
 
 
 class PhysicalKey(BaseModel):

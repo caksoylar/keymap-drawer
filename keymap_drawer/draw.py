@@ -7,64 +7,20 @@ from html import escape
 
 from .keymap import KeymapData, ComboSpec, Layer, LayoutKey
 from .physical_layout import PhysicalKey
-
-
-KEY_W = 55
-KEY_H = 50
-COMBO_W = KEY_W / 2
-COMBO_H = KEY_H / 2
-KEY_RX = 6
-KEY_RY = 6
-INNER_PAD_W = 2
-INNER_PAD_H = 2
-OUTER_PAD_W = KEY_W / 2
-OUTER_PAD_H = KEY_H
-LINE_SPACING = 18
-
-STYLE = """
-    svg {
-        font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
-        font-size: 14px;
-        font-kerning: normal;
-        text-rendering: optimizeLegibility;
-        fill: #24292e;
-    }
-
-    rect {
-        fill: #f6f8fa;
-        stroke: #d6d8da;
-        stroke-width: 1;
-    }
-
-    .held {
-        fill: #fdd;
-    }
-
-    .combo {
-        fill: #cdf;
-    }
-
-    .ghost {
-        fill: #ddd;
-    }
-
-    text {
-        text-anchor: middle;
-        dominant-baseline: middle;
-    }
-
-    .label {
-        font-weight: bold;
-        text-anchor: start;
-        stroke: white;
-        stroke-width: 2;
-        paint-order: stroke;
-    }
-
-    .small {
-        font-size: 80%;
-    }
-"""
+from .style import (
+    SVG_STYLE,
+    KEY_W,
+    KEY_H,
+    COMBO_W,
+    COMBO_H,
+    KEY_RX,
+    KEY_RY,
+    INNER_PAD_W,
+    INNER_PAD_H,
+    OUTER_PAD_W,
+    OUTER_PAD_H,
+    LINE_SPACING,
+)
 
 
 class KeymapDrawer:
@@ -148,7 +104,7 @@ class KeymapDrawer:
             f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" '
             'xmlns="http://www.w3.org/2000/svg">'
         )
-        print(f"<style>{STYLE}</style>")
+        print(f"<style>{SVG_STYLE}</style>")
 
         x, y = OUTER_PAD_W, 0.0
         for name, layer in self.layers.items():
