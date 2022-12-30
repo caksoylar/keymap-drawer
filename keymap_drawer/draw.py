@@ -51,7 +51,7 @@ class KeymapDrawer:
         print(f'<text x="{x}" y="{y}"{class_str}>')
         print(f'<tspan x="{x}" dy="-{(len(words) - 1) * 0.6}em">{escape(words[0])}</tspan>', end="")
         for word in words[1:]:
-            print(f'<tspan x="{x}" dy="1.2em">{escape(word)}</tspan>')
+            print(f'<tspan x="{x}" dy="1.2em">{escape(word)}</tspan>', end="")
         print("</text>")
 
     @classmethod
@@ -61,10 +61,20 @@ class KeymapDrawer:
         the key, which is described by its physical representation (p_key) and what it does in
         the given layer (l_key).
         """
-        x, y, w, h = x_0 + p_key.x_pos, y_0 + p_key.y_pos, p_key.width, p_key.height
+        x, y, w, h, r = (
+            x_0 + p_key.x_pos,
+            y_0 + p_key.y_pos,
+            p_key.width,
+            p_key.height,
+            p_key.rotation,
+        )
+        if r != 0:
+            print(f'<g transform="rotate({r}, {x}, {y})">')
         cls._draw_rect(x, y, w - 2 * INNER_PAD_W, h - 2 * INNER_PAD_H, l_key.type)
         cls._draw_text(x, y, l_key.tap)
         cls._draw_text(x, y + h / 2 - LINE_SPACING / 2, l_key.hold, cls="small")
+        if r != 0:
+            print("</g>")
 
     def print_combo(self, x_0: float, y_0: float, combo_spec: ComboSpec) -> None:
         """

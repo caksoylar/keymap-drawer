@@ -80,21 +80,15 @@ class OrthoGenerator(BaseModel):
         thumbs = vals["thumbs"]
         if thumbs:
             if isinstance(thumbs, int):
-                assert (
-                    thumbs <= vals["columns"]
-                ), "Number of thumbs should not be greater than columns"
+                assert thumbs <= vals["columns"], "Number of thumbs should not be greater than columns"
                 assert vals["split"], "Cannot process non-split layout with thumb keys"
             else:
-                assert not vals[
-                    "split"
-                ], "Non-integer thumb specs (MIT/2x2u) can only be used with non-split layout"
+                assert not vals["split"], "Non-integer thumb specs (MIT/2x2u) can only be used with non-split layout"
                 assert thumbs in (
                     "MIT",
                     "2x2u",
                 ), 'Only "MIT" or "2x2u" supported for "thumbs" for non-splits'
-                assert (
-                    vals["columns"] % 2 == 0
-                ), "Cannot use MIT or 2x2u bottom row layout with odd number of columns"
+                assert vals["columns"] % 2 == 0, "Cannot use MIT or 2x2u bottom row layout with odd number of columns"
         return vals
 
     @root_validator
@@ -147,18 +141,12 @@ class OrthoGenerator(BaseModel):
             keys += create_row(ncols * KEY_W + SPLIT_GAP, y, self.thumbs)
         elif self.thumbs == "MIT":
             keys += create_row(0.0, y, ncols // 2 - 1)
-            keys.append(
-                PhysicalKey(x_pos=(ncols / 2) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W)
-            )
+            keys.append(PhysicalKey(x_pos=(ncols / 2) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W))
             keys += create_row((ncols / 2 + 1) * KEY_W, y, ncols // 2 - 1)
         else:  # "2x2u"
             keys += create_row(0.0, y, ncols // 2 - 2)
-            keys.append(
-                PhysicalKey(x_pos=(ncols / 2 - 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W)
-            )
-            keys.append(
-                PhysicalKey(x_pos=(ncols / 2 + 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W)
-            )
+            keys.append(PhysicalKey(x_pos=(ncols / 2 - 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W))
+            keys.append(PhysicalKey(x_pos=(ncols / 2 + 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W))
             keys += create_row((ncols / 2 + 2) * KEY_W, y, ncols // 2 - 2)
 
         return keys
@@ -174,6 +162,7 @@ class QmkGenerator(BaseModel):
         y: float
         w: float = 1.0
         h: float = 1.0
+        r: float = 0
 
     layout: Sequence[QmkKey]
 
@@ -185,6 +174,7 @@ class QmkGenerator(BaseModel):
                 y_pos=KEY_H * (k.y + k.h / 2),
                 width=KEY_H * k.w,
                 height=KEY_H * k.h,
+                rotation=k.r,
             )
             for k in self.layout
         ]
