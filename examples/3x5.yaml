@@ -1,8 +1,10 @@
 layout:
-    split: true
-    rows: 3
-    columns: 5
-    thumbs: 3
+    qmk_keyboard: crkbd/rev1
+    qmk_layout: LAYOUT_split_3x5_3
+    # split: true
+    # rows: 3
+    # columns: 5
+    # thumbs: 3
 layers:
     DEF:
         keys:

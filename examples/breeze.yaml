@@ -1,3 +1,5 @@
+layout:
+    qmk_keyboard: afternoonlabs/breeze/rev1
 layers:
     default:
         keys:

@@ -1,5 +1,4 @@
 layout:
-    ltype: ortho
     split: true
     rows: 3
     columns: 6

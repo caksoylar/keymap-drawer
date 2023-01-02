@@ -43,23 +43,26 @@ def main() -> None:
         yaml_data = yaml.safe_load(f)
         assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in layout_yaml'
 
-    if args.qmk_keyboard or args.qmk_info_json:
-        if args.qmk_keyboard:
-            with urlopen(f"https://keyboards.qmk.fm/v1/keyboards/{args.qmk_keyboard}/info.json") as f:
-                qmk_info = json.load(f)["keyboards"][args.qmk_keyboard]
+    qmk_keyboard = args.qmk_keyboard or yaml_data.get("layout", {}).get("qmk_keyboard")
+    qmk_layout = args.qmk_layout or yaml_data.get("layout", {}).get("qmk_layout")
+
+    if qmk_keyboard or args.qmk_info_json:
+        if qmk_keyboard:
+            with urlopen(f"https://keyboards.qmk.fm/v1/keyboards/{qmk_keyboard}/info.json") as f:
+                qmk_info = json.load(f)["keyboards"][qmk_keyboard]
         else:
             with open(args.qmk_info_json, "rb") as f:
                 qmk_info = json.load(f)
 
-        if args.qmk_layout is None:
+        if qmk_layout is None:
             layout = next(iter(qmk_info["layouts"].values()))["layout"]  # take the first layout in map
         else:
-            layout = qmk_info["layouts"][args.qmk_layout]["layout"]
+            layout = qmk_info["layouts"][qmk_layout]["layout"]
         layout = {"ltype": "qmk", "layout": layout}
     else:
         assert "layout" in yaml_data, (
             "A physical layout needs to be specified either via --qmk-keyboard/--qmk-layout, "
-            'or in a "layout" field in layout_yaml'
+            'or in a "layout" field in layout_yaml using "ortho" parameters'
         )
         layout = {"ltype": "ortho", **yaml_data["layout"]}
 

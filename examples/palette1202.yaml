@@ -1,3 +1,5 @@
+layout:
+    qmk_keyboard: palette1202
 layers:
     "0":
         keys:
