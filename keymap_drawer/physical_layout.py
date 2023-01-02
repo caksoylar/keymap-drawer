@@ -30,7 +30,6 @@ class PhysicalLayout(BaseModel):
     keys: Sequence[PhysicalKey]
 
     class Config:  # pylint: disable=missing-class-docstring
-        arbitrary_types_allowed = True
         keep_untouched = (cached_property,)
 
     def __len__(self) -> int:

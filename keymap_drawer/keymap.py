@@ -3,9 +3,10 @@ Module with classes that define the keymap representation, with multiple layers
 containing key and combo specifications, paired with the physical keyboard layout.
 """
 from itertools import chain
-from typing import Literal, Sequence, Mapping, Union
+from typing import Literal, Sequence, Mapping
+from typing_extensions import Self
 
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel, Field, validator, root_validator
 
 from .physical_layout import layout_factory, PhysicalLayout
 
@@ -21,7 +22,7 @@ class LayoutKey(BaseModel):
     type: Literal[None, "held", "combo", "ghost"] = None
 
     @classmethod
-    def from_key_spec(cls, key_spec: Union[str, "LayoutKey", None]) -> "LayoutKey":
+    def from_key_spec(cls, key_spec: str | Self | None) -> Self:
         """Create LayoutKey from a string (for tap), a full LayoutKey or null (empty key)."""
         if key_spec is None:
             return cls(tap="")
@@ -32,7 +33,7 @@ class LayoutKey(BaseModel):
 
 class ComboSpec(BaseModel):
     """
-    Represents a combo in the keymap, with the trigger position, activated binding (key)
+    Represents a combo in the keymap, with the trigger positions, activated binding (key)
     and layers that it is present on.
     """
 
