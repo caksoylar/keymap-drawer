@@ -17,9 +17,12 @@ class LayoutKey(BaseModel):
     can optionally have a hold property, or be "held", be a "ghost" key, or be a combo.
     """
 
-    tap: str
-    hold: str = ""
+    tap: str = Field(alias="t")
+    hold: str = Field(default="", alias="h")
     type: Literal[None, "held", "combo", "ghost"] = None
+
+    class Config:  # pylint: disable=missing-class-docstring
+        allow_population_by_field_name = True
 
     @classmethod
     def from_key_spec(cls, key_spec: str | Self | None) -> Self:
@@ -37,8 +40,8 @@ class ComboSpec(BaseModel):
     and layers that it is present on.
     """
 
-    positions: Sequence[int]
-    key: LayoutKey
+    key_positions: Sequence[int] = Field(alias="p")
+    key: LayoutKey = Field(alias="k")
     layers: Sequence[str] = []
 
     @validator("key", pre=True)
@@ -93,9 +96,9 @@ class KeymapData(BaseModel):
         """Validate combo positions are legitimate ones we can draw."""
         for layer in vals["layers"].values():
             for combo in layer.combos:
-                assert len(combo.positions) == 2, "Cannot have more than two positions for combo"
+                assert len(combo.key_positions) == 2, "Cannot have more than two positions for combo"
                 assert all(
-                    pos < len(vals["layout"]) for pos in combo.positions
+                    pos < len(vals["layout"]) for pos in combo.key_positions
                 ), "Combo positions exceed number of keys"
         return vals
 

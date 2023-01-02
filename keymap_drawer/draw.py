@@ -83,7 +83,7 @@ class KeymapDrawer:
         when triggered. The rectangle is drawn at the midpoint of the physical representations
         of the key positions.
         """
-        pos_idx = combo_spec.positions
+        pos_idx = combo_spec.key_positions
 
         p_keys = [self.layout.keys[p] for p in pos_idx]
         x_pos = [k.x_pos for k in p_keys]
