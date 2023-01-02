@@ -1,0 +1,70 @@
+layout:
+    split: true
+    rows: 3
+    columns: 5
+    thumbs: 2
+layers:
+    DEF:
+        keys:
+            - [Q, W, E, R, T, Y, U, I, O, P]
+            - [{h: Ctrl, t: A}, {h: Gui, t: S}, {h: Alt, t: D}, {h: Shift, t: F}, G, H, {h: Shift, t: J}, {h: Alt, t: K}, {h: Gui, t: L}, {h: Ctrl, t: "'"}]
+            - [Z, X, C, V, B, N, M, ",", ., /]
+            - {h: Ctrl,  t: Esc}
+            - {h: NAV,   t: BSpace}
+            - {h: SYM,   t: Space}
+            - {h: Shift, t: Enter}
+        combos: &combos
+            - {p: [22, 23], k: "`"}
+            - {p: [6, 7],   k: ";"}
+            - {p: [12, 13], k: "("}
+            - {p: [16, 17], k: ")"}
+            - {p: [11, 12], k: "["}
+            - {p: [17, 18], k: "]"}
+            - {p: [26, 27], k: "\\"}
+            - {p: [27, 28], k: "|"}
+    CLM:
+        keys:
+            - [Q, W, F, P, B, J, L, U, Y, "'"]
+            - [{h: Ctrl, t: A}, {h: Gui, t: R}, {h: Alt, t: S}, {h: Shift, t: T}, G, M, {h: Shift, t: N}, {h: Alt, t: E}, {h: Gui, t: I}, {h: Ctrl, t: O}]
+            - [Z, X, C, D, V, K, H, ",", ., /]
+            - {h: Ctrl,  t: Esc}
+            - {h: NAV,   t: BSpace}
+            - {h: SYM,   t: Space}
+            - {h: Shift, t: Enter}
+        combos: *combos
+    GME:
+        keys:
+            - [Tab, Q, W, E, R, Y, U, I, O, P]
+            - [Esc, A, S, D, F, H, J, K, L, "off"]
+            - [Shift, Z, X, C, V, N, M, ",", ., /]
+            - Ctrl
+            - Space
+            - Alt
+            - Enter
+    SYM:
+        keys:
+            - ["!", "@", "#", "$", "%", "\\", "7", "8", "9", ","]
+            - ["+", "=", "_", "-", "^", "0", "4", "5", "6", "."]
+            - [null, null, "¿", "*", "&", ";", "1", "2", "3", "/"]
+            - Space
+            - FUN
+            - {t: "", type: held}
+            - Shift
+    NAV:
+        keys:
+            - ["Win Close", "Tab Prev", "Tab Next", "Tab Close", "Vol Up", Home, "Page Down", "Page Up", End, null]
+            - [Ctrl, Gui, Alt, {h: Shift, t: Tab}, "Vol Down", Left, Down, Up, Right, Calc]
+            - [null, "Win Prev", "Win Next", "Paste", "Play Pause", Insert, Delete, Prev, Next, null]
+            - Ctrl
+            - {t: "", type: held}
+            - FUN
+            - Shift
+    FUN:
+        keys:
+            - [F1, F2, F3, F4, F5, "Caps Lock", null, DEF, CLM, GME]
+            - [F6, F7, F8, F9, F10, BT1, BT2, BT3, BT4, BT5]
+            - [null, "Desk Prev", "Desk Next", F11, F12, "Out USB", "Out BLE", "Print Scrn", "Pause Break", "BT CLR"]
+            - Reset
+            - {t: "", type: held}
+            - {t: "", type: held}
+            - Reset
