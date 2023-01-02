@@ -41,6 +41,7 @@ def main() -> None:
 
     with open(args.layout_yaml, "rb") as f:
         yaml_data = yaml.safe_load(f)
+        assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in layout_yaml'
 
     if args.qmk_keyboard or args.qmk_info_json:
         if args.qmk_keyboard:
@@ -56,6 +57,10 @@ def main() -> None:
             layout = qmk_info["layouts"][args.qmk_layout]["layout"]
         layout = {"ltype": "qmk", "layout": layout}
     else:
+        assert "layout" in yaml_data, (
+            "A physical layout needs to be specified either via --qmk-keyboard/--qmk-layout, "
+            'or in a "layout" field in layout_yaml'
+        )
         layout = {"ltype": "ortho", **yaml_data["layout"]}
 
     drawer = KeymapDrawer(layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", []))
