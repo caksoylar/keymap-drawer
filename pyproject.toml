@@ -10,7 +10,6 @@ packages = [{include = "keymap_drawer"}]
 python = "^3.10"
 "ruamel.yaml" = "^0.17.21"
 pydantic = "^1.10.2"
-typing-extensions = "^4.4.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^0.971"

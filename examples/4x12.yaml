@@ -18,7 +18,7 @@ layers:
             - [null, null, null, null, {t: "", type: held}, "", null, "Next", "Vol-", "Vol+", "Play"]
     Raise:
         keys:
-            - ["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Bksp"]
+            - ["`", 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, "Bksp"]
             - ["Del", "F1", "F2", "F3", "F4", "F5", "F6", "-", "=", "[", "]", "\\"]
             - [null, "F7", "F8", "F9", "F10", "F11", "F12", "ISO #", "ISO /", "Pg Up", "Pg Dn", null]
             - [null, null, null, null, null, "", {t: "", type: held}, "Next", "Vol-", "Vol+", "Play"]

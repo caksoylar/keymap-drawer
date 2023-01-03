@@ -4,7 +4,6 @@ containing key and combo specifications, paired with the physical keyboard layou
 """
 from itertools import chain
 from typing import Literal, Sequence, Mapping
-from typing_extensions import Self
 
 from pydantic import BaseModel, Field, validator, root_validator
 
@@ -25,13 +24,18 @@ class LayoutKey(BaseModel):
         allow_population_by_field_name = True
 
     @classmethod
-    def from_key_spec(cls, key_spec: str | Self | None) -> Self:
-        """Create LayoutKey from a string (for tap), a full LayoutKey or null (empty key)."""
-        if key_spec is None:
-            return cls(tap="")
-        if isinstance(key_spec, str):
-            return cls(tap=key_spec)
-        return key_spec
+    def from_key_spec(cls, key_spec: dict | str | int | None) -> dict:
+        """Derive full params from a string/int (for tap), a full spec or null (empty key)."""
+        match key_spec:
+            case dict():
+                return key_spec
+            case str():
+                return {"tap": key_spec}
+            case int():
+                return {"tap": str(key_spec)}
+            case None:
+                return {"tap": ""}
+        raise ValueError(f'Invalid key specification "{key_spec}", provide a dict, string or null')
 
 
 class ComboSpec(BaseModel):
@@ -45,7 +49,7 @@ class ComboSpec(BaseModel):
     layers: Sequence[str] = []
 
     @validator("key", pre=True)
-    def get_key(cls, val) -> LayoutKey:
+    def get_key(cls, val) -> dict:
         """Parse each key from its key spec."""
         return LayoutKey.from_key_spec(val)
 
@@ -57,7 +61,7 @@ class Layer(BaseModel):
     combos: Sequence[ComboSpec] = []
 
     @validator("keys", pre=True)
-    def parse_keys(cls, vals) -> Sequence[LayoutKey]:
+    def parse_keys(cls, vals) -> Sequence[dict]:
         """Parse each key on layer from its key spec, flattening the spec if it contains sublists."""
         return [
             LayoutKey.from_key_spec(val)
