@@ -101,7 +101,6 @@ class KeymapData(BaseModel):
         """Validate combo positions are legitimate ones we can draw."""
         for layer in vals["layers"].values():
             for combo in layer.combos:
-                assert len(combo.key_positions) == 2, "Cannot have more than two positions for combo"
                 assert all(
                     pos < len(vals["layout"]) for pos in combo.key_positions
                 ), "Combo positions exceed number of keys"

@@ -55,20 +55,20 @@ class KeymapDrawer:
         print("</text>")
 
     @staticmethod
-    def _draw_dendron(x_start: float, y_start: float, x_end: float, y_end: float, x_first: bool) -> None:
-        start = f"M{x_start},{y_start}"
-        arc_x = copysign(ARC_RADIUS, x_end - x_start)
-        arc_y = copysign(ARC_RADIUS, y_end - y_start)
-        x_line = f"h{x_end - x_start - arc_x}"
-        y_line = f"v{y_end - y_start - arc_y}"
-        clockwise = (x_end > x_start) ^ (y_end > y_start)
+    def _draw_dendron(x_1: float, y_1: float, x_2: float, y_2: float, x_first: bool, shorten: float) -> None:
+        start = f"M{x_1},{y_1}"
+        arc_x = copysign(ARC_RADIUS, x_2 - x_1)
+        arc_y = copysign(ARC_RADIUS, y_2 - y_1)
+        clockwise = (x_2 > x_1) ^ (y_2 > y_1)
         if x_first:
-            first_line, last_line = x_line, y_line
+            line_1 = f"h{x_2 - x_1 - arc_x}"
+            line_2 = f"v{y_2 - y_1 - arc_y - copysign(shorten, y_2 - y_1)}"
             clockwise = not clockwise
         else:
-            first_line, last_line = y_line, x_line
+            line_1 = f"v{y_2 - y_1 - arc_y}"
+            line_2 = f"h{x_2 - x_1 - arc_x - copysign(shorten, x_2 - x_1)}"
         arc = f"a{ARC_RADIUS},{ARC_RADIUS} 0 0 {int(clockwise)} {arc_x},{arc_y}"
-        print(f'<path d="{start} {first_line} {arc} {last_line}"/>')
+        print(f'<path d="{start} {line_1} {arc} {line_2}"/>')
 
     @classmethod
     def print_key(cls, x_0: float, y_0: float, p_key: PhysicalKey, l_key: LayoutKey) -> None:
@@ -109,12 +109,13 @@ class KeymapDrawer:
         if combo_spec.align == "mid":
             y_mid += sum(k.y_pos for k in p_keys) / n_keys
         if combo_spec.align == "upper":
-            y_mid += min(k.y_pos - k.height / 2 for k in p_keys)
+            y_mid += min(k.y_pos - k.height / 2 for k in p_keys) - INNER_PAD_H / 2
         if combo_spec.align == "lower":
-            y_mid += max(k.y_pos + k.height / 2 for k in p_keys)
+            y_mid += max(k.y_pos + k.height / 2 for k in p_keys) + INNER_PAD_H / 2
         if combo_spec.align != "mid":
             for k in p_keys:
-                self._draw_dendron(x_mid, y_mid, x_0 + k.x_pos, y_0 + k.y_pos, True)
+                offset = k.height / 5 if x_0 + k.x_pos == x_mid else k.height / 3
+                self._draw_dendron(x_mid, y_mid, x_0 + k.x_pos, y_0 + k.y_pos, True, offset)
 
         self._draw_rect(x_mid, y_mid, COMBO_W, COMBO_H, "combo")
         self._draw_text(x_mid, y_mid, combo_spec.key.tap, cls="small")
