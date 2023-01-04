@@ -3,6 +3,7 @@ Module containing classes pertaining to the physical layout of a keyboard,
 i.e. a sequence of keys each represented by its coordinates, dimensions
 and rotation.
 """
+from dataclasses import dataclass
 from functools import cached_property
 from typing import Sequence, Literal
 
@@ -11,11 +12,23 @@ from pydantic import BaseModel, root_validator
 from .style import KEY_W, KEY_H, SPLIT_GAP
 
 
+@dataclass
+class Point:
+    """Simple class representing a 2d point."""
+
+    x: float
+    y: float
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Point(self.x - other.x, self.y - other.y)
+
 class PhysicalKey(BaseModel):
     """Represents a physical key, in terms of its center coordinates, width, height and rotation."""
 
-    x_pos: float
-    y_pos: float
+    pos: Point
     width: float = KEY_W
     height: float = KEY_H
     rotation: float = 0
@@ -38,12 +51,12 @@ class PhysicalLayout(BaseModel):
     @cached_property
     def width(self) -> float:
         """Return overall width of layout."""
-        return max(k.x_pos + k.width / 2 for k in self.keys)
+        return max(k.pos.x + k.width / 2 for k in self.keys)
 
     @cached_property
     def height(self) -> float:
         """Return overall height of layout."""
-        return max(k.y_pos + k.height / 2 for k in self.keys)
+        return max(k.pos.y + k.height / 2 for k in self.keys)
 
 
 def layout_factory(ltype: LayoutType, **kwargs) -> PhysicalLayout:
@@ -109,7 +122,7 @@ class OrthoGenerator(BaseModel):
         def create_row(x: float, y: float, ncols: int = ncols) -> list[PhysicalKey]:
             row_keys = []
             for _ in range(ncols):
-                row_keys.append(PhysicalKey(x_pos=x + KEY_W / 2, y_pos=y + KEY_H / 2))
+                row_keys.append(PhysicalKey(pos=Point(x + KEY_W / 2, y + KEY_H / 2)))
                 x += KEY_W
             return row_keys
 
@@ -125,7 +138,7 @@ class OrthoGenerator(BaseModel):
             ] * self.drop_inner
             for col in reversed(drop_cols):
                 if row < nrows - 1:
-                    row_keys[col].y_pos += KEY_H / 2
+                    row_keys[col].pos.y += KEY_H / 2
                 else:
                     row_keys.pop(col)
 
@@ -140,12 +153,12 @@ class OrthoGenerator(BaseModel):
             keys += create_row(ncols * KEY_W + SPLIT_GAP, y, self.thumbs)
         elif self.thumbs == "MIT":
             keys += create_row(0.0, y, ncols // 2 - 1)
-            keys.append(PhysicalKey(x_pos=(ncols / 2) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W))
+            keys.append(PhysicalKey(pos=Point((ncols / 2) * KEY_W, y + KEY_H / 2), width=2 * KEY_W))
             keys += create_row((ncols / 2 + 1) * KEY_W, y, ncols // 2 - 1)
         else:  # "2x2u"
             keys += create_row(0.0, y, ncols // 2 - 2)
-            keys.append(PhysicalKey(x_pos=(ncols / 2 - 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W))
-            keys.append(PhysicalKey(x_pos=(ncols / 2 + 1) * KEY_W, y_pos=y + KEY_H / 2, width=2 * KEY_W))
+            keys.append(PhysicalKey(pos=Point((ncols / 2 - 1) * KEY_W, y + KEY_H / 2), width=2 * KEY_W))
+            keys.append(PhysicalKey(pos=Point((ncols / 2 + 1) * KEY_W, y + KEY_H / 2), width=2 * KEY_W))
             keys += create_row((ncols / 2 + 2) * KEY_W, y, ncols // 2 - 2)
 
         return keys
@@ -169,8 +182,7 @@ class QmkGenerator(BaseModel):
         """Generate a sequence of PhysicalKeys from QmkKeys."""
         return [
             PhysicalKey(
-                x_pos=KEY_H * (k.x + k.w / 2),
-                y_pos=KEY_H * (k.y + k.h / 2),
+                pos=Point(KEY_H * (k.x + k.w / 2), KEY_H * (k.y + k.h / 2)),
                 width=KEY_H * k.w,
                 height=KEY_H * k.h,
                 rotation=k.r,
