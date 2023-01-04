@@ -47,7 +47,7 @@ class ComboSpec(BaseModel):
     key_positions: Sequence[int] = Field(alias="p")
     key: LayoutKey = Field(alias="k")
     layers: Sequence[str] = []
-    align: Literal["mid", "upper", "lower"] = "mid"
+    align: Literal["mid", "upper", "lower", "left", "right"] = "mid"
 
     @validator("key", pre=True)
     def get_key(cls, val) -> dict:

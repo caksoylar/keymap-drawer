@@ -95,27 +95,41 @@ class KeymapDrawer:
         """
         Given anchor coordinates p_0, print SVG code for a rectangle with text representing
         a combo specification, which contains the key positions that trigger it and what it does
-        when triggered. The rectangle is drawn at the midpoint of the physical representations
-        of the key positions.
+        when triggered. The position of the rectangle depends on the alignment specified,
+        along with whether dendrons are drawn going to each key position from the combo.
         """
-        pos_idx = combo_spec.key_positions
-        n_keys = len(pos_idx)
+        p_keys = [self.layout.keys[p] for p in combo_spec.key_positions]
+        n_keys = len(p_keys)
 
-        p_keys = [self.layout.keys[p] for p in pos_idx]
-
+        # find center of combo box
         p_mid = Point(p_0.x, p_0.y)
-        p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
         if combo_spec.align == "mid":
+            p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
             p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
         if combo_spec.align == "upper":
+            p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
             p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - INNER_PAD_H / 2
         if combo_spec.align == "lower":
+            p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
             p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + INNER_PAD_H / 2
-        if combo_spec.align != "mid":
-            for k in p_keys:
-                offset = k.height / 5 if p_0.x + k.pos.x == p_mid.x else k.height / 3
-                self._draw_dendron(p_mid, p_0 + k.pos, True, offset)
+        if combo_spec.align == "left":
+            p_mid.x += min(k.pos.x - k.width / 2 for k in p_keys) - INNER_PAD_W / 2
+            p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
+        if combo_spec.align == "right":
+            p_mid.x += max(k.pos.x + k.width / 2 for k in p_keys) + INNER_PAD_W / 2
+            p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
 
+        # draw dendrons going from box to combo keys
+        if combo_spec.align in ("upper", "lower"):
+            for k in p_keys:
+                offset = k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < COMBO_W / 2 else k.height / 3
+                self._draw_dendron(p_mid, p_0 + k.pos, True, offset)
+        if combo_spec.align in ("left", "right"):
+            for k in p_keys:
+                offset = k.width / 5 if abs(p_0.y + k.pos.y - p_mid.y) < COMBO_H / 2 else k.width / 3
+                self._draw_dendron(p_mid, p_0 + k.pos, False, offset)
+
+        # draw combo box with text
         self._draw_rect(p_mid, COMBO_W, COMBO_H, "combo")
         self._draw_text(p_mid, combo_spec.key.tap, cls="small")
 
