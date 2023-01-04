@@ -15,6 +15,8 @@ OUTER_PAD_W = KEY_W / 2
 OUTER_PAD_H = KEY_H
 LINE_SPACING = 18
 
+ARC_RADIUS = 3
+
 SVG_STYLE = """
     svg {
         font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
@@ -57,5 +59,11 @@ SVG_STYLE = """
 
     .small {
         font-size: 80%;
+    }
+
+    path {
+        stroke-width: 1;
+        stroke: gray;
+        fill: none;
     }
 """

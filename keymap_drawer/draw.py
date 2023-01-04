@@ -3,14 +3,13 @@ Module that contains the KeymapDrawer class which takes a physical layout,
 keymap with layers and optionally combo definitions, then can draw an SVG
 representation of the keymap using these two.
 """
+from math import copysign
 from html import escape
 
 from .keymap import KeymapData, ComboSpec, Layer, LayoutKey
 from .physical_layout import PhysicalKey
 from .style import (
     SVG_STYLE,
-    KEY_W,
-    KEY_H,
     COMBO_W,
     COMBO_H,
     KEY_RX,
@@ -20,6 +19,7 @@ from .style import (
     OUTER_PAD_W,
     OUTER_PAD_H,
     LINE_SPACING,
+    ARC_RADIUS,
 )
 
 
@@ -54,6 +54,22 @@ class KeymapDrawer:
             print(f'<tspan x="{x}" dy="1.2em">{escape(word)}</tspan>', end="")
         print("</text>")
 
+    @staticmethod
+    def _draw_dendron(x_start: float, y_start: float, x_end: float, y_end: float, x_first: bool) -> None:
+        start = f"M{x_start},{y_start}"
+        arc_x = copysign(ARC_RADIUS, x_end - x_start)
+        arc_y = copysign(ARC_RADIUS, y_end - y_start)
+        x_line = f"h{x_end - x_start - arc_x}"
+        y_line = f"v{y_end - y_start - arc_y}"
+        clockwise = (x_end > x_start) ^ (y_end > y_start)
+        if x_first:
+            first_line, last_line = x_line, y_line
+            clockwise = not clockwise
+        else:
+            first_line, last_line = y_line, x_line
+        arc = f"a{ARC_RADIUS},{ARC_RADIUS} 0 0 {int(clockwise)} {arc_x},{arc_y}"
+        print(f'<path d="{start} {first_line} {arc} {last_line}"/>')
+
     @classmethod
     def print_key(cls, x_0: float, y_0: float, p_key: PhysicalKey, l_key: LayoutKey) -> None:
         """
@@ -84,12 +100,21 @@ class KeymapDrawer:
         of the key positions.
         """
         pos_idx = combo_spec.key_positions
+        n_keys = len(pos_idx)
 
         p_keys = [self.layout.keys[p] for p in pos_idx]
-        x_pos = [k.x_pos for k in p_keys]
-        y_pos = [k.y_pos for k in p_keys]
 
-        x_mid, y_mid = x_0 + sum(x_pos) / len(pos_idx), y_0 + sum(y_pos) / len(pos_idx)
+        x_mid, y_mid = x_0, y_0
+        x_mid += sum(k.x_pos for k in p_keys) / n_keys
+        if combo_spec.align == "mid":
+            y_mid += sum(k.y_pos for k in p_keys) / n_keys
+        if combo_spec.align == "upper":
+            y_mid += min(k.y_pos - k.height / 2 for k in p_keys)
+        if combo_spec.align == "lower":
+            y_mid += max(k.y_pos + k.height / 2 for k in p_keys)
+        if combo_spec.align != "mid":
+            for k in p_keys:
+                self._draw_dendron(x_mid, y_mid, x_0 + k.x_pos, y_0 + k.y_pos, True)
 
         self._draw_rect(x_mid, y_mid, COMBO_W, COMBO_H, "combo")
         self._draw_text(x_mid, y_mid, combo_spec.key.tap, cls="small")
@@ -99,7 +124,7 @@ class KeymapDrawer:
         Given anchor coordinates x_0/y_0, print SVG code for keys and combos for a given layer,
         and a layer label (name) at the top.
         """
-        self._draw_text(KEY_W / 2, y_0 - KEY_H / 2, f"{name}:", cls="label")
+        self._draw_text(OUTER_PAD_W, y_0 - OUTER_PAD_H / 2, f"{name}:", cls="label")
         for p_key, l_key in zip(self.layout.keys, layer.keys):
             self.print_key(x_0, y_0, p_key, l_key)
         if layer.combos:
