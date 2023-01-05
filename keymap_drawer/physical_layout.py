@@ -180,9 +180,11 @@ class QmkGenerator(BaseModel):
 
     def generate(self) -> Sequence[PhysicalKey]:
         """Generate a sequence of PhysicalKeys from QmkKeys."""
+        x_min = min(k.x for k in self.layout)
+        y_min = min(k.y for k in self.layout)
         return [
             PhysicalKey(
-                pos=Point(KEY_H * (k.x + k.w / 2), KEY_H * (k.y + k.h / 2)),
+                pos=Point(KEY_H * (k.x - x_min + k.w / 2), KEY_H * (k.y - y_min + k.h / 2)),
                 width=KEY_H * k.w,
                 height=KEY_H * k.h,
                 rotation=k.r,
