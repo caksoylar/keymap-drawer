@@ -112,36 +112,38 @@ class KeymapDrawer:
 
         # find center of combo box
         p_mid = Point(p_0.x, p_0.y)
-        if combo_spec.align == "mid":
-            p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
-            p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
-        if combo_spec.align == "upper":
-            p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
-            p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - INNER_PAD_H / 2
-        if combo_spec.align == "lower":
-            p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
-            p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + INNER_PAD_H / 2
-        if combo_spec.align == "left":
-            p_mid.x += min(k.pos.x - k.width / 2 for k in p_keys) - INNER_PAD_W / 2
-            p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
-        if combo_spec.align == "right":
-            p_mid.x += max(k.pos.x + k.width / 2 for k in p_keys) + INNER_PAD_W / 2
-            p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
+        match combo_spec.align:
+            case "mid":
+                p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
+                p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
+            case "upper":
+                p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
+                p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - INNER_PAD_H / 2
+            case "lower":
+                p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
+                p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + INNER_PAD_H / 2
+            case "left":
+                p_mid.x += min(k.pos.x - k.width / 2 for k in p_keys) - INNER_PAD_W / 2
+                p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
+            case "right":
+                p_mid.x += max(k.pos.x + k.width / 2 for k in p_keys) + INNER_PAD_W / 2
+                p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
 
         # draw dendrons going from box to combo keys
         if combo_spec.dendron is not False:
-            if combo_spec.align in ("upper", "lower"):
-                for k in p_keys:
-                    offset = k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < COMBO_W / 2 else k.height / 3
-                    self._draw_arc_dendron(p_mid, p_0 + k.pos, True, offset)
-            if combo_spec.align in ("left", "right"):
-                for k in p_keys:
-                    offset = k.width / 5 if abs(p_0.y + k.pos.y - p_mid.y) < COMBO_H / 2 else k.width / 3
-                    self._draw_arc_dendron(p_mid, p_0 + k.pos, False, offset)
-            if combo_spec.align == "mid":
-                for k in p_keys:
-                    if combo_spec.dendron is True or abs(p_0 + k.pos - p_mid) >= k.width - 1:
-                        self._draw_line_dendron(p_mid, p_0 + k.pos, k.width / 3)
+            match combo_spec.align:
+                case "upper" | "lower":
+                    for k in p_keys:
+                        offset = k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < COMBO_W / 2 else k.height / 3
+                        self._draw_arc_dendron(p_mid, p_0 + k.pos, True, offset)
+                case "left" | "right":
+                    for k in p_keys:
+                        offset = k.width / 5 if abs(p_0.y + k.pos.y - p_mid.y) < COMBO_H / 2 else k.width / 3
+                        self._draw_arc_dendron(p_mid, p_0 + k.pos, False, offset)
+                case "mid":
+                    for k in p_keys:
+                        if combo_spec.dendron is True or abs(p_0 + k.pos - p_mid) >= k.width - 1:
+                            self._draw_line_dendron(p_mid, p_0 + k.pos, k.width / 3)
 
         # draw combo box with text
         self._draw_rect(p_mid, COMBO_W, COMBO_H, "combo")
