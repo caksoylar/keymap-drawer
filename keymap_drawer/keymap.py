@@ -48,6 +48,10 @@ class ComboSpec(BaseModel):
     key: LayoutKey = Field(alias="k")
     layers: Sequence[str] = Field(alias="l", default=[])
     align: Literal["mid", "upper", "lower", "left", "right"] = Field(alias="a", default="mid")
+    dendron: bool | None = Field(alias="d", default=None)
+
+    class Config:  # pylint: disable=missing-class-docstring
+        allow_population_by_field_name = True
 
     @validator("key", pre=True)
     def get_key(cls, val) -> dict:

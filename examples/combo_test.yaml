@@ -10,7 +10,7 @@ layers:
             - [3A, 3B, 3C]
         combos:
             - {p: [0, 1],    k: "1AB"}
-            - {p: [4, 8],    k: "2B3C"}
+            - {p: [4, 8],    k: "2B3C", dendron: true}
             - {p: [0, 1, 2], k: "1ABCu", a: upper}
             - {p: [0, 2],    k: "1ACl",  a: lower}
             - {p: [6, 8],    k: "3AC",   a: lower}

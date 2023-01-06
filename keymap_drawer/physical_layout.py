@@ -3,6 +3,7 @@ Module containing classes pertaining to the physical layout of a keyboard,
 i.e. a sequence of keys each represented by its coordinates, dimensions
 and rotation.
 """
+from math import sqrt
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Sequence, Literal
@@ -24,6 +25,10 @@ class Point:
 
     def __sub__(self, other):
         return Point(self.x - other.x, self.y - other.y)
+
+    def __abs__(self):
+        return sqrt(self.x ** 2 + self.y ** 2)
+
 
 class PhysicalKey(BaseModel):
     """Represents a physical key, in terms of its center coordinates, width, height and rotation."""
