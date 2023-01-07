@@ -4,6 +4,7 @@ keyboard layout definition (either via QMK info files or with parameters
 specified in the aforementioned yaml), print an SVG representing the keymap
 to standard output.
 """
+import sys
 import json
 import argparse
 from urllib.request import urlopen
@@ -11,10 +12,11 @@ from urllib.request import urlopen
 from ruamel import yaml
 
 from .draw import KeymapDrawer
+from .parse import parse_qmk_json, parse_zmk_keymap
 
 
 def draw(args) -> None:
-    with open(args.layout_yaml, "rb") as f:
+    with sys.stdin if args.layout_yaml == "-" else open(args.layout_yaml, "rb") as f:
         yaml_data = yaml.safe_load(f)
         assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in layout_yaml'
 
@@ -46,7 +48,12 @@ def draw(args) -> None:
 
 
 def parse(args) -> None:
-    pass
+    if args.qmk_keymap_json:
+        parsed = parse_qmk_json(args.qmk_keymap_json, not args.keep_prefixes)
+    else:
+        parsed = parse_zmk_keymap(args.zmk_keymap, not args.keep_prefixes, args.preprocess)
+
+    yaml.dump(parsed, sys.stdout, indent=4)
 
 
 def main() -> None:
@@ -73,14 +80,16 @@ def main() -> None:
     )
     draw_p.add_argument(
         "layout_yaml",
-        help="YAML file containing keymap definition with layers and (optionally) combos, see examples for schema",
+        help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, see examples for schema',
     )
 
     parse_p = subparsers.add_parser("parse", help="parse a QMK/ZMK keymap to yaml representation to edit")
     keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
     keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse")
     keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse")
-    parse_p.add_argument("-k", "--keep-prefixes", help="Do not remove KC_/behavior prefixes from items", action="store_true")
+    parse_p.add_argument(
+        "-k", "--keep-prefixes", help="Do not remove KC_/behavior prefixes from items", action="store_true"
+    )
     parse_p.add_argument("-p", "--preprocess", help="Run C preprocessor on ZMK keymap first", action="store_true")
 
     args = parser.parse_args()
