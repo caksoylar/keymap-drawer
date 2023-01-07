@@ -49,11 +49,11 @@ def draw(args) -> None:
 
 def parse(args) -> None:
     if args.qmk_keymap_json:
-        parsed = parse_qmk_json(args.qmk_keymap_json, not args.keep_prefixes)
+        parsed = parse_qmk_json(args.qmk_keymap_json, args.columns, not args.keep_prefixes)
     else:
-        parsed = parse_zmk_keymap(args.zmk_keymap, not args.keep_prefixes, args.preprocess)
+        parsed = parse_zmk_keymap(args.zmk_keymap, args.columns, not args.keep_prefixes, args.preprocess)
 
-    yaml.dump(parsed, sys.stdout, indent=4)
+    yaml.dump(parsed, sys.stdout, indent=4, width=160)
 
 
 def main() -> None:
@@ -91,6 +91,12 @@ def main() -> None:
         "-k", "--keep-prefixes", help="Do not remove KC_/behavior prefixes from items", action="store_true"
     )
     parse_p.add_argument("-p", "--preprocess", help="Run C preprocessor on ZMK keymap first", action="store_true")
+    parse_p.add_argument(
+        "-c",
+        "--columns",
+        help="Number of columns in the layout to enable better key grouping in the output, optional",
+        type=int,
+    )
 
     args = parser.parse_args()
     match args.command:
