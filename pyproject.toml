@@ -24,7 +24,7 @@ optional = true
 python-lsp-server = "^1.6.0"
 
 [tool.poetry.scripts]
-draw-keymap = 'keymap_drawer.__main__:main'
+keymap = 'keymap_drawer.__main__:main'
 
 [build-system]
 requires = ["poetry-core"]

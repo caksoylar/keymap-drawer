@@ -13,32 +13,7 @@ from ruamel import yaml
 from .draw import KeymapDrawer
 
 
-def main() -> None:
-    """Parse the configuration and print SVG using KeymapDrawer."""
-    parser = argparse.ArgumentParser(description=__doc__)
-    info_srcs = parser.add_mutually_exclusive_group()
-    info_srcs.add_argument(
-        "-j", "--qmk-info-json", help="Path to QMK info.json for a keyboard, containing the physical layout description"
-    )
-    info_srcs.add_argument(
-        "-k",
-        "--qmk-keyboard",
-        help="Name of the keyboard in QMK to fetch info.json containing the physical layout info, "
-        "including revision if any",
-    )
-    parser.add_argument(
-        "-l",
-        "--qmk-layout",
-        help='Name of the layout (starting with "LAYOUT_") to use in the QMK keyboard info file, '
-        "use the first defined one by default",
-    )
-    parser.add_argument(
-        "layout_yaml",
-        help="YAML file containing keymap definition with layers and (optionally) combos, see examples for schema",
-    )
-
-    args = parser.parse_args()
-
+def draw(args) -> None:
     with open(args.layout_yaml, "rb") as f:
         yaml_data = yaml.safe_load(f)
         assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in layout_yaml'
@@ -68,6 +43,39 @@ def main() -> None:
 
     drawer = KeymapDrawer(layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", []))
     drawer.print_board()
+
+
+def main() -> None:
+    """Parse the configuration and print SVG using KeymapDrawer."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    draw_p = subparsers.add_parser("draw", help="draw an SVG representation of the keymap")
+    info_srcs = draw_p.add_mutually_exclusive_group()
+    info_srcs.add_argument(
+        "-j", "--qmk-info-json", help="Path to QMK info.json for a keyboard, containing the physical layout description"
+    )
+    info_srcs.add_argument(
+        "-k",
+        "--qmk-keyboard",
+        help="Name of the keyboard in QMK to fetch info.json containing the physical layout info, "
+        "including revision if any",
+    )
+    draw_p.add_argument(
+        "-l",
+        "--qmk-layout",
+        help='Name of the layout (starting with "LAYOUT_") to use in the QMK keyboard info file, '
+        "use the first defined one by default",
+    )
+    draw_p.add_argument(
+        "layout_yaml",
+        help="YAML file containing keymap definition with layers and (optionally) combos, see examples for schema",
+    )
+
+    args = parser.parse_args()
+    match args.command:
+        case "draw":
+            draw(args)
 
 
 if __name__ == "__main__":
