@@ -45,6 +45,10 @@ def draw(args) -> None:
     drawer.print_board()
 
 
+def parse(args) -> None:
+    pass
+
+
 def main() -> None:
     """Parse the configuration and print SVG using KeymapDrawer."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -72,10 +76,19 @@ def main() -> None:
         help="YAML file containing keymap definition with layers and (optionally) combos, see examples for schema",
     )
 
+    parse_p = subparsers.add_parser("parse", help="parse a QMK/ZMK keymap to yaml representation to edit")
+    keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
+    keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse")
+    keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse")
+    parse_p.add_argument("-k", "--keep-prefixes", help="Do not remove KC_/behavior prefixes from items", action="store_true")
+    parse_p.add_argument("-p", "--preprocess", help="Run C preprocessor on ZMK keymap first", action="store_true")
+
     args = parser.parse_args()
     match args.command:
         case "draw":
             draw(args)
+        case "parse":
+            parse(args)
 
 
 if __name__ == "__main__":

@@ -271,6 +271,18 @@ files = [
 ]
 
 [[package]]
+name = "pcpp"
+version = "1.30"
+description = "A C99 preprocessor written in pure Python"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pcpp-1.30-py2.py3-none-any.whl", hash = "sha256:05fe08292b6da57f385001c891a87f40d6aa7f46787b03e8ba326d20a3297c6e"},
+    {file = "pcpp-1.30.tar.gz", hash = "sha256:5af9fbce55f136d7931ae915fae03c34030a3b36c496e72d9636cedc8e2543a1"},
+]
+
+[[package]]
 name = "platformdirs"
 version = "2.6.2"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
@@ -719,4 +731,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3b8082f72f01f32a957260b1a1ecbe20cc8804070f2f1cdebbc5ae6f94491173"
+content-hash = "286117d11e805c8ae694ec111cbf3729ecb95323851eaea95cfc5235150d4005"
