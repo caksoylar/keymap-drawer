@@ -11,6 +11,7 @@ python = "^3.10"
 "ruamel.yaml" = "^0.17.21"
 pydantic = "^1.10.2"
 pcpp = "^1.30"
+pyparsing = "^3.0.9"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^0.971"

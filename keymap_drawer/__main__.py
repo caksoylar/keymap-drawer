@@ -51,7 +51,7 @@ def parse(args) -> None:
     if args.qmk_keymap_json:
         parsed = parse_qmk_json(args.qmk_keymap_json, args.columns, not args.keep_prefixes)
     else:
-        parsed = parse_zmk_keymap(args.zmk_keymap, args.columns, not args.keep_prefixes, args.preprocess)
+        parsed = parse_zmk_keymap(args.zmk_keymap, args.columns, not args.keep_prefixes, not args.no_preprocess)
 
     yaml.dump(parsed, sys.stdout, indent=4, width=160)
 
@@ -90,7 +90,7 @@ def main() -> None:
     parse_p.add_argument(
         "-k", "--keep-prefixes", help="Do not remove KC_/behavior prefixes from items", action="store_true"
     )
-    parse_p.add_argument("-p", "--preprocess", help="Run C preprocessor on ZMK keymap first", action="store_true")
+    parse_p.add_argument("-n", "--no-preprocess", help="Do not run C preprocessor on ZMK keymap first", action="store_true")
     parse_p.add_argument(
         "-c",
         "--columns",
