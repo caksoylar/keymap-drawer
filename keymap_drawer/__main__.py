@@ -12,7 +12,7 @@ from urllib.request import urlopen
 from ruamel import yaml
 
 from .draw import KeymapDrawer
-from .parse import parse_qmk_json, parse_zmk_keymap
+from .parse import QmkJsonParser, ZmkKeymapParser
 
 
 def draw(args) -> None:
@@ -49,9 +49,9 @@ def draw(args) -> None:
 
 def parse(args) -> None:
     if args.qmk_keymap_json:
-        parsed = parse_qmk_json(args.qmk_keymap_json, args.columns, not args.keep_prefixes)
+        parsed = QmkJsonParser(args.columns, not args.keep_prefixes).parse(args.qmk_keymap_json)
     else:
-        parsed = parse_zmk_keymap(args.zmk_keymap, args.columns, not args.keep_prefixes, not args.no_preprocess)
+        parsed = ZmkKeymapParser(args.columns, not args.keep_prefixes, not args.no_preprocess).parse(args.zmk_keymap)
 
     yaml.dump(parsed, sys.stdout, indent=4, width=160)
 
@@ -90,7 +90,9 @@ def main() -> None:
     parse_p.add_argument(
         "-k", "--keep-prefixes", help="Do not remove KC_/behavior prefixes from items", action="store_true"
     )
-    parse_p.add_argument("-n", "--no-preprocess", help="Do not run C preprocessor on ZMK keymap first", action="store_true")
+    parse_p.add_argument(
+        "-n", "--no-preprocess", help="Do not run C preprocessor on ZMK keymap first", action="store_true"
+    )
     parse_p.add_argument(
         "-c",
         "--columns",
