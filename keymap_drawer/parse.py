@@ -169,7 +169,7 @@ class ZmkKeymapParser(KeymapParser):
         layers_out = {}
         layer_names = []
         for name, keys in layers.items():
-            layers_out[name] = {"keys": keys}
+            layers_out[name] = {"keys": self.rearrange_layer(keys)}
             layer_names.append(name)
 
         for combo in combos:

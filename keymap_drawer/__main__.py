@@ -53,7 +53,7 @@ def parse(args) -> None:
     else:
         parsed = ZmkKeymapParser(args.columns, not args.keep_prefixes, not args.no_preprocess).parse(args.zmk_keymap)
 
-    yaml.dump(parsed, sys.stdout, indent=4, width=160, sort_keys=False)
+    yaml.safe_dump(parsed, sys.stdout, indent=4, width=160, sort_keys=False, default_flow_style=None)
 
 
 def main() -> None:
