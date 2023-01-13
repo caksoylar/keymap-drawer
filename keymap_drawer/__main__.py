@@ -16,7 +16,7 @@ from .parse import QmkJsonParser, ZmkKeymapParser
 
 
 def draw(args) -> None:
-    with sys.stdin if args.layout_yaml == "-" else open(args.layout_yaml, "rb") as f:
+    with sys.stdin.buffer if args.layout_yaml == "-" else open(args.layout_yaml, "rb") as f:
         yaml_data = yaml.safe_load(f)
         assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in layout_yaml'
 

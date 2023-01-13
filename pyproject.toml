@@ -18,6 +18,7 @@ mypy = "^0.971"
 pylint = "^2.15.2"
 black = "^22.8.0"
 pylint-pydantic = "^0.1.4"
+types-pyyaml = "^6.0.12.2"
 
 [tool.poetry.group.lsp]
 optional = true
