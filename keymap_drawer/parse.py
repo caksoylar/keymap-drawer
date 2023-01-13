@@ -10,11 +10,14 @@ from copy import deepcopy
 import pyparsing as pp
 from pcpp.preprocessor import Preprocessor, OutputDirective, Action
 
+from .keymap import Layer, ComboSpec, KeymapData
+
 
 class KeymapParser(ABC):
     def __init__(self, columns: int | None, remove_prefixes: bool):
         self.columns = columns
         self.remove_prefixes = remove_prefixes
+        self._dict_args = {"exclude_defaults": True, "exclude_unset": True, "by_alias": True}
 
     def rearrange_layer(self, layer_keys):
         if self.columns:
@@ -36,12 +39,13 @@ class QmkJsonParser(KeymapParser):
         with open(path, "rb") if path != "-" else sys.stdin as f:
             raw = json.load(f)
 
-        out = {"layout": {}, "layers": {}}
+        layout = {}
         if "keyboard" in raw:
-            out["layout"]["qmk_keyboard"] = raw["keyboard"]
+            layout["qmk_keyboard"] = raw["keyboard"]
         if "layout" in raw:
-            out["layout"]["qmk_layout"] = raw["layout"]
+            layout["qmk_layout"] = raw["layout"]
 
+        layers = {}
         for ind, layer in enumerate(raw["layers"]):
             parsed_keys = []
             for key in layer:
@@ -61,9 +65,10 @@ class QmkJsonParser(KeymapParser):
 
                 parsed_keys.append(parsed)
 
-            out["layers"][f"L{ind}"] = {"keys": self.rearrange_layer(parsed_keys)}
+            layer_keys = Layer(keys=parsed_keys).dict(**self._dict_args)["keys"]
+            layers[f"L{ind}"] = {"keys": self.rearrange_layer(layer_keys)}
 
-        return out
+        return {"layout": layout, "layers": layers}
 
 
 class ZmkKeymapParser(KeymapParser):
@@ -115,7 +120,26 @@ class ZmkKeymapParser(KeymapParser):
                     found_nodes.append((elt_p, elt_n))
         return found_nodes
 
-    def _get_combos(self, parsed):
+    def _get_layers(self, parsed) -> dict[str, Layer]:
+        layer_parents = self._find_nodes_with_name(parsed, "keymap")
+        layer_nodes = chain.from_iterable(self._find_nodes_with_name(node) for node in layer_parents)
+        layers = {}
+        for node_name, node in layer_nodes:
+            try:
+                node_str = " ".join(item for item in node.as_list() if isinstance(item, str))
+                layer_name = m.group(1) if (m := self._label_re.search(node_str)) else node_name
+                layers[layer_name] = Layer(
+                    keys=[
+                        self._remove_prefix("&" + stripped)
+                        for binding in self._bindings_re.search(node_str).group(1).split(" &")
+                        if (stripped := binding.strip())
+                    ]
+                )
+            except Exception:
+                continue
+        return layers
+
+    def _get_combos(self, parsed, layer_names) -> list[ComboSpec]:
         combo_parents = self._find_nodes_with_name(parsed, "combos")
         combo_nodes = chain.from_iterable(self._find_nodes_with_name(node) for node in combo_parents)
         combos = []
@@ -128,28 +152,11 @@ class ZmkKeymapParser(KeymapParser):
                     "p": [int(pos) for pos in self._keypos_re.search(node_str).group(1).split()],
                 }
                 if m := self._layers_re.search(node_str):
-                    combo["l"] = [int(layer) for layer in m.group(1).split()]
-                combos.append(combo)
+                    combo["l"] = [layer_names[int(layer)] for layer in m.group(1).split()]
+                combos.append(ComboSpec(**combo))
             except Exception:
                 continue
         return combos
-
-    def _get_layers(self, parsed):
-        layer_parents = self._find_nodes_with_name(parsed, "keymap")
-        layer_nodes = chain.from_iterable(self._find_nodes_with_name(node) for node in layer_parents)
-        layers = {}
-        for node_name, node in layer_nodes:
-            try:
-                node_str = " ".join(item for item in node.as_list() if isinstance(item, str))
-                layer_name = m.group(1) if (m := self._label_re.search(node_str)) else node_name
-                layers[layer_name] = [
-                    self._remove_prefix("&" + stripped)
-                    for binding in self._bindings_re.search(node_str).group(1).split(" &")
-                    if (stripped := binding.strip())
-                ]
-            except Exception:
-                continue
-        return layers
 
     def parse(self, path) -> dict:
         prepped = self._get_prepped(path)
@@ -161,23 +168,13 @@ class ZmkKeymapParser(KeymapParser):
             .ignore(pp.c_style_comment)
             .parse_string(unparsed)[0]
         )
-        combos = self._get_combos(parsed)
         layers = self._get_layers(parsed)
-        # print(*combos, sep="\n")
-        # print(*layers.items(), sep="\n")
+        layer_names = list(layers.keys())
+        combos = self._get_combos(parsed, layer_names)
 
-        layers_out = {}
-        layer_names = []
-        for name, keys in layers.items():
-            layers_out[name] = {"keys": self.rearrange_layer(keys)}
-            layer_names.append(name)
+        layers = KeymapData.assign_combos_to_layers({"layers": layers, "combos": combos})["layers"]
+        layers_dict = {name: layer.dict(**self._dict_args) for name, layer in layers.items()}
+        for name, layer in layers_dict.items():
+            layer["keys"] = self.rearrange_layer(layer["keys"])
 
-        for combo in combos:
-            layers = combo.pop("l", range(len(layers)))
-            for layer in layers:
-                layer_name = layer_names[layer]
-                if "combos" not in layers_out[layer_name]:
-                    layers_out[layer_name]["combos"] = []
-                layers_out[layer_name]["combos"].append(deepcopy(combo))
-
-        return {"layers": layers_out}
+        return {"layers": layers_dict}

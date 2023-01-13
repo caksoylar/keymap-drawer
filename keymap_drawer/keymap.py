@@ -81,6 +81,12 @@ class Layer(BaseModel):
             )
         ]
 
+    def dict(self, *args, **kwargs):
+        dict_repr = super().dict(*args, **kwargs)
+        if self.combos and "combos" not in dict_repr:
+            dict_repr["combos"] = [combo.dict(*args, **kwargs) for combo in self.combos]
+        return dict_repr
+
 
 class KeymapData(BaseModel):
     """Represents all data pertaining to a keymap, including layers, combos and physical layout."""
@@ -104,6 +110,7 @@ class KeymapData(BaseModel):
         for combo in vals["combos"]:
             for layer in combo.layers if combo.layers else vals["layers"]:
                 vals["layers"][layer].combos.append(combo)
+        vals["combos"] = []
         return vals
 
     @root_validator(skip_on_failure=True)
