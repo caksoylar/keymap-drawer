@@ -23,8 +23,8 @@ class LayoutKey(BaseModel):
     class Config:  # pylint: disable=missing-class-docstring
         allow_population_by_field_name = True
 
-    @classmethod
-    def from_key_spec(cls, key_spec: dict | str | int | None) -> dict:
+    @staticmethod
+    def from_key_spec(key_spec: dict | str | int | None) -> dict:
         """Derive full params from a string/int (for tap), a full spec or null (empty key)."""
         match key_spec:
             case dict():
@@ -36,6 +36,12 @@ class LayoutKey(BaseModel):
             case None:
                 return {"tap": ""}
         raise ValueError(f'Invalid key specification "{key_spec}", provide a dict, string or null')
+
+    def dict(self, *args, **kwargs):
+        dict_repr = super().dict(*args, **kwargs)
+        if set(dict_repr.keys()) == {"t"}:
+            return dict_repr["t"]
+        return dict_repr
 
 
 class ComboSpec(BaseModel):
