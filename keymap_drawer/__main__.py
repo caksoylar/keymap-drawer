@@ -49,9 +49,9 @@ def draw(args) -> None:
 
 def parse(args) -> None:
     if args.qmk_keymap_json:
-        parsed = QmkJsonParser(args.columns, not args.keep_prefixes).parse(args.qmk_keymap_json)
+        parsed = QmkJsonParser(args.columns, args.skip_guessing).parse(args.qmk_keymap_json)
     else:
-        parsed = ZmkKeymapParser(args.columns, not args.keep_prefixes, not args.no_preprocess).parse(args.zmk_keymap)
+        parsed = ZmkKeymapParser(args.columns, args.skip_guessing, not args.no_preprocess).parse(args.zmk_keymap)
 
     yaml.safe_dump(parsed, sys.stdout, indent=4, width=160, sort_keys=False, default_flow_style=None)
 
@@ -88,7 +88,7 @@ def main() -> None:
     keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse")
     keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse")
     parse_p.add_argument(
-        "-k", "--keep-prefixes", help="Do not remove KC_/behavior prefixes from items", action="store_true"
+        "-s", "--skip-guessing", help="Do not try to guess individual key types like hold-taps", action="store_true"
     )
     parse_p.add_argument(
         "-n", "--no-preprocess", help="Do not run C preprocessor on ZMK keymap first", action="store_true"

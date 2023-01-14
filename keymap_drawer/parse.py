@@ -15,9 +15,9 @@ from .keymap import Layer, ComboSpec, KeymapData
 class KeymapParser(ABC):
     """Abstract base class for parsing firmware keymap representations."""
 
-    def __init__(self, columns: int | None, remove_prefixes: bool):
+    def __init__(self, columns: int | None, skip_guessing: bool):
         self.columns = columns
-        self.remove_prefixes = remove_prefixes
+        self.skip_guessing = skip_guessing
         self._dict_args = {"exclude_defaults": True, "exclude_unset": True, "by_alias": True}
         self.layer_names: list[str] | None = None
 
@@ -31,16 +31,33 @@ class KeymapParser(ABC):
 class QmkJsonParser(KeymapParser):
     """Parser for json-format QMK keymaps, like Configurator exports or `qmk c2json` outputs."""
 
-    def __init__(self, columns: int | None, remove_prefixes: bool):
-        super().__init__(columns, remove_prefixes)
+    def __init__(self, columns: int | None, skip_guessing: bool):
+        super().__init__(columns, skip_guessing)
+        self._prefix_re = re.compile(r"\bKC_")
         self._mo_re = re.compile(r"MO\((\S+)\)")
         self._mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
         self._mtl_re = re.compile(r"MT\((\S+),(\S+)\)")
         self._lt_re = re.compile(r"LT\((\S+),(\S+)\)")
 
+    def _str_to_key_spec(self, key_str: str) -> str | dict:
+        if self.skip_guessing:
+            return key_str
+
+        key_str = self._prefix_re.sub("", key_str)
+
+        parsed: str | dict[str, str]
+        if m := self._mo_re.fullmatch(key_str):
+            return f"L{m.group(1).strip()}"
+        if m := self._mts_re.fullmatch(key_str):
+            return {"t": m.group(2).strip(), "h": m.group(1)}
+        if m := self._mtl_re.fullmatch(key_str):
+            return {"t": m.group(2).strip(), "h": m.group(1).strip()}
+        if m := self._lt_re.fullmatch(key_str):
+            return {"t": m.group(2).strip(), "h": f"L{m.group(1).strip()}"}
+        return key_str
+
     def parse(self, path: str) -> dict:
         """Parse a JSON keymap with its file path and return a dict representation to be dumped to YAML."""
-        prefix_re = re.compile(r"\bKC_")
 
         with open(path, "rb") if path != "-" else sys.stdin.buffer as f:
             raw = json.load(f)
@@ -53,27 +70,8 @@ class QmkJsonParser(KeymapParser):
 
         layers = {}
         for ind, layer in enumerate(raw["layers"]):
-            parsed_keys = []
-            for key in layer:
-                if self.remove_prefixes:
-                    key = prefix_re.sub("", key)
-
-                parsed: str | dict[str, str]
-                if m := self._mo_re.fullmatch(key):
-                    parsed = f"L{m.group(1).strip()}"
-                elif m := self._mts_re.fullmatch(key):
-                    parsed = {"t": m.group(2).strip(), "h": m.group(1)}
-                elif m := self._mtl_re.fullmatch(key):
-                    parsed = {"t": m.group(2).strip(), "h": m.group(1).strip()}
-                elif m := self._lt_re.fullmatch(key):
-                    parsed = {"t": m.group(2).strip(), "h": f"L{m.group(1).strip()}"}
-                else:
-                    parsed = key
-
-                parsed_keys.append(parsed)
-
-            layer_keys = Layer(keys=parsed_keys).dict(**self._dict_args)["keys"]
-            layers[f"L{ind}"] = {"keys": self.rearrange_layer(layer_keys)}
+            layer = Layer(keys=[self._str_to_key_spec(key) for key in layer]).dict(**self._dict_args)
+            layers[f"L{ind}"] = {"keys": self.rearrange_layer(layer["keys"])}
 
         return {"layout": layout, "layers": layers}
 
@@ -81,16 +79,17 @@ class QmkJsonParser(KeymapParser):
 class ZmkKeymapParser(KeymapParser):
     """Parser for ZMK devicetree keymaps, using C preprocessor and hacky pyparsing-based parsers."""
 
-    def __init__(self, columns: int | None, remove_prefixes: bool, preprocess: bool):
-        super().__init__(columns, remove_prefixes)
+    def __init__(self, columns: int | None, skip_guessing: bool, preprocess: bool):
+        super().__init__(columns, skip_guessing)
         self.preprocess = preprocess
         self._bindings_re = re.compile(r"bindings = <(.*?)>")
         self._keypos_re = re.compile(r"key-positions = <(.*?)>")
         self._layers_re = re.compile(r"layers = <(.*?)>")
         self._label_re = re.compile(r'label = "(.*?)"')
+        self._nodelabel_re = re.compile(r"([\w-]+) *: *([\w-]+) *{")
 
-    def _remove_prefix(self, binding: str) -> str:
-        if not self.remove_prefixes:
+    def _str_to_key_spec(self, binding: str) -> str | dict:
+        if self.skip_guessing:
             return binding
         return re.sub(r"&(kp|bt|mt|lt|none|trans|out) +", "", binding)
 
@@ -141,7 +140,7 @@ class ZmkKeymapParser(KeymapParser):
             try:
                 layers[layer_name] = Layer(
                     keys=[
-                        self._remove_prefix("&" + stripped)
+                        self._str_to_key_spec("&" + stripped)
                         for binding in self._bindings_re.search(node_str).group(1).split(" &")  # type: ignore
                         if (stripped := binding.strip())
                     ]
@@ -178,7 +177,7 @@ class ZmkKeymapParser(KeymapParser):
             pp.nested_expr("{", "};")
             .ignore("//" + pp.SkipTo(pp.lineEnd))
             .ignore(pp.c_style_comment)
-            .parse_string("{ " + prepped + " };")[0]
+            .parse_string("{ " + self._nodelabel_re.sub(r"\1:\2 {", prepped) + " };")[0]
         ) if isinstance(node, pp.ParseResults)]
         layers = self._get_layers(parsed)
         combos = self._get_combos(parsed)
