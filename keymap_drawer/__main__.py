@@ -16,6 +16,7 @@ from .parse import QmkJsonParser, ZmkKeymapParser
 
 
 def draw(args) -> None:
+    """Draw the keymap in SVG format to stdout."""
     with sys.stdin.buffer if args.layout_yaml == "-" else open(args.layout_yaml, "rb") as f:
         yaml_data = yaml.safe_load(f)
         assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in layout_yaml'
@@ -48,6 +49,7 @@ def draw(args) -> None:
 
 
 def parse(args) -> None:
+    """Call the appropriate parser for given args and dump YAML keymap representation to stdout."""
     if args.qmk_keymap_json:
         parsed = QmkJsonParser(args.columns, args.skip_guessing).parse(args.qmk_keymap_json)
     else:
@@ -80,7 +82,8 @@ def main() -> None:
     )
     draw_p.add_argument(
         "layout_yaml",
-        help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, see examples for schema',
+        help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
+        "see examples for schema",
     )
 
     parse_p = subparsers.add_parser("parse", help="parse a QMK/ZMK keymap to yaml representation to edit")

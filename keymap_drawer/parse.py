@@ -18,8 +18,8 @@ class KeymapParser(ABC):
     def __init__(self, columns: int | None, skip_guessing: bool):
         self.columns = columns
         self.skip_guessing = skip_guessing
-        self._dict_args = {"exclude_defaults": True, "exclude_unset": True, "by_alias": True}
         self.layer_names: list[str] | None = None
+        self._dict_args = {"exclude_defaults": True, "exclude_unset": True, "by_alias": True}
 
     def rearrange_layer(self, layer_keys: list) -> list:
         """Convert a list of keys to list of list of keys to roughly correspond to rows."""
@@ -31,13 +31,11 @@ class KeymapParser(ABC):
 class QmkJsonParser(KeymapParser):
     """Parser for json-format QMK keymaps, like Configurator exports or `qmk c2json` outputs."""
 
-    def __init__(self, columns: int | None, skip_guessing: bool):
-        super().__init__(columns, skip_guessing)
-        self._prefix_re = re.compile(r"\bKC_")
-        self._mo_re = re.compile(r"MO\((\S+)\)")
-        self._mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
-        self._mtl_re = re.compile(r"MT\((\S+),(\S+)\)")
-        self._lt_re = re.compile(r"LT\((\S+),(\S+)\)")
+    _prefix_re = re.compile(r"\bKC_")
+    _mo_re = re.compile(r"MO\((\S+)\)")
+    _mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
+    _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
+    _lt_re = re.compile(r"LT\((\S+), *(\S+)\)")
 
     def _str_to_key_spec(self, key_str: str) -> str | dict:
         if self.skip_guessing:
@@ -45,7 +43,6 @@ class QmkJsonParser(KeymapParser):
 
         key_str = self._prefix_re.sub("", key_str)
 
-        parsed: str | dict[str, str]
         if m := self._mo_re.fullmatch(key_str):
             return f"L{m.group(1).strip()}"
         if m := self._mts_re.fullmatch(key_str):
@@ -79,22 +76,44 @@ class QmkJsonParser(KeymapParser):
 class ZmkKeymapParser(KeymapParser):
     """Parser for ZMK devicetree keymaps, using C preprocessor and hacky pyparsing-based parsers."""
 
+    _bindings_re = re.compile(r"bindings = <(.*?)>")
+    _keypos_re = re.compile(r"key-positions = <(.*?)>")
+    _layers_re = re.compile(r"layers = <(.*?)>")
+    _label_re = re.compile(r'label = "(.*?)"')
+    _compatible_re = re.compile(r'compatible = "(.*?)"')
+    _nodelabel_re = re.compile(r"([\w-]+) *: *([\w-]+) *{")
+    _numbers_re = re.compile(r"N(UM(BER)?_)?(\d)")
+
     def __init__(self, columns: int | None, skip_guessing: bool, preprocess: bool):
         super().__init__(columns, skip_guessing)
         self.preprocess = preprocess
-        self._bindings_re = re.compile(r"bindings = <(.*?)>")
-        self._keypos_re = re.compile(r"key-positions = <(.*?)>")
-        self._layers_re = re.compile(r"layers = <(.*?)>")
-        self._label_re = re.compile(r'label = "(.*?)"')
-        self._nodelabel_re = re.compile(r"([\w-]+) *: *([\w-]+) *{")
+        self.hold_tap_labels = {"&mt", "&lt"}
 
-    def _str_to_key_spec(self, binding: str) -> str | dict:
+    def _str_to_key_spec(self, binding: str) -> str | dict:  # pylint: disable=too-many-return-statements
         if self.skip_guessing:
             return binding
-        return re.sub(r"&(kp|bt|mt|lt|none|trans|out) +", "", binding)
+        match binding.split():
+            case ["&none"] | ["&trans"]:
+                return ""
+            case [ref]:
+                return ref
+            case ["&kp", par]:
+                return self._numbers_re.sub(r"\3", par)
+            case [("&out" | "&bt"), *pars]:
+                return " ".join(pars)
+            case [("&mo" | "&to" | "&tog"), par]:
+                return self.layer_names[int(par)]
+            case ["&sl", par]:
+                return self.layer_names[int(par)] + " (sticky)"
+            case [ref, hold_par, tap_par] if ref in self.hold_tap_labels:
+                try:
+                    hold_par = self.layer_names[int(hold_par)]
+                except (ValueError, IndexError):
+                    pass
+                return {"t": tap_par, "h": hold_par}
+        return binding
 
     def _get_prepped(self, path: str) -> str:
-        clean_prep = re.compile(r"^\s*#.*?$", re.MULTILINE)
         with open(path, "r", encoding="utf-8") if path != "-" else sys.stdin as f:
             if self.preprocess:
 
@@ -110,7 +129,7 @@ class ZmkKeymapParser(KeymapParser):
                     prepped = f_out.getvalue()
             else:
                 prepped = f.read()
-            return clean_prep.sub("", prepped)
+        return re.sub(r"^\s*#.*?$", "", prepped)
 
     def _find_nodes_with_name(
         self, parsed: pp.ParseResults, node_name: str | None = None
@@ -125,6 +144,18 @@ class ZmkKeymapParser(KeymapParser):
                 found_nodes.append((elt_p, elt_n))
         return found_nodes
 
+    def _update_hold_tap_labels(self, parsed: list[pp.ParseResults]) -> None:
+        behavior_parents = chain.from_iterable(self._find_nodes_with_name(node, "behaviors") for node in parsed)
+        behavior_nodes = {
+            node_name: " ".join(item for item in node.as_list() if isinstance(item, str))
+            for node_name, node in chain.from_iterable(self._find_nodes_with_name(node) for _, node in behavior_parents)
+        }
+        for name, node_str in behavior_nodes.items():
+            if ":" not in name:
+                continue
+            if (m := self._compatible_re.search(node_str)) and m.group(1) == "zmk,behavior-hold-tap":
+                self.hold_tap_labels.add("&" + name.split(":", 1)[0])
+
     def _get_layers(self, parsed: list[pp.ParseResults]) -> dict[str, Layer]:
         layer_parents = chain.from_iterable(self._find_nodes_with_name(node, "keymap") for node in parsed)
         layer_nodes = {
@@ -132,7 +163,7 @@ class ZmkKeymapParser(KeymapParser):
             for node_name, node in chain.from_iterable(self._find_nodes_with_name(node) for _, node in layer_parents)
         }
         self.layer_names: list[str] = [
-            m.group(1) if (m := self._label_re.search(node_str)) else node_name  # type: ignore
+            m.group(1) if (m := self._label_re.search(node_str)) else node_name
             for node_name, node_str in layer_nodes.items()
         ]
         layers = {}
@@ -160,11 +191,11 @@ class ZmkKeymapParser(KeymapParser):
                 node_str = " ".join(item for item in node.as_list() if isinstance(item, str))
                 binding = self._bindings_re.search(node_str).group(1)  # type: ignore
                 combo = {
-                    "k": self._remove_prefix(binding),
+                    "k": self._str_to_key_spec(binding),
                     "p": [int(pos) for pos in self._keypos_re.search(node_str).group(1).split()],  # type: ignore
                 }
                 if m := self._layers_re.search(node_str):
-                    combo["l"] = [self.layer_names[int(layer)] for layer in m.group(1).split()]
+                    combo["l"] = [self.layer_names[int(layer)] for layer in m.group(1).split()]  # type: ignore
                 combos.append(ComboSpec(**combo))
             except (AttributeError, ValueError):
                 continue
@@ -173,12 +204,17 @@ class ZmkKeymapParser(KeymapParser):
     def parse(self, path: str) -> dict:
         """Parse a ZMK keymap with its file path and return a dict representation to be dumped to YAML."""
         prepped = self._get_prepped(path)
-        parsed = [node for node in (
-            pp.nested_expr("{", "};")
-            .ignore("//" + pp.SkipTo(pp.lineEnd))
-            .ignore(pp.c_style_comment)
-            .parse_string("{ " + self._nodelabel_re.sub(r"\1:\2 {", prepped) + " };")[0]
-        ) if isinstance(node, pp.ParseResults)]
+        parsed = [
+            node
+            for node in (
+                pp.nested_expr("{", "};")
+                .ignore("//" + pp.SkipTo(pp.lineEnd))
+                .ignore(pp.c_style_comment)
+                .parse_string("{ " + self._nodelabel_re.sub(r"\1:\2 {", prepped) + " };")[0]
+            )
+            if isinstance(node, pp.ParseResults)
+        ]
+        self._update_hold_tap_labels(parsed)
         layers = self._get_layers(parsed)
         combos = self._get_combos(parsed)
 
