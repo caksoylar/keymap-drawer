@@ -98,13 +98,15 @@ class ZmkKeymapParser(KeymapParser):
             case [ref]:
                 return ref
             case ["&kp", par]:
-                return self._numbers_re.sub(r"\3", par)
+                return self._numbers_re.sub(r"\3", par).removeprefix("C_").removeprefix("K_").replace("_", " ")
+            case ["&sk", par]:
+                return {"t": par, "h": "sticky"}
             case [("&out" | "&bt"), *pars]:
-                return " ".join(pars)
+                return " ".join(pars).replace("_", " ")
             case [("&mo" | "&to" | "&tog"), par]:
                 return self.layer_names[int(par)]
             case ["&sl", par]:
-                return self.layer_names[int(par)] + " (sticky)"
+                return {"t": self.layer_names[int(par)], "h": "sticky"}
             case [ref, hold_par, tap_par] if ref in self.hold_tap_labels:
                 try:
                     hold_par = self.layer_names[int(hold_par)]
@@ -172,8 +174,8 @@ class ZmkKeymapParser(KeymapParser):
                 layers[layer_name] = Layer(
                     keys=[
                         self._str_to_key_spec("&" + stripped)
-                        for binding in self._bindings_re.search(node_str).group(1).split(" &")  # type: ignore
-                        if (stripped := binding.strip())
+                        for binding in self._bindings_re.search(node_str).group(1).split("&")  # type: ignore
+                        if (stripped := binding.strip().removeprefix("&"))
                     ]
                 )
             except AttributeError:
