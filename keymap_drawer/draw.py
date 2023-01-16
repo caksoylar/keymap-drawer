@@ -120,15 +120,19 @@ class KeymapDrawer:
             case "upper":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - INNER_PAD_H / 2
+                p_mid.y -= combo_spec.offset * self.layout.min_height
             case "lower":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + INNER_PAD_H / 2
+                p_mid.y += combo_spec.offset * self.layout.min_height
             case "left":
                 p_mid.x += min(k.pos.x - k.width / 2 for k in p_keys) - INNER_PAD_W / 2
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
+                p_mid.x -= combo_spec.offset * self.layout.min_width
             case "right":
                 p_mid.x += max(k.pos.x + k.width / 2 for k in p_keys) + INNER_PAD_W / 2
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
+                p_mid.x += combo_spec.offset * self.layout.min_width
 
         # draw dendrons going from box to combo keys
         if combo_spec.dendron is not False:

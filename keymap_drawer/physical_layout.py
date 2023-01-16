@@ -63,6 +63,16 @@ class PhysicalLayout(BaseModel):
         """Return overall height of layout."""
         return max(k.pos.y + k.height / 2 for k in self.keys)
 
+    @cached_property
+    def min_width(self) -> float:
+        """Return minimum key width in the layout."""
+        return min(k.width for k in self.keys)
+
+    @cached_property
+    def min_height(self) -> float:
+        """Return minimum key height in the layout."""
+        return min(k.height for k in self.keys)
+
 
 def layout_factory(ltype: LayoutType, **kwargs) -> PhysicalLayout:
     """Create and return a physical layout as determined by the ltype argument."""

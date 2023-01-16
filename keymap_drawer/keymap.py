@@ -54,6 +54,7 @@ class ComboSpec(BaseModel):
     key: LayoutKey = Field(alias="k")
     layers: Sequence[str] = Field(alias="l", default=[])
     align: Literal["mid", "upper", "top", "lower", "bottom", "left", "right"] = Field(alias="a", default="mid")
+    offset: float = 0.0
     dendron: bool | None = Field(alias="d", default=None)
 
     class Config:  # pylint: disable=missing-class-docstring
