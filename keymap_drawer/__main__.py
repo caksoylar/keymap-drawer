@@ -45,7 +45,7 @@ def draw(args) -> None:
         layout = {"ltype": "ortho", **yaml_data["layout"]}
 
     drawer = KeymapDrawer(layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", []))
-    drawer.print_board()
+    drawer.print_board(args.scale_combo_arcs)
 
 
 def parse(args) -> None:
@@ -84,6 +84,13 @@ def main() -> None:
         "layout_yaml",
         help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
         "see examples for schema",
+    )
+    draw_p.add_argument(
+        "-s",
+        "--scale-combo-arcs",
+        help="Scale combo arc lengths by this factor, useful to set <1 if multiple arcs overlap on the same key",
+        default=1.0,
+        type=float,
     )
 
     parse_p = subparsers.add_parser("parse", help="parse a QMK/ZMK keymap to yaml representation to edit")

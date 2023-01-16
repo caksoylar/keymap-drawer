@@ -30,6 +30,7 @@ class KeymapDrawer:
         data = KeymapData.parse_obj(kwargs)
         self.layout = data.layout
         self.layers = data.layers
+        self._arc_scale = 1.0
 
     @staticmethod
     def _draw_rect(p: Point, w: float, h: float, cls: str | None = None) -> None:
@@ -55,17 +56,17 @@ class KeymapDrawer:
         print("</text>")
 
     @staticmethod
-    def _draw_arc_dendron(p_1: Point, p_2: Point, x_first: bool, shorten: float) -> None:
+    def _draw_arc_dendron(p_1: Point, p_2: Point, x_first: bool, shorten: float, arc_scale: float) -> None:
         start = f"M{p_1.x},{p_1.y}"
         arc_x = copysign(ARC_RADIUS, p_2.x - p_1.x)
         arc_y = copysign(ARC_RADIUS, p_2.y - p_1.y)
         clockwise = (p_2.x > p_1.x) ^ (p_2.y > p_1.y)
         if x_first:
-            line_1 = f"h{p_2.x - p_1.x - arc_x}"
+            line_1 = f"h{arc_scale * (p_2.x - p_1.x) - arc_x}"
             line_2 = f"v{p_2.y - p_1.y - arc_y - copysign(shorten, p_2.y - p_1.y)}"
             clockwise = not clockwise
         else:
-            line_1 = f"v{p_2.y - p_1.y - arc_y}"
+            line_1 = f"v{arc_scale * (p_2.y - p_1.y) - arc_y}"
             line_2 = f"h{p_2.x - p_1.x - arc_x - copysign(shorten, p_2.x - p_1.x)}"
         arc = f"a{ARC_RADIUS},{ARC_RADIUS} 0 0 {int(clockwise)} {arc_x},{arc_y}"
         print(f'<path d="{start} {line_1} {arc} {line_2}"/>')
@@ -135,11 +136,11 @@ class KeymapDrawer:
                 case "upper" | "lower":
                     for k in p_keys:
                         offset = k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < COMBO_W / 2 else k.height / 3
-                        self._draw_arc_dendron(p_mid, p_0 + k.pos, True, offset)
+                        self._draw_arc_dendron(p_mid, p_0 + k.pos, True, offset, self._arc_scale)
                 case "left" | "right":
                     for k in p_keys:
                         offset = k.width / 5 if abs(p_0.y + k.pos.y - p_mid.y) < COMBO_H / 2 else k.width / 3
-                        self._draw_arc_dendron(p_mid, p_0 + k.pos, False, offset)
+                        self._draw_arc_dendron(p_mid, p_0 + k.pos, False, offset, self._arc_scale)
                 case "mid":
                     for k in p_keys:
                         if combo_spec.dendron is True or abs(p_0 + k.pos - p_mid) >= k.width - 1:
@@ -161,8 +162,11 @@ class KeymapDrawer:
             for combo_spec in layer.combos:
                 self.print_combo(p_0, combo_spec)
 
-    def print_board(self) -> None:
+    def print_board(self, scale_combo_arcs=None) -> None:
         """Print SVG code representing the keymap."""
+        if scale_combo_arcs:
+            self._arc_scale = scale_combo_arcs
+
         board_w = self.layout.width + 2 * OUTER_PAD_W
         board_h = len(self.layers) * self.layout.height + (len(self.layers) + 1) * OUTER_PAD_H
         print(
