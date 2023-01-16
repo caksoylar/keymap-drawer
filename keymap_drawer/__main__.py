@@ -11,11 +11,12 @@ from urllib.request import urlopen
 
 import yaml
 
+from .config import Config, DrawConfig, ParseConfig
 from .draw import KeymapDrawer
 from .parse import QmkJsonParser, ZmkKeymapParser
 
 
-def draw(args) -> None:
+def draw(args, config: DrawConfig) -> None:
     """Draw the keymap in SVG format to stdout."""
     with sys.stdin.buffer if args.layout_yaml == "-" else open(args.layout_yaml, "rb") as f:
         yaml_data = yaml.safe_load(f)
@@ -44,16 +45,16 @@ def draw(args) -> None:
         )
         layout = {"ltype": "ortho", **yaml_data["layout"]}
 
-    drawer = KeymapDrawer(layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", []))
-    drawer.print_board(args.scale_combo_arcs)
+    drawer = KeymapDrawer(config=config, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", []))
+    drawer.print_board()
 
 
-def parse(args) -> None:
+def parse(args, config: ParseConfig) -> None:
     """Call the appropriate parser for given args and dump YAML keymap representation to stdout."""
     if args.qmk_keymap_json:
-        parsed = QmkJsonParser(args.columns, args.skip_guessing).parse(args.qmk_keymap_json)
+        parsed = QmkJsonParser(config, args.columns).parse(args.qmk_keymap_json)
     else:
-        parsed = ZmkKeymapParser(args.columns, args.skip_guessing, not args.no_preprocess).parse(args.zmk_keymap)
+        parsed = ZmkKeymapParser(config, args.columns).parse(args.zmk_keymap)
 
     yaml.safe_dump(parsed, sys.stdout, indent=4, width=160, sort_keys=False, default_flow_style=None)
 
@@ -85,24 +86,11 @@ def main() -> None:
         help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
         "see examples for schema",
     )
-    draw_p.add_argument(
-        "-s",
-        "--scale-combo-arcs",
-        help="Scale combo arc lengths by this factor, useful to set <1 if multiple arcs overlap on the same key",
-        default=1.0,
-        type=float,
-    )
 
     parse_p = subparsers.add_parser("parse", help="parse a QMK/ZMK keymap to yaml representation to edit")
     keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
     keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse")
     keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse")
-    parse_p.add_argument(
-        "-s", "--skip-guessing", help="Do not try to guess individual key types like hold-taps", action="store_true"
-    )
-    parse_p.add_argument(
-        "-n", "--no-preprocess", help="Do not run C preprocessor on ZMK keymap first", action="store_true"
-    )
     parse_p.add_argument(
         "-c",
         "--columns",
@@ -111,11 +99,13 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+
+    config = Config()
     match args.command:
         case "draw":
-            draw(args)
+            draw(args, config.draw_config)
         case "parse":
-            parse(args)
+            parse(args, config.parse_config)
 
 
 if __name__ == "__main__":

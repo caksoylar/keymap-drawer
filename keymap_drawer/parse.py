@@ -10,14 +10,15 @@ import pyparsing as pp
 from pcpp.preprocessor import Preprocessor, OutputDirective, Action  # type: ignore
 
 from .keymap import Layer, ComboSpec, KeymapData
+from .config import ParseConfig
 
 
 class KeymapParser(ABC):
     """Abstract base class for parsing firmware keymap representations."""
 
-    def __init__(self, columns: int | None, skip_guessing: bool):
+    def __init__(self, config: ParseConfig, columns: int | None):
+        self.cfg = config
         self.columns = columns
-        self.skip_guessing = skip_guessing
         self.layer_names: list[str] | None = None
         self._dict_args = {"exclude_defaults": True, "exclude_unset": True, "by_alias": True}
 
@@ -38,7 +39,7 @@ class QmkJsonParser(KeymapParser):
     _lt_re = re.compile(r"LT\((\S+), *(\S+)\)")
 
     def _str_to_key_spec(self, key_str: str) -> str | dict:
-        if self.skip_guessing:
+        if self.cfg.skip_binding_parsing:
             return key_str
 
         key_str = self._prefix_re.sub("", key_str)
@@ -84,13 +85,12 @@ class ZmkKeymapParser(KeymapParser):
     _nodelabel_re = re.compile(r"([\w-]+) *: *([\w-]+) *{")
     _numbers_re = re.compile(r"N(UM(BER)?_)?(\d)")
 
-    def __init__(self, columns: int | None, skip_guessing: bool, preprocess: bool):
-        super().__init__(columns, skip_guessing)
-        self.preprocess = preprocess
+    def __init__(self, config: ParseConfig, columns: int | None):
+        super().__init__(config, columns)
         self.hold_tap_labels = {"&mt", "&lt"}
 
     def _str_to_key_spec(self, binding: str) -> str | dict:  # pylint: disable=too-many-return-statements
-        if self.skip_guessing:
+        if self.cfg.skip_binding_parsing:
             return binding
         match binding.split():
             case ["&none"] | ["&trans"]:
@@ -117,7 +117,7 @@ class ZmkKeymapParser(KeymapParser):
 
     def _get_prepped(self, path: str) -> str:
         with open(path, "r", encoding="utf-8") if path != "-" else sys.stdin as f:
-            if self.preprocess:
+            if self.cfg.preprocess:
 
                 def include_handler(*args):
                     raise OutputDirective(Action.IgnoreAndPassThrough)

@@ -8,6 +8,7 @@ from typing import Literal, Sequence, Mapping
 from pydantic import BaseModel, Field, validator, root_validator
 
 from .physical_layout import layout_factory, PhysicalLayout
+from .config import DrawConfig
 
 
 class LayoutKey(BaseModel):
@@ -100,12 +101,14 @@ class KeymapData(BaseModel):
     layout: PhysicalLayout
     layers: Mapping[str, Layer]
     combos: Sequence[ComboSpec] = []
+    config: DrawConfig
 
-    @validator("layout", pre=True)
-    def create_layout(cls, val) -> PhysicalLayout:
+    @root_validator(pre=True, skip_on_failure=True)
+    def create_layout(cls, vals) -> PhysicalLayout:
         """Create layout with type given by ltype."""
-        assert "ltype" in val, 'Specifying a layout type key "ltype" is mandatory under "layout"'
-        return layout_factory(**val)
+        assert "ltype" in vals["layout"], 'Specifying a layout type key "ltype" is mandatory under "layout"'
+        vals["layout"] = layout_factory(config=vals["config"], **vals["layout"])
+        return vals
 
     @root_validator(skip_on_failure=True)
     def assign_combos_to_layers(cls, vals):

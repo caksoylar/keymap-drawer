@@ -8,35 +8,22 @@ from html import escape
 
 from .keymap import KeymapData, ComboSpec, Layer, LayoutKey
 from .physical_layout import Point, PhysicalKey
-from .style import (
-    SVG_STYLE,
-    COMBO_W,
-    COMBO_H,
-    KEY_RX,
-    KEY_RY,
-    INNER_PAD_W,
-    INNER_PAD_H,
-    OUTER_PAD_W,
-    OUTER_PAD_H,
-    LINE_SPACING,
-    ARC_RADIUS,
-)
+from .config import DrawConfig
 
 
 class KeymapDrawer:
     """Class that draws a keyboard representation in SVG."""
 
-    def __init__(self, **kwargs) -> None:
-        data = KeymapData.parse_obj(kwargs)
+    def __init__(self, config: DrawConfig, **kwargs) -> None:
+        self.cfg = config
+        data = KeymapData(config=config, **kwargs)
         self.layout = data.layout
         self.layers = data.layers
-        self._arc_scale = 1.0
 
-    @staticmethod
-    def _draw_rect(p: Point, w: float, h: float, cls: str | None = None) -> None:
+    def _draw_rect(self, p: Point, w: float, h: float, cls: str | None = None) -> None:
         class_str = f' class="{cls}"' if cls is not None else ""
         print(
-            f'<rect rx="{KEY_RX}" ry="{KEY_RY}" x="{p.x - w / 2}" y="{p.y - h / 2}" '
+            f'<rect rx="{self.cfg.key_rx}" ry="{self.cfg.key_ry}" x="{p.x - w / 2}" y="{p.y - h / 2}" '
             f'width="{w}" height="{h}"{class_str}/>'
         )
 
@@ -55,20 +42,19 @@ class KeymapDrawer:
             print(f'<tspan x="{p.x}" dy="1.2em">{escape(word)}</tspan>', end="")
         print("</text>")
 
-    @staticmethod
-    def _draw_arc_dendron(p_1: Point, p_2: Point, x_first: bool, shorten: float, arc_scale: float) -> None:
+    def _draw_arc_dendron(self, p_1: Point, p_2: Point, x_first: bool, shorten: float) -> None:
         start = f"M{p_1.x},{p_1.y}"
-        arc_x = copysign(ARC_RADIUS, p_2.x - p_1.x)
-        arc_y = copysign(ARC_RADIUS, p_2.y - p_1.y)
+        arc_x = copysign(self.cfg.arc_radius, p_2.x - p_1.x)
+        arc_y = copysign(self.cfg.arc_radius, p_2.y - p_1.y)
         clockwise = (p_2.x > p_1.x) ^ (p_2.y > p_1.y)
         if x_first:
-            line_1 = f"h{arc_scale * (p_2.x - p_1.x) - arc_x}"
+            line_1 = f"h{self.cfg.arc_scale * (p_2.x - p_1.x) - arc_x}"
             line_2 = f"v{p_2.y - p_1.y - arc_y - copysign(shorten, p_2.y - p_1.y)}"
             clockwise = not clockwise
         else:
-            line_1 = f"v{arc_scale * (p_2.y - p_1.y) - arc_y}"
+            line_1 = f"v{self.cfg.arc_scale * (p_2.y - p_1.y) - arc_y}"
             line_2 = f"h{p_2.x - p_1.x - arc_x - copysign(shorten, p_2.x - p_1.x)}"
-        arc = f"a{ARC_RADIUS},{ARC_RADIUS} 0 0 {int(clockwise)} {arc_x},{arc_y}"
+        arc = f"a{self.cfg.arc_radius},{self.cfg.arc_radius} 0 0 {int(clockwise)} {arc_x},{arc_y}"
         print(f'<path d="{start} {line_1} {arc} {line_2}"/>')
 
     @staticmethod
@@ -80,8 +66,7 @@ class KeymapDrawer:
         line = f"l{diff.x},{diff.y}"
         print(f'<path d="{start} {line}"/>')
 
-    @classmethod
-    def print_key(cls, p_0: Point, p_key: PhysicalKey, l_key: LayoutKey) -> None:
+    def print_key(self, p_0: Point, p_key: PhysicalKey, l_key: LayoutKey) -> None:
         """
         Given anchor coordinates p_0, print SVG code for a rectangle with text representing
         the key, which is described by its physical representation (p_key) and what it does in
@@ -95,9 +80,9 @@ class KeymapDrawer:
         )
         if r != 0:
             print(f'<g transform="rotate({r}, {p.x}, {p.y})">')
-        cls._draw_rect(p, w - 2 * INNER_PAD_W, h - 2 * INNER_PAD_H, l_key.type)
-        cls._draw_text(p, l_key.tap)
-        cls._draw_text(p + Point(0, h / 2 - LINE_SPACING / 2), l_key.hold, cls="small")
+        self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, l_key.type)
+        self._draw_text(p, l_key.tap)
+        self._draw_text(p + Point(0, h / 2 - self.cfg.line_spacing / 2), l_key.hold, cls="small")
         if r != 0:
             print("</g>")
 
@@ -119,18 +104,18 @@ class KeymapDrawer:
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
             case "upper":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
-                p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - INNER_PAD_H / 2
+                p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - self.cfg.inner_pad_h / 2
                 p_mid.y -= combo_spec.offset * self.layout.min_height
             case "lower":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
-                p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + INNER_PAD_H / 2
+                p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + self.cfg.inner_pad_h / 2
                 p_mid.y += combo_spec.offset * self.layout.min_height
             case "left":
-                p_mid.x += min(k.pos.x - k.width / 2 for k in p_keys) - INNER_PAD_W / 2
+                p_mid.x += min(k.pos.x - k.width / 2 for k in p_keys) - self.cfg.inner_pad_w / 2
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
                 p_mid.x -= combo_spec.offset * self.layout.min_width
             case "right":
-                p_mid.x += max(k.pos.x + k.width / 2 for k in p_keys) + INNER_PAD_W / 2
+                p_mid.x += max(k.pos.x + k.width / 2 for k in p_keys) + self.cfg.inner_pad_w / 2
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
                 p_mid.x += combo_spec.offset * self.layout.min_width
 
@@ -139,19 +124,23 @@ class KeymapDrawer:
             match combo_spec.align:
                 case "upper" | "lower":
                     for k in p_keys:
-                        offset = k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < COMBO_W / 2 else k.height / 3
-                        self._draw_arc_dendron(p_mid, p_0 + k.pos, True, offset, self._arc_scale)
+                        offset = (
+                            k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < self.cfg.combo_w / 2 else k.height / 3
+                        )
+                        self._draw_arc_dendron(p_mid, p_0 + k.pos, True, offset)
                 case "left" | "right":
                     for k in p_keys:
-                        offset = k.width / 5 if abs(p_0.y + k.pos.y - p_mid.y) < COMBO_H / 2 else k.width / 3
-                        self._draw_arc_dendron(p_mid, p_0 + k.pos, False, offset, self._arc_scale)
+                        offset = (
+                            k.width / 5 if abs(p_0.y + k.pos.y - p_mid.y) < self.cfg.combo_h / 2 else k.width / 3
+                        )
+                        self._draw_arc_dendron(p_mid, p_0 + k.pos, False, offset)
                 case "mid":
                     for k in p_keys:
                         if combo_spec.dendron is True or abs(p_0 + k.pos - p_mid) >= k.width - 1:
                             self._draw_line_dendron(p_mid, p_0 + k.pos, k.width / 3)
 
         # draw combo box with text
-        self._draw_rect(p_mid, COMBO_W, COMBO_H, "combo")
+        self._draw_rect(p_mid, self.cfg.combo_w, self.cfg.combo_h, "combo")
         self._draw_text(p_mid, combo_spec.key.tap, cls="small")
 
     def print_layer(self, p_0: Point, name: str, layer: Layer) -> None:
@@ -159,29 +148,26 @@ class KeymapDrawer:
         Given anchor coordinates p_0, print SVG code for keys and combos for a given layer,
         and a layer label (name) at the top.
         """
-        self._draw_text(p_0 - Point(0, OUTER_PAD_H / 2), f"{name}:", cls="label")
+        self._draw_text(p_0 - Point(0, self.cfg.outer_pad_h / 2), f"{name}:", cls="label")
         for p_key, l_key in zip(self.layout.keys, layer.keys):
             self.print_key(p_0, p_key, l_key)
         if layer.combos:
             for combo_spec in layer.combos:
                 self.print_combo(p_0, combo_spec)
 
-    def print_board(self, scale_combo_arcs=None) -> None:
+    def print_board(self) -> None:
         """Print SVG code representing the keymap."""
-        if scale_combo_arcs:
-            self._arc_scale = scale_combo_arcs
-
-        board_w = self.layout.width + 2 * OUTER_PAD_W
-        board_h = len(self.layers) * self.layout.height + (len(self.layers) + 1) * OUTER_PAD_H
+        board_w = self.layout.width + 2 * self.cfg.outer_pad_w
+        board_h = len(self.layers) * self.layout.height + (len(self.layers) + 1) * self.cfg.outer_pad_h
         print(
             f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" '
             'xmlns="http://www.w3.org/2000/svg">'
         )
-        print(f"<style>{SVG_STYLE}</style>")
+        print(f"<style>{self.cfg.svg_style}</style>")
 
-        p = Point(OUTER_PAD_W, 0.0)
+        p = Point(self.cfg.outer_pad_w, 0.0)
         for name, layer in self.layers.items():
-            p.y += OUTER_PAD_H
+            p.y += self.cfg.outer_pad_h
             self.print_layer(p, name, layer)
             p.y += self.layout.height
 

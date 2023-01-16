@@ -10,7 +10,7 @@ from typing import Sequence, Literal
 
 from pydantic import BaseModel, root_validator
 
-from .style import KEY_W, KEY_H, SPLIT_GAP
+from .config import DrawConfig
 
 
 @dataclass
@@ -34,8 +34,8 @@ class PhysicalKey(BaseModel):
     """Represents a physical key, in terms of its center coordinates, width, height and rotation."""
 
     pos: Point
-    width: float = KEY_W
-    height: float = KEY_H
+    width: float
+    height: float
     rotation: float = 0
 
 
@@ -74,13 +74,13 @@ class PhysicalLayout(BaseModel):
         return min(k.height for k in self.keys)
 
 
-def layout_factory(ltype: LayoutType, **kwargs) -> PhysicalLayout:
+def layout_factory(ltype: LayoutType, config: DrawConfig, **kwargs) -> PhysicalLayout:
     """Create and return a physical layout as determined by the ltype argument."""
     match ltype:
         case "ortho":
-            return PhysicalLayout(keys=OrthoGenerator(**kwargs).generate())
+            return PhysicalLayout(keys=OrthoGenerator(**kwargs).generate(config.key_w, config.key_h, config.split_gap))
         case "qmk":
-            return PhysicalLayout(keys=QmkGenerator(**kwargs).generate())
+            return PhysicalLayout(keys=QmkGenerator(**kwargs).generate(config.key_h))
         case "raw":
             return PhysicalLayout(**kwargs)
         case _:
@@ -125,7 +125,7 @@ class OrthoGenerator(BaseModel):
             assert vals["split"], '"drop_*" properties can only be used with split layouts'
         return vals
 
-    def generate(self) -> Sequence[PhysicalKey]:
+    def generate(self, key_w: float, key_h: float, split_gap: float) -> Sequence[PhysicalKey]:
         """Generate a list of PhysicalKeys from given ortho specifications."""
         nrows = self.rows
         if not isinstance(self.thumbs, int):
@@ -137,15 +137,15 @@ class OrthoGenerator(BaseModel):
         def create_row(x: float, y: float, ncols: int = ncols) -> list[PhysicalKey]:
             row_keys = []
             for _ in range(ncols):
-                row_keys.append(PhysicalKey(pos=Point(x + KEY_W / 2, y + KEY_H / 2)))
-                x += KEY_W
+                row_keys.append(PhysicalKey(pos=Point(x + key_w / 2, y + key_h / 2)))
+                x += key_w
             return row_keys
 
         x, y = 0.0, 0.0
         for row in range(nrows):
             row_keys = create_row(x, y)
             if self.split:
-                row_keys += create_row(x + ncols * KEY_W + SPLIT_GAP, y)
+                row_keys += create_row(x + ncols * key_w + split_gap, y)
 
             drop_cols = [0, -1] * self.drop_pinky + [
                 len(row_keys) // 2 - 1,
@@ -153,28 +153,28 @@ class OrthoGenerator(BaseModel):
             ] * self.drop_inner
             for col in reversed(drop_cols):
                 if row < nrows - 1:
-                    row_keys[col].pos.y += KEY_H / 2
+                    row_keys[col].pos.y += key_h / 2
                 else:
                     row_keys.pop(col)
 
             keys.extend(row_keys)
-            y += KEY_H
+            y += key_h
 
         if not self.thumbs:
             return keys
 
         if isinstance(self.thumbs, int):  # implies split
-            keys += create_row((ncols - self.thumbs) * KEY_W, y, self.thumbs)
-            keys += create_row(ncols * KEY_W + SPLIT_GAP, y, self.thumbs)
+            keys += create_row((ncols - self.thumbs) * key_w, y, self.thumbs)
+            keys += create_row(ncols * key_w + SPLIT_GAP, y, self.thumbs)
         elif self.thumbs == "MIT":
             keys += create_row(0.0, y, ncols // 2 - 1)
-            keys.append(PhysicalKey(pos=Point((ncols / 2) * KEY_W, y + KEY_H / 2), width=2 * KEY_W))
-            keys += create_row((ncols / 2 + 1) * KEY_W, y, ncols // 2 - 1)
+            keys.append(PhysicalKey(pos=Point((ncols / 2) * key_w, y + key_h / 2), width=2 * key_w))
+            keys += create_row((ncols / 2 + 1) * key_w, y, ncols // 2 - 1)
         else:  # "2x2u"
             keys += create_row(0.0, y, ncols // 2 - 2)
-            keys.append(PhysicalKey(pos=Point((ncols / 2 - 1) * KEY_W, y + KEY_H / 2), width=2 * KEY_W))
-            keys.append(PhysicalKey(pos=Point((ncols / 2 + 1) * KEY_W, y + KEY_H / 2), width=2 * KEY_W))
-            keys += create_row((ncols / 2 + 2) * KEY_W, y, ncols // 2 - 2)
+            keys.append(PhysicalKey(pos=Point((ncols / 2 - 1) * key_w, y + key_h / 2), width=2 * key_w))
+            keys.append(PhysicalKey(pos=Point((ncols / 2 + 1) * key_w, y + key_h / 2), width=2 * key_w))
+            keys += create_row((ncols / 2 + 2) * key_w, y, ncols // 2 - 2)
 
         return keys
 
@@ -193,15 +193,15 @@ class QmkGenerator(BaseModel):
 
     layout: Sequence[QmkKey]
 
-    def generate(self) -> Sequence[PhysicalKey]:
+    def generate(self, key_size: float) -> Sequence[PhysicalKey]:
         """Generate a sequence of PhysicalKeys from QmkKeys."""
         x_min = min(k.x for k in self.layout)
         y_min = min(k.y for k in self.layout)
         return [
             PhysicalKey(
-                pos=Point(KEY_H * (k.x - x_min + k.w / 2), KEY_H * (k.y - y_min + k.h / 2)),
-                width=KEY_H * k.w,
-                height=KEY_H * k.h,
+                pos=Point(key_size * (k.x - x_min + k.w / 2), key_size * (k.y - y_min + k.h / 2)),
+                width=key_size * k.w,
+                height=key_size * k.h,
                 rotation=k.r,
             )
             for k in self.layout
