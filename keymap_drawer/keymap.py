@@ -53,7 +53,7 @@ class ComboSpec(BaseModel):
     key_positions: Sequence[int] = Field(alias="p")
     key: LayoutKey = Field(alias="k")
     layers: Sequence[str] = Field(alias="l", default=[])
-    align: Literal["mid", "upper", "lower", "left", "right"] = Field(alias="a", default="mid")
+    align: Literal["mid", "upper", "top", "lower", "bottom", "left", "right"] = Field(alias="a", default="mid")
     dendron: bool | None = Field(alias="d", default=None)
 
     class Config:  # pylint: disable=missing-class-docstring
@@ -63,6 +63,11 @@ class ComboSpec(BaseModel):
     def get_key(cls, val) -> dict:
         """Parse each key from its key spec."""
         return LayoutKey.from_key_spec(val)
+
+    @validator("align")
+    def normalize_align(cls, val: str) -> str:
+        """Normalize align value, specifically for top/bottom aliases."""
+        return val.replace("top", "upper").replace("bottom", "lower")
 
 
 class Layer(BaseModel):
