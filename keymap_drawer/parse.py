@@ -38,21 +38,26 @@ class QmkJsonParser(KeymapParser):
     _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
     _lt_re = re.compile(r"LT\((\S+), *(\S+)\)")
 
-    def _str_to_key_spec(self, key_str: str) -> str | dict:
+    def _str_to_key_spec(self, key_str: str) -> str | dict:  # pylint: disable=too-many-return-statements
+        if key_str in self.cfg.raw_binding_map:
+            return self.cfg.raw_binding_map[key_str]
         if self.cfg.skip_binding_parsing:
             return key_str
+
+        def mapped(key):
+            return self.cfg.qmk_keycode_map.get(key, key)
 
         key_str = self._prefix_re.sub("", key_str)
 
         if m := self._mo_re.fullmatch(key_str):
             return f"L{m.group(1).strip()}"
         if m := self._mts_re.fullmatch(key_str):
-            return {"t": m.group(2).strip(), "h": m.group(1)}
+            return {"t": mapped(m.group(2).strip()), "h": m.group(1)}
         if m := self._mtl_re.fullmatch(key_str):
-            return {"t": m.group(2).strip(), "h": m.group(1).strip()}
+            return {"t": mapped(m.group(2).strip()), "h": m.group(1).strip()}
         if m := self._lt_re.fullmatch(key_str):
-            return {"t": m.group(2).strip(), "h": f"L{m.group(1).strip()}"}
-        return key_str
+            return {"t": mapped(m.group(2).strip()), "h": f"L{m.group(1).strip()}"}
+        return mapped(key_str)
 
     def parse(self, path: str) -> dict:
         """Parse a JSON keymap with its file path and return a dict representation to be dumped to YAML."""
@@ -90,17 +95,25 @@ class ZmkKeymapParser(KeymapParser):
         self.hold_tap_labels = {"&mt", "&lt"}
 
     def _str_to_key_spec(self, binding: str) -> str | dict:  # pylint: disable=too-many-return-statements
+        if binding in self.cfg.raw_binding_map:
+            return self.cfg.raw_binding_map[binding]
         if self.cfg.skip_binding_parsing:
             return binding
+
+        def mapped(key):
+            if key in self.cfg.zmk_keycode_map:
+                return self.cfg.zmk_keycode_map[key]
+            return self._numbers_re.sub(r"\3", key).removeprefix("C_").removeprefix("K_").replace("_", " ")
+
         match binding.split():
             case ["&none"] | ["&trans"]:
                 return ""
             case [ref]:
                 return ref
             case ["&kp", par]:
-                return self._numbers_re.sub(r"\3", par).removeprefix("C_").removeprefix("K_").replace("_", " ")
+                return mapped(par)
             case ["&sk", par]:
-                return {"t": par, "h": "sticky"}
+                return {"t": mapped(par), "h": "sticky"}
             case [("&out" | "&bt"), *pars]:
                 return " ".join(pars).replace("_", " ").replace(" SEL ", " ")
             case [("&mo" | "&to" | "&tog"), par]:
@@ -112,7 +125,7 @@ class ZmkKeymapParser(KeymapParser):
                     hold_par = self.layer_names[int(hold_par)]
                 except (ValueError, IndexError):
                     pass
-                return {"t": tap_par, "h": hold_par}
+                return {"t": mapped(tap_par), "h": hold_par}
         return binding
 
     def _get_prepped(self, path: str) -> str:
