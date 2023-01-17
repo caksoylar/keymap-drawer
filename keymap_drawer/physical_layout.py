@@ -27,7 +27,7 @@ class Point:
         return Point(self.x - other.x, self.y - other.y)
 
     def __abs__(self):
-        return sqrt(self.x ** 2 + self.y ** 2)
+        return sqrt(self.x**2 + self.y**2)
 
 
 class PhysicalKey(BaseModel):
@@ -163,18 +163,25 @@ class OrthoGenerator(BaseModel):
         if not self.thumbs:
             return keys
 
-        if isinstance(self.thumbs, int):  # implies split
-            keys += create_row((ncols - self.thumbs) * key_w, y, self.thumbs)
-            keys += create_row(ncols * key_w + split_gap, y, self.thumbs)
-        elif self.thumbs == "MIT":
-            keys += create_row(0.0, y, ncols // 2 - 1)
-            keys.append(PhysicalKey(pos=Point((ncols / 2) * key_w, y + key_h / 2), width=2 * key_w, height=key_h))
-            keys += create_row((ncols / 2 + 1) * key_w, y, ncols // 2 - 1)
-        else:  # "2x2u"
-            keys += create_row(0.0, y, ncols // 2 - 2)
-            keys.append(PhysicalKey(pos=Point((ncols / 2 - 1) * key_w, y + key_h / 2), width=2 * key_w, height=key_h))
-            keys.append(PhysicalKey(pos=Point((ncols / 2 + 1) * key_w, y + key_h / 2), width=2 * key_w, height=key_h))
-            keys += create_row((ncols / 2 + 2) * key_w, y, ncols // 2 - 2)
+        match self.thumbs:
+            case int():  # implies split
+                keys += create_row((ncols - self.thumbs) * key_w, y, self.thumbs)
+                keys += create_row(ncols * key_w + split_gap, y, self.thumbs)
+            case "MIT":
+                keys += create_row(0.0, y, ncols // 2 - 1)
+                keys.append(PhysicalKey(pos=Point((ncols / 2) * key_w, y + key_h / 2), width=2 * key_w, height=key_h))
+                keys += create_row((ncols / 2 + 1) * key_w, y, ncols // 2 - 1)
+            case "2x2u":
+                keys += create_row(0.0, y, ncols // 2 - 2)
+                keys.append(
+                    PhysicalKey(pos=Point((ncols / 2 - 1) * key_w, y + key_h / 2), width=2 * key_w, height=key_h)
+                )
+                keys.append(
+                    PhysicalKey(pos=Point((ncols / 2 + 1) * key_w, y + key_h / 2), width=2 * key_w, height=key_h)
+                )
+                keys += create_row((ncols / 2 + 2) * key_w, y, ncols // 2 - 2)
+            case _:
+                raise ValueError("Unknown thumbs value in ortho layout")
 
         return keys
 
