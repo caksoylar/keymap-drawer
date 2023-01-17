@@ -109,16 +109,17 @@ class ParseConfig(BaseSettings):
 
     preprocess: bool = True
     skip_binding_parsing: bool = False
-    keycode_map: dict[str, str] = {  # pylint: disable=duplicate-key
+    assign_combos_to_layers: bool = False
+    qmk_keycode_map: dict[str, str] = {
         # QMK keycodes
         "MINUS": "-",
         "MINS": "-",
         "EQUAL": "=",
         "EQL": "=",
         "LEFT_BRACKET": "[",
-        # "LBRC": "[",  confusable with ZMK version
+        "LBRC": "[",
         "RIGHT_BRACKET": "]",
-        # "RBRC": "]",  confusable with ZMK version
+        "RBRC": "]",
         "BACKSLASH": "\\",
         "BSLS": "\\",
         "NONUS_HASH": "#",
@@ -175,7 +176,8 @@ class ParseConfig(BaseSettings):
         "GT": ">",
         "QUESTION": "?",
         "QUES": "?",
-        # ZMK keycodes
+    }
+    zmk_keycode_map: dict[str, str] = {
         "EXCLAMATION": "!",
         "EXCL": "!",
         "AT_SIGN": "@",
@@ -230,17 +232,18 @@ class ParseConfig(BaseSettings):
         "LEFT_BRACKET": "[",
         "LBKT": "]",
         "LEFT_BRACE": "{",
-        # "LBRC": "{",  confusable with QMK version
+        "LBRC": "{",
         "RIGHT_BRACKET": "]",
         "RBKT": "]",
         "RIGHT_BRACE": "}",
-        # "RBRC": "}",  confusable with QMK version
+        "RBRC": "}",
         "GRAVE": "`",
         "TILDE": "~",
         "NON_US_HASH": "#",
         "NUHS": "#",
         "TILDE2": "~",
     }
+    raw_binding_map = {}
 
 
 class Config(BaseSettings):
