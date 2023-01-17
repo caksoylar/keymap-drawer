@@ -242,5 +242,5 @@ class ZmkKeymapParser(KeymapParser):
 
         out = {"layers": layers_dict}
         if not self.cfg.assign_combos_to_layers:
-            out["combos"] = [combo.dict(**self._dict_args) for combo in combos]
+            out["combos"] = [combo.dict(**self._dict_args) for combo in combos]   # type: ignore
         return out
