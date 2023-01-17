@@ -89,9 +89,9 @@ class DrawConfig(BaseSettings):
             paint-order: stroke;
         }
 
-        /* styling for combo box label text */
+        /* styling for combo box and hold-tap hold label text */
         .small {
-            font-size: 80%;
+            font-size: 11px;
         }
 
         /* styling for combo dendrons */
