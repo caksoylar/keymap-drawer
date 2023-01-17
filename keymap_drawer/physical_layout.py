@@ -137,7 +137,7 @@ class OrthoGenerator(BaseModel):
         def create_row(x: float, y: float, ncols: int = ncols) -> list[PhysicalKey]:
             row_keys = []
             for _ in range(ncols):
-                row_keys.append(PhysicalKey(pos=Point(x + key_w / 2, y + key_h / 2)))
+                row_keys.append(PhysicalKey(pos=Point(x + key_w / 2, y + key_h / 2), width=key_w, height=key_h))
                 x += key_w
             return row_keys
 
@@ -165,15 +165,15 @@ class OrthoGenerator(BaseModel):
 
         if isinstance(self.thumbs, int):  # implies split
             keys += create_row((ncols - self.thumbs) * key_w, y, self.thumbs)
-            keys += create_row(ncols * key_w + SPLIT_GAP, y, self.thumbs)
+            keys += create_row(ncols * key_w + split_gap, y, self.thumbs)
         elif self.thumbs == "MIT":
             keys += create_row(0.0, y, ncols // 2 - 1)
-            keys.append(PhysicalKey(pos=Point((ncols / 2) * key_w, y + key_h / 2), width=2 * key_w))
+            keys.append(PhysicalKey(pos=Point((ncols / 2) * key_w, y + key_h / 2), width=2 * key_w, height=key_h))
             keys += create_row((ncols / 2 + 1) * key_w, y, ncols // 2 - 1)
         else:  # "2x2u"
             keys += create_row(0.0, y, ncols // 2 - 2)
-            keys.append(PhysicalKey(pos=Point((ncols / 2 - 1) * key_w, y + key_h / 2), width=2 * key_w))
-            keys.append(PhysicalKey(pos=Point((ncols / 2 + 1) * key_w, y + key_h / 2), width=2 * key_w))
+            keys.append(PhysicalKey(pos=Point((ncols / 2 - 1) * key_w, y + key_h / 2), width=2 * key_w, height=key_h))
+            keys.append(PhysicalKey(pos=Point((ncols / 2 + 1) * key_w, y + key_h / 2), width=2 * key_w, height=key_h))
             keys += create_row((ncols / 2 + 2) * key_w, y, ncols // 2 - 2)
 
         return keys
