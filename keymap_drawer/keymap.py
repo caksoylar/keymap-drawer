@@ -3,6 +3,7 @@ Module with classes that define the keymap representation, with multiple layers
 containing key and combo specifications, paired with the physical keyboard layout.
 """
 from itertools import chain
+from copy import deepcopy
 from typing import Literal, Sequence, Mapping
 
 from pydantic import BaseModel, Field, validator, root_validator
@@ -117,7 +118,9 @@ class KeymapData(BaseModel):
         or to all layers if not specified.
         """
         for combo in vals["combos"]:
-            for layer in combo.layers if combo.layers else vals["layers"]:
+            layers = deepcopy(combo.layers)
+            combo.layers = []
+            for layer in layers if layers else vals["layers"]:
                 vals["layers"][layer].combos.append(combo)
         vals["combos"] = []
         return vals

@@ -220,9 +220,14 @@ class ZmkKeymapParser(KeymapParser):
         layers = self._get_layers(parsed)
         combos = self._get_combos(parsed)
 
-        layers = KeymapData.assign_combos_to_layers({"layers": layers, "combos": combos})["layers"]
+        if self.cfg.assign_combos_to_layers:
+            layers = KeymapData.assign_combos_to_layers({"layers": layers, "combos": combos})["layers"]
+
         layers_dict = {name: layer.dict(**self._dict_args) for name, layer in layers.items()}
         for name, layer in layers_dict.items():
             layer["keys"] = self.rearrange_layer(layer["keys"])
 
-        return {"layers": layers_dict}
+        out = {"layers": layers_dict}
+        if not self.cfg.assign_combos_to_layers:
+            out["combos"] = [combo.dict(**self._dict_args) for combo in combos]
+        return out
