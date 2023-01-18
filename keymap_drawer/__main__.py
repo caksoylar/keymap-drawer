@@ -59,9 +59,27 @@ def parse(args, config: ParseConfig) -> None:
     yaml.safe_dump(parsed, sys.stdout, indent=4, width=160, sort_keys=False, default_flow_style=None)
 
 
+def dump_config(config: Config) -> None:
+    """Dump the currently active config, either default or parsed from args."""
+
+    def cfg_str_representer(dumper, in_str):
+        if "\n" in in_str:  # use '|' style for multiline strings
+            return dumper.represent_scalar("tag:yaml.org,2002:str", in_str, style="|")
+        return dumper.represent_scalar("tag:yaml.org,2002:str", in_str)
+
+    yaml.representer.SafeRepresenter.add_representer(str, cfg_str_representer)
+    yaml.safe_dump(config.dict(), sys.stdout, indent=4, default_flow_style=False)
+
+
 def main() -> None:
     """Parse the configuration and print SVG using KeymapDrawer."""
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "-c",
+        "--config",
+        help="A YAML file containing settings for parsing and drawing, "
+        "default can be dumped using `dump-config` command and to be modified",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     draw_p = subparsers.add_parser("draw", help="draw an SVG representation of the keymap")
@@ -87,7 +105,9 @@ def main() -> None:
         "see examples for schema",
     )
 
-    parse_p = subparsers.add_parser("parse", help="parse a QMK/ZMK keymap to yaml representation to edit")
+    parse_p = subparsers.add_parser(
+        "parse", help="parse a QMK/ZMK keymap to YAML representation to stdout, to be used with the `draw` command"
+    )
     keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
     keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse")
     keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse")
@@ -98,14 +118,25 @@ def main() -> None:
         type=int,
     )
 
+    _ = subparsers.add_parser(
+        "dump-config", help="dump default draw and parse config to stdout that can be passed to -s/--settings parameter"
+    )
+
     args = parser.parse_args()
 
-    config = Config()
+    if args.config:
+        with sys.stdin.buffer if args.config == "-" else open(args.config, "rb") as f:
+            config = Config.parse_obj(yaml.safe_load(f))
+    else:
+        config = Config()
+
     match args.command:
         case "draw":
             draw(args, config.draw_config)
         case "parse":
             parse(args, config.parse_config)
+        case "dump-config":
+            dump_config(config)
 
 
 if __name__ == "__main__":
