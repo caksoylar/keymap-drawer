@@ -114,7 +114,7 @@ class ZmkKeymapParser(KeymapParser):
                 return mapped(par)
             case ["&sk", par]:
                 return {"t": mapped(par), "h": "sticky"}
-            case [("&out" | "&bt"), *pars]:
+            case [("&out" | "&bt" | "&ext_power" | "&rgb_ug"), *pars]:
                 return " ".join(pars).replace("_", " ").replace(" SEL ", " ")
             case [("&mo" | "&to" | "&tog"), par]:
                 return self.layer_names[int(par)]
