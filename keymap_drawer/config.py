@@ -94,6 +94,11 @@ class DrawConfig(BaseSettings):
             font-size: 11px;
         }
 
+        /* styling for hold-tap hold label text in combo box */
+        .smaller {
+            font-size: 8px;
+        }
+
         /* styling for combo dendrons */
         path {
             stroke-width: 1;

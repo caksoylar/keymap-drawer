@@ -29,10 +29,9 @@ class KeymapDrawer:
 
     @staticmethod
     def _draw_text(p: Point, text: str, cls: str | None = None) -> None:
-        class_str = f' class="{cls}"' if cls is not None else ""
-        words = text.split()
-        if not words:
+        if not (words := text.split()):
             return
+        class_str = f' class="{cls}"' if cls is not None else ""
         if len(words) == 1:
             print(f'<text x="{p.x}" y="{p.y}"{class_str}>{escape(words[0])}</text>')
             return
@@ -124,15 +123,11 @@ class KeymapDrawer:
             match combo_spec.align:
                 case "upper" | "lower":
                     for k in p_keys:
-                        offset = (
-                            k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < self.cfg.combo_w / 2 else k.height / 3
-                        )
+                        offset = k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < self.cfg.combo_w / 2 else k.height / 3
                         self._draw_arc_dendron(p_mid, p_0 + k.pos, True, offset)
                 case "left" | "right":
                     for k in p_keys:
-                        offset = (
-                            k.width / 5 if abs(p_0.y + k.pos.y - p_mid.y) < self.cfg.combo_h / 2 else k.width / 3
-                        )
+                        offset = k.width / 5 if abs(p_0.y + k.pos.y - p_mid.y) < self.cfg.combo_h / 2 else k.width / 3
                         self._draw_arc_dendron(p_mid, p_0 + k.pos, False, offset)
                 case "mid":
                     for k in p_keys:
@@ -142,6 +137,9 @@ class KeymapDrawer:
         # draw combo box with text
         self._draw_rect(p_mid, self.cfg.combo_w, self.cfg.combo_h, "combo")
         self._draw_text(p_mid, combo_spec.key.tap, cls="small")
+        self._draw_text(
+            p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.line_spacing / 5), combo_spec.key.hold, cls="smaller"
+        )
 
     def print_layer(self, p_0: Point, name: str, layer: Layer) -> None:
         """
