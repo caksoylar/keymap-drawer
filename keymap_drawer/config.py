@@ -112,9 +112,22 @@ class DrawConfig(BaseSettings):
 class ParseConfig(BaseSettings):
     """Configuration settings related to parsing QMK/ZMK keymaps."""
 
+    # run C preprocessor on ZMK keymaps
     preprocess: bool = True
-    skip_binding_parsing: bool = False
+
+    # instead of a root "combos" node in output with "layers" property on each combo,
+    # assign combos to a "combos" node under each layer and remove the "layers" property
+    # useful if you e.g. have single layer combos on different layers
     assign_combos_to_layers: bool = False
+
+    # do not do any keycode/binding parsing (except as specified by "raw_binding_map")
+    skip_binding_parsing: bool = False
+
+    # map raw keycode/binding strings as specified and shortcut any further key parsing
+    # e.g. {"QK_BOOT": "BOOT", "&bootloader": "BOOT"}
+    raw_binding_map: dict[str, str | dict] = {}
+
+    # convert QMK keycodes to their display forms, omitting "KC_" prefix on the keys
     qmk_keycode_map: dict[str, str] = {
         # QMK keycodes
         "MINUS": "-",
@@ -182,6 +195,8 @@ class ParseConfig(BaseSettings):
         "QUESTION": "?",
         "QUES": "?",
     }
+
+    # convert ZMK keycodes to their display forms, applied to parameters of behaviors like "&kp"
     zmk_keycode_map: dict[str, str] = {
         "EXCLAMATION": "!",
         "EXCL": "!",
@@ -248,7 +263,6 @@ class ParseConfig(BaseSettings):
         "NUHS": "#",
         "TILDE2": "~",
     }
-    raw_binding_map: dict[str, str | dict] = {}
 
 
 class Config(BaseSettings):

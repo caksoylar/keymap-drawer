@@ -18,9 +18,9 @@ from .parse import QmkJsonParser, ZmkKeymapParser
 
 def draw(args, config: DrawConfig) -> None:
     """Draw the keymap in SVG format to stdout."""
-    with sys.stdin.buffer if args.layout_yaml == "-" else open(args.layout_yaml, "rb") as f:
+    with sys.stdin.buffer if args.keymap_yaml == "-" else open(args.keymap_yaml, "rb") as f:
         yaml_data = yaml.safe_load(f)
-        assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in layout_yaml'
+        assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
 
     qmk_keyboard = args.qmk_keyboard or yaml_data.get("layout", {}).get("qmk_keyboard")
     qmk_layout = args.qmk_layout or yaml_data.get("layout", {}).get("qmk_layout")
@@ -41,7 +41,7 @@ def draw(args, config: DrawConfig) -> None:
     else:
         assert "layout" in yaml_data, (
             "A physical layout needs to be specified either via --qmk-keyboard/--qmk-layout, "
-            'or in a "layout" field in layout_yaml using "ortho" parameters'
+            'or in a "layout" field in keymap_yaml using "ortho" parameters'
         )
         layout = {"ltype": "ortho", **yaml_data["layout"]}
 
@@ -100,9 +100,9 @@ def main() -> None:
         "use the first defined one by default",
     )
     draw_p.add_argument(
-        "layout_yaml",
+        "keymap_yaml",
         help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
-        "see examples for schema",
+        "see README for schema",
     )
 
     parse_p = subparsers.add_parser(

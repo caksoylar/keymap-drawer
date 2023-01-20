@@ -123,8 +123,8 @@ class ZmkKeymapParser(KeymapParser):
             case [ref, hold_par, tap_par] if ref in self.hold_tap_labels:
                 try:
                     hold_par = self.layer_names[int(hold_par)]
-                except (ValueError, IndexError):
-                    pass
+                except (ValueError, IndexError):  # not a layer-tap, so maybe a keycode?
+                    hold_par = mapped(hold_par)
                 return {"t": mapped(tap_par), "h": hold_par}
         return binding
 
