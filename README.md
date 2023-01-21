@@ -35,46 +35,42 @@ This will make the `keymap` command available in your `PATH` to use:
 keymap --help
 ```
 
-Alternatively, you can `pip install` into your favorite `virtualenv` or in your user install directory with `pip install --user keymap-drawer`. Also see the [development](#development) section to install from source.
+Alternatively, you can `pip install` into your favorite `virtualenv` or in your user install directory with `pip install --user keymap-drawer`. See [the development section](#development) to install from source.
 
 ### Bootstrapping your keymap representation
 
 `parse` subcommand of `keymap` helps to parse an existing QMK or ZMK keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
 `-c`/`--columns` is an optional parameter that specifies the total number of columns in the keymap to better reorganize output layers.
 
-#### QMK
+- **QMK**: Only json-format keymaps are supported, which can be exported from [QMK Configurator](https://config.qmk.fm/) or converted from `keymap.c` via `qmk c2json`:
 
-Only json-format QMK keymaps are supported, which can be exported from [QMK Configurator](https://config.qmk.fm/) or converted from `keymap.c` via `qmk c2json`.
+  ```sh
+  qmk c2json ~/qmk_firmware/keyboards/ferris/keymaps/username/keymap.c | keymap parse -c 10 -q - >sweep_keymap.yaml
+  ```
 
-```sh
-qmk c2json ~/qmk_firmware/keyboards/ferris/keymaps/username/keymap.c | keymap parse -c 10 -q - >sweep_keymap.yaml
-```
+  Due to current limitations of the `keymap.json` format, combos and `#define`'d layer names will not be present in the output.
 
-Due to current limitations of the `keymap.json` format, combos and layer names will not be present in the output.
+- **ZMK**: `.keymap` files are used for parsing. These will be preprocessed similar to the ZMK build system, so `#define`'s and `#include`s will be expanded.
 
-#### ZMK
+  ```sh
+  keymap parse -c 10 -z ~/zmk-config/config/cradio.keymap >sweep_keymap.yaml
+  ```
 
-ZMK keymaps are parsed by pointing to the `.keymap` file. These will be preprocessed similar to the ZMK build system, so `#define`'s and `#include`s are fully supported.
+  Currently combos, hold-taps (including custom ones), layer names and sticky keys (`&sk`/`&sl`) can be determined via parsing.
+For layer names, the value of the `label` property will take precedence over the layer's node name if provided.
 
-```sh
-keymap parse -c 10 -z ~/zmk-config/config/cradio.keymap >sweep_keymap.yaml
-```
+  > **Warning**
+  >
+  > Parsing rules currently require that your `keymap` and `combos` nodes be nested one-level deep from the root node and have fixed names. These conditions typically hold for most keymaps by convention.
 
-Currently combos, hold-taps (including custom ones), layer names and sticky keys (only default `&sk`/`&sl`) can be determined via parsing.
-For layer names, `label` property will take precedence over the layer's node name if it is provided.
-
-> **Warning**
->
-> Parsing rules currently require that your `keymap` and `combos` nodes be nested one-level deep from the root node and have fixed names. These conditions typically hold for most keymaps by convention.
-
-### Tweaking produced keymap representation
+### Tweaking the produced keymap representation
 
 While the parsing step aims to create a decent starting point, you will likely want to make certain tweaks to the produced keymap representation.
 Please refer to [the next section on the keymap schema](#keymap-yaml-specification) while making changes:
 
-0. (If starting from a QMK keymap:) Add combo definitions using key position indices.
-1. Tweak the display form of parsed keys, e.g, replacing `&bootloader` with `BOOT`. (See [customization section](#customization) to modify parser's behavior.)
-2. Add `align` and/or `offset` properties to combos between non-adjacent keys or those 3+ key positions, in order to position them better
+0. (If starting from a QMK keymap) Add combo definitions using key position indices.
+1. Tweak the display form of parsed keys, e.g, replacing `&bootloader` with `BOOT`. (See [the customization section](#customization) to modify parser's behavior.)
+2. Add `align` and/or `offset` properties to combos between non-adjacent keys or those with 3+ key positions, in order to position them better
 3. Add `type` specifiers to certain keys, such as `held` for layer keys used to enter the current layer or `ghost` for optional keys
 
 It might be beneficial to start by `draw`'ing the current representation and iterate over these changes, especially for positioning tricky combos.
@@ -84,41 +80,37 @@ It might be beneficial to start by `draw`'ing the current representation and ite
 Final step is to produce the SVG representation using the `keymap draw` command.
 However to do that, we need to specify the physical layout of the keyboard, i.e., how many keys there are, where each key is positioned etc. `keymap-drawer` can figure this information out from a few different sources:
 
-#### QMK `info.json` specification
+- **QMK `info.json` specification**: Each keyboard in the QMK repo has a `info.json` file which specifies physical key locations. Using the keyboard name in the QMK repo, we can fetch this information from the [keyboard metadata API](https://docs.qmk.fm/#/configurator_architecture?id=keyboard-metadata):
 
-Each keyboard in the QMK repo has a `info.json` file which specifies physical key locations. Using the keyboard name in the QMK repo, we can fetch this information from the [keyboard metadata API](https://docs.qmk.fm/#/configurator_architecture?id=keyboard-metadata):
+  ```sh
+  keymap draw -k ferris/sweep sweep_keymap.yaml >sweep_keymap.svg
+  ```
 
-```sh
-keymap draw -k ferris/sweep sweep_keymap.yaml >sweep_keymap.svg
-```
+  You can also specify a layout macro to use alongside the keyboard name if you don't want to use the default one:
 
-You can also specify a layout macro to use alongside the keyboard name if you don't want to use the default one:
+  ```sh
+  keymap draw -k crkbd/rev1 -l LAYOUT_split_3x5_3 corne_5col_keymap.yaml >corne_5col_keymap.svg
+  ```
 
-```sh
-keymap draw -k crkbd/rev1 -l LAYOUT_split_3x5_3 corne_5col_keymap.yaml >corne_5col_keymap.svg
-```
+  `-j` flag also allows you to pass a local `info.json` file instead of the keyboard name.
 
-`-j` flag also allows you to pass a local `info.json` file instead of the keyboard name.
+  > **Note**
+  >
+  > If you parsed a QMK keymap, keyboard and layout information will be populated in the keymap YAML already, so you don't need to specify it in the command line.
+  >
+  > *Hint*: You can use the [QMK Configurator](https://config.qmk.fm/) to search for keyboard and layout names, and preview the physical layout.
 
-> **Note**
->
-> If you parsed a QMK keymap, keyboard and layout information will be populated in the keymap YAML already, so you don't need to specify it in the command line.
->
-> Hint: You can use the [QMK Configurator](https://config.qmk.fm/) to search for keyboard and layout names, and preview the physical layout.
+- **Parametrized ortholinear layouts**: You can also specify parameters to automatically generate a split or non-split ortholinear layout, by adding a `layout:` section in the keymap YAML, for example:
 
-#### Parametrized ortholinear layouts
+  ```yaml
+  layout:          # for a Sweep-like layout
+      split: true  # split or non-split keyboard
+      rows: 3      # number of rows (excluding thumb row if split)
+      columns: 5   # number of columns (for each half if split)
+      thumbs: 2    # number of thumb keys per side if split, can optionally be "MIT" or "2x2u" for non-split
+  ```
 
-You can also specify parameters to automatically generate a split or non-split ortholinear layout, by adding a `layout:` section in the keymap YAML, for example:
-
-```yaml
-layout:  # for a Sweep-like layout
-    split: true  # split or non-split keyboard
-    rows: 3      # number of rows (excluding thumb row if split)
-    columns: 5   # number of columns (for each half if split)
-    thumbs: 2    # number of thumb keys per side if split, can optionally be "MIT" or "2x2u" for non-split
-```
-
-See the following section on keymap specification for other options.
+  See the following section on keymap specification for other options.
 
 ## Keymap YAML specification
 
