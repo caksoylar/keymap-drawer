@@ -23,3 +23,7 @@ These are things I plan to implement if there is demand for it, or would welcome
   - This would allow better automation, going from `parse` to `draw` directly for any layout
   - We can already specify display representations for arbitrary keys in config
   - Currently cannot specify combo properties like `align` and `offset` before parsing
+
+## Long term
+
+- Set up a web interface?
