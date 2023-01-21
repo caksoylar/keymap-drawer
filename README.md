@@ -66,7 +66,7 @@ For layer names, the value of the `label` property will take precedence over the
 ### Tweaking the produced keymap representation
 
 While the parsing step aims to create a decent starting point, you will likely want to make certain tweaks to the produced keymap representation.
-Please refer to [the next section on the keymap schema](#keymap-yaml-specification) while making changes:
+Please refer to [the keymap schema specification](KEYMAP_SPEC.md) while making changes:
 
 0. (If starting from a QMK keymap) Add combo definitions using key position indices.
 1. Tweak the display form of parsed keys, e.g, replacing `&bootloader` with `BOOT`. (See [the customization section](#customization) to modify parser's behavior.)
@@ -110,7 +110,7 @@ However to do that, we need to specify the physical layout of the keyboard, i.e.
       thumbs: 2    # number of thumb keys per side if split, can optionally be "MIT" or "2x2u" for non-split
   ```
 
-  See the following section on keymap specification for other options.
+  See [the keymap specification](KEYMAP_SPEC.md) for details.
 
 ## Keymap YAML specification
 
