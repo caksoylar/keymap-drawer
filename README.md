@@ -42,6 +42,12 @@ keymap -c my_config.yaml parse [...] >my_keymap.yaml
 keymap -c my_config.yaml draw [...] my_keymap.yaml >my_keymap.svg
 ```
 
+Since configuration classes are [Pydantic settings](https://docs.pydantic.dev/usage/settings/) they can also be overridden by environment variables with a `KEYMAP_` prefix:
+
+```sh
+KEYMAP_raw_binding_map='{"&bootloader": "BOOT"}' keymap parse -z zmk-config/config/cradio.keymap >cradio.yaml
+```
+
 ## Development
 
 This project requires Python 3.10+ and uses [`poetry`](https://python-poetry.org/) for packaging.

@@ -10,6 +10,9 @@ from pydantic import BaseSettings
 class DrawConfig(BaseSettings):
     """Configuration related to SVG drawing, including key sizes, padding amounts, combo drawing settings etc."""
 
+    class Config:  # pylint: disable=missing-class-docstring
+        env_prefix = "KEYMAP_"
+
     # key dimensions, non-ortho layouts use key_h for width as well
     key_w: float = 60
     key_h: float = 56
@@ -111,6 +114,9 @@ class DrawConfig(BaseSettings):
 
 class ParseConfig(BaseSettings):
     """Configuration settings related to parsing QMK/ZMK keymaps."""
+
+    class Config:  # pylint: disable=missing-class-docstring
+        env_prefix = "KEYMAP_"
 
     # run C preprocessor on ZMK keymaps
     preprocess: bool = True
@@ -267,6 +273,9 @@ class ParseConfig(BaseSettings):
 
 class Config(BaseSettings):
     """All configuration settings used for this module."""
+
+    class Config:  # pylint: disable=missing-class-docstring
+        env_prefix = "KEYMAP_"
 
     draw_config: DrawConfig = DrawConfig()
     parse_config: ParseConfig = ParseConfig()
