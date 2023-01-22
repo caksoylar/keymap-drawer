@@ -5,8 +5,9 @@ representation of the keymap using these two.
 """
 from math import copysign
 from html import escape
+from typing import Sequence
 
-from .keymap import KeymapData, ComboSpec, Layer, LayoutKey
+from .keymap import KeymapData, ComboSpec, LayoutKey
 from .physical_layout import Point, PhysicalKey
 from .config import DrawConfig
 
@@ -16,9 +17,7 @@ class KeymapDrawer:
 
     def __init__(self, config: DrawConfig, **kwargs) -> None:
         self.cfg = config
-        data = KeymapData(config=config, **kwargs)
-        self.layout = data.layout
-        self.layers = data.layers
+        self.keymap = KeymapData(config=config, **kwargs)
 
     def _draw_rect(self, p: Point, w: float, h: float, cls: str | None = None) -> None:
         class_str = f' class="{cls}"' if cls is not None else ""
@@ -92,7 +91,7 @@ class KeymapDrawer:
         when triggered. The position of the rectangle depends on the alignment specified,
         along with whether dendrons are drawn going to each key position from the combo.
         """
-        p_keys = [self.layout.keys[p] for p in combo_spec.key_positions]
+        p_keys = [self.keymap.layout.keys[p] for p in combo_spec.key_positions]
         n_keys = len(p_keys)
 
         # find center of combo box
@@ -104,19 +103,19 @@ class KeymapDrawer:
             case "upper":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - self.cfg.inner_pad_h / 2
-                p_mid.y -= combo_spec.offset * self.layout.min_height
+                p_mid.y -= combo_spec.offset * self.keymap.layout.min_height
             case "lower":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + self.cfg.inner_pad_h / 2
-                p_mid.y += combo_spec.offset * self.layout.min_height
+                p_mid.y += combo_spec.offset * self.keymap.layout.min_height
             case "left":
                 p_mid.x += min(k.pos.x - k.width / 2 for k in p_keys) - self.cfg.inner_pad_w / 2
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
-                p_mid.x -= combo_spec.offset * self.layout.min_width
+                p_mid.x -= combo_spec.offset * self.keymap.layout.min_width
             case "right":
                 p_mid.x += max(k.pos.x + k.width / 2 for k in p_keys) + self.cfg.inner_pad_w / 2
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
-                p_mid.x += combo_spec.offset * self.layout.min_width
+                p_mid.x += combo_spec.offset * self.keymap.layout.min_width
 
         # draw dendrons going from box to combo keys
         if combo_spec.dendron is not False:
@@ -141,22 +140,23 @@ class KeymapDrawer:
             p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.line_spacing / 5), combo_spec.key.hold, cls="smaller"
         )
 
-    def print_layer(self, p_0: Point, name: str, layer: Layer) -> None:
+    def print_layer(self, p_0: Point, name: str, layer_keys: Sequence[LayoutKey], combos: Sequence[ComboSpec]) -> None:
         """
         Given anchor coordinates p_0, print SVG code for keys and combos for a given layer,
         and a layer label (name) at the top.
         """
         self._draw_text(p_0 - Point(0, self.cfg.outer_pad_h / 2), f"{name}:", cls="label")
-        for p_key, l_key in zip(self.layout.keys, layer.keys):
+        for p_key, l_key in zip(self.keymap.layout.keys, layer_keys):
             self.print_key(p_0, p_key, l_key)
-        if layer.combos:
-            for combo_spec in layer.combos:
-                self.print_combo(p_0, combo_spec)
+        for combo_spec in combos:
+            self.print_combo(p_0, combo_spec)
 
     def print_board(self) -> None:
         """Print SVG code representing the keymap."""
-        board_w = self.layout.width + 2 * self.cfg.outer_pad_w
-        board_h = len(self.layers) * self.layout.height + (len(self.layers) + 1) * self.cfg.outer_pad_h
+        board_w = self.keymap.layout.width + 2 * self.cfg.outer_pad_w
+        board_h = (
+            len(self.keymap.layers) * self.keymap.layout.height + (len(self.keymap.layers) + 1) * self.cfg.outer_pad_h
+        )
         print(
             f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" '
             'xmlns="http://www.w3.org/2000/svg">'
@@ -164,9 +164,10 @@ class KeymapDrawer:
         print(f"<style>{self.cfg.svg_style}</style>")
 
         p = Point(self.cfg.outer_pad_w, 0.0)
-        for name, layer in self.layers.items():
+        for name, layer_keys in self.keymap.layers.items():
             p.y += self.cfg.outer_pad_h
-            self.print_layer(p, name, layer)
-            p.y += self.layout.height
+            combos = self.keymap.get_combos_for_layer(name)
+            self.print_layer(p, name, layer_keys, combos)
+            p.y += self.keymap.layout.height
 
         print("</svg>")

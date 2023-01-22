@@ -7,24 +7,23 @@ layout:
     drop_inner: true
 layers:
     DEF:
-        keys:
-            - [Q, W, F, P, B, J, L, U, Y, '"']
-            - [{h: Ctrl, t: A}, {h: Gui, t: R}, {h: Alt, t: S}, {h: Shift, t: T}, G, M, {h: Shift, t: N}, {h: Alt, t: E}, {h: Gui, t: I}, {h: Ctrl, t: O}]
-            - [X, C, D, H, ",", .]
-            - {h: Ctrl,  t: Esc}
-            - {h: NAV,   t: BSpace}
-            - {h: SYM,   t: Space}
-            - {h: Shift, t: Enter}
-        combos: &combos
-            - {p: [21, 22], k: "`"}
-            - {p: [6, 7],   k: ";"}
-            - {p: [12, 13], k: "("}
-            - {p: [16, 17], k: ")"}
-            - {p: [11, 12], k: "["}
-            - {p: [17, 18], k: "]"}
-            - {p: [23, 24], k: "\\"}
-            - {p: [24, 25], k: "|"}
-            - {p: [0, 10],  k: Z}
-            - {p: [9, 19],  k: /}
-            - {p: [4, 14],  k: V}
-            - {p: [5, 15],  k: K}
+        - [Q, W, F, P, B, J, L, U, Y, '"']
+        - [{h: Ctrl, t: A}, {h: Gui, t: R}, {h: Alt, t: S}, {h: Shift, t: T}, G, M, {h: Shift, t: N}, {h: Alt, t: E}, {h: Gui, t: I}, {h: Ctrl, t: O}]
+        - [X, C, D, H, ",", .]
+        - {h: Ctrl,  t: Esc}
+        - {h: NAV,   t: BSpace}
+        - {h: SYM,   t: Space}
+        - {h: Shift, t: Enter}
+combos:
+    - {p: [21, 22], k: "`"}
+    - {p: [6, 7],   k: ";"}
+    - {p: [12, 13], k: "("}
+    - {p: [16, 17], k: ")"}
+    - {p: [11, 12], k: "["}
+    - {p: [17, 18], k: "]"}
+    - {p: [23, 24], k: "\\"}
+    - {p: [24, 25], k: "|"}
+    - {p: [0, 10],  k: Z}
+    - {p: [9, 19],  k: /}
+    - {p: [4, 14],  k: V}
+    - {p: [5, 15],  k: K}

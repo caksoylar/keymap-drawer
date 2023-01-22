@@ -3,7 +3,6 @@ Module with classes that define the keymap representation, with multiple layers
 containing key and combo specifications, paired with the physical keyboard layout.
 """
 from itertools import chain
-from copy import deepcopy
 from typing import Literal, Sequence, Mapping
 
 from pydantic import BaseModel, Field, validator, root_validator
@@ -25,18 +24,18 @@ class LayoutKey(BaseModel):
     class Config:  # pylint: disable=missing-class-docstring
         allow_population_by_field_name = True
 
-    @staticmethod
-    def from_key_spec(key_spec: dict | str | int | None) -> dict:
+    @classmethod
+    def from_key_spec(cls, key_spec: dict | str | int | None) -> "LayoutKey":
         """Derive full params from a string/int (for tap), a full spec or null (empty key)."""
         match key_spec:
             case dict():
-                return key_spec
+                return cls(**key_spec)
             case str():
-                return {"tap": key_spec}
+                return cls(tap=key_spec)
             case int():
-                return {"tap": str(key_spec)}
+                return cls(tap=str(key_spec))
             case None:
-                return {"tap": ""}
+                return cls(tap="")
         raise ValueError(f'Invalid key specification "{key_spec}", provide a dict, string or null')
 
     def dict(self, *args, **kwargs):
@@ -63,7 +62,7 @@ class ComboSpec(BaseModel):
         allow_population_by_field_name = True
 
     @validator("key", pre=True)
-    def get_key(cls, val) -> dict:
+    def get_key(cls, val) -> LayoutKey:
         """Parse each key from its key spec."""
         return LayoutKey.from_key_spec(val)
 
@@ -73,73 +72,55 @@ class ComboSpec(BaseModel):
         return val.replace("top", "upper").replace("bottom", "lower")
 
 
-class Layer(BaseModel):
-    """Represents a layer with a sequence of bindings (keys) and combos belonging to that layer."""
-
-    keys: Sequence[LayoutKey]
-    combos: Sequence[ComboSpec] = []
-
-    @validator("keys", pre=True)
-    def parse_keys(cls, vals) -> Sequence[dict]:
-        """Parse each key on layer from its key spec, flattening the spec if it contains sublists."""
-        return [
-            LayoutKey.from_key_spec(val)
-            for val in chain.from_iterable(
-                v if isinstance(v, Sequence) and not isinstance(v, str) else [v] for v in vals
-            )
-        ]
-
-    def dict(self, *args, **kwargs):
-        dict_repr = super().dict(*args, **kwargs)
-        if self.combos and "combos" not in dict_repr:
-            dict_repr["combos"] = [combo.dict(*args, **kwargs) for combo in self.combos]
-        return dict_repr
-
-
 class KeymapData(BaseModel):
     """Represents all data pertaining to a keymap, including layers, combos and physical layout."""
 
     layout: PhysicalLayout
-    layers: Mapping[str, Layer]
+    layers: Mapping[str, Sequence[LayoutKey]]
     combos: Sequence[ComboSpec] = []
     config: DrawConfig
 
+    def get_combos_for_layer(self, layer_name: str) -> list[ComboSpec]:
+        """Return all combos that are present for layer as specified by its name."""
+        return [combo for combo in self.combos if not combo.layers or layer_name in combo.layers]
+
+    @validator("layers", pre=True)
+    def parse_layers(cls, val) -> Mapping[str, Sequence[LayoutKey]]:
+        """Parse each key on layer from its key spec, flattening the spec if it contains sublists."""
+        return {
+            layer_name: [
+                LayoutKey.from_key_spec(val)
+                for val in chain.from_iterable(
+                    v if isinstance(v, Sequence) and not isinstance(v, str) else [v] for v in keys
+                )
+            ]
+            for layer_name, keys in val.items()
+        }
+
     @root_validator(pre=True, skip_on_failure=True)
-    def create_layout(cls, vals) -> PhysicalLayout:
+    def create_layout(cls, vals):
         """Create layout with type given by ltype."""
         assert "ltype" in vals["layout"], 'Specifying a layout type key "ltype" is mandatory under "layout"'
         vals["layout"] = layout_factory(config=vals["config"], **vals["layout"])
         return vals
 
     @root_validator(skip_on_failure=True)
-    def assign_combos_to_layers(cls, vals):
-        """
-        If combos are given at the root, assign them to layers specified for each,
-        or to all layers if not specified.
-        """
-        for combo in vals["combos"]:
-            layers = deepcopy(combo.layers)
-            combo.layers = []
-            for layer in layers if layers else vals["layers"]:
-                vals["layers"][layer].combos.append(combo)
-        vals["combos"] = []
-        return vals
-
-    @root_validator(skip_on_failure=True)
-    def check_combo_pos(cls, vals):
+    def check_combos(cls, vals):
         """Validate combo positions are legitimate ones we can draw."""
-        for layer in vals["layers"].values():
-            for combo in layer.combos:
-                assert all(
-                    pos < len(vals["layout"]) for pos in combo.key_positions
-                ), "Combo positions exceed number of keys"
+        for combo in vals["combos"]:
+            assert all(
+                pos < len(vals["layout"]) for pos in combo.key_positions
+            ), f"Combo positions exceed number of keys for combo '{combo}'"
+            assert not combo.layers or all(
+                l in vals["layers"] for l in combo.layers
+            ), f"One of the layer names for combo '{combo}' is not found in the layer definitions"
         return vals
 
     @root_validator(skip_on_failure=True)
     def check_dimensions(cls, vals):
         """Validate that physical layout and layers have the same number of keys."""
         for name, layer in vals["layers"].items():
-            assert len(layer.keys) == len(
+            assert len(layer) == len(
                 vals["layout"]
             ), f"Number of keys do not match layout specification in layer {name}"
         return vals
