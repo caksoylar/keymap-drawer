@@ -136,6 +136,11 @@ class ParseConfig(BaseSettings):
     # convert QMK keycodes to their display forms, omitting "KC_" prefix on the keys
     qmk_keycode_map: dict[str, str] = {
         # QMK keycodes
+        "XXXXXXX": "",
+        "TRANSPARENT": "",
+        "TRNS": "",
+        "_______": "",
+        "NO": "",
         "MINUS": "-",
         "MINS": "-",
         "EQUAL": "=",
