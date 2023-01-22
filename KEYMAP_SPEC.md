@@ -5,16 +5,15 @@ This page documents the YAML-format keymap representation that is output by `key
 At the root, three key values are expected, which are detailed in respective sections. A typical keymap will have the following structure:
 
 ```yaml
-layout:    # physical layout specs
+layout:     # physical layout specs
   ...
-layers:    # mapping of layer name to contents
-  layer_name_1:
-    keys:  # list of (lists of) key specs
-      - [Q, W, ...]
-      ...
-  layer_name_2:
+layers:     # mapping of layer name to contents
+  layer_1:  # list of (lists of) key specs
+    - [Q, W, ...]
     ...
-combos:    # optional, list of combo specs
+  layer_2:
+    ...
+combos:     # optional, list of combo specs
   - ...
 ```
 

@@ -1,23 +1,22 @@
 # `keymap-drawer`
 
-Parse QMK & ZMK keymaps and draw them in SVG format, with support for visualizing hold-taps and combos.
+Parse QMK & ZMK keymaps and draw them in vector graphics (SVG) format, with support for visualizing hold-taps and combos that are commonly used with smaller keyboards.
 
 (example SVG here)
 
 ## Features
 
 - Draw keymap representations consisting of multiple layers, hold-tap keys and combos
-  - Uses an intuitive and human-readable YAML format for specifying the keymap
+  - Uses a human-editable YAML format for specifying the keymap
   - Non-adjacent or 3+ key combos can be visualized by specifying its positioning relative to the keys, with automatically drawn dendrons to keys
 - Bootstrap the YAML representation by automatically parsing QMK or ZMK keymap files
-  - QMK keymaps are supported in json format as emitted by QMK Configurator and `qmk c2json` (and thus it is not possible to parse combos at the moment)
-  - ZMK formats are parsed from devicetree `.keymap` files with preprocessor applied, with full support for parsing combos and hold-taps
 - Arbitrary physical keyboard layouts (with rotated keys!) supported, along with parametrized ortho layouts
-  - Ortho layout generator supports split/non-split ortho layouts with row/column/thumb key counts, MIT/2x2u layouts for non-split, dropped pinky/inner columns
-  - Layouts for keyboards supported in QMK can be retrieved from QMK's Keyboards API using keyboard and layout names, similar to QMK Configurator
 - Both parsing and drawing are customizable with a config file, see ["Customization" section](#customization)
 
 See [examples folder](examples/) for example inputs and outputs.
+
+Compared to to visual editors like [KLE](http://www.keyboard-layout-editor.com/), `keymap-drawer` takes a more programmatic approach.
+It also decouples the physical keyboard layout from the keymap (i.e., layer and combo definitions) and provides the tooling to bootstrap it quickly from existing firmware configuration.
 
 ## Usage
 
@@ -35,14 +34,15 @@ This will make the `keymap` command available in your `PATH` to use:
 keymap --help
 ```
 
-Alternatively, you can `pip install` into your favorite `virtualenv` or in your user install directory with `pip install --user keymap-drawer`. See [the development section](#development) to install from source.
+Alternatively, you can `pip install keymap-drawer` in a virtual environment or install into your user install directory with `pip install --user keymap-drawer`.
+See [the development section](#development) to install from source.
 
 ### Bootstrapping your keymap representation
 
-`parse` subcommand of `keymap` helps to parse an existing QMK or ZMK keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
+**`keymap parse`** command helps to parse an existing QMK or ZMK keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
 `-c`/`--columns` is an optional parameter that specifies the total number of columns in the keymap to better reorganize output layers.
 
-- **QMK**: Only json-format keymaps are supported, which can be exported from [QMK Configurator](https://config.qmk.fm/) or converted from `keymap.c` via `qmk c2json`:
+- **QMK**: Only json-format keymaps are supported, which can be exported from [QMK Configurator](https://config.qmk.fm/), converted from `keymap.c` via `qmk c2json`, or from a VIA backup json via `qmk via2json`:
 
   ```sh
   qmk c2json ~/qmk_firmware/keyboards/ferris/keymaps/username/keymap.c | keymap parse -c 10 -q - >sweep_keymap.yaml
@@ -77,7 +77,7 @@ It might be beneficial to start by `draw`'ing the current representation and ite
 
 ### Producing the SVG
 
-Final step is to produce the SVG representation using the `keymap draw` command.
+Final step is to produce the SVG representation using the **`keymap draw`** command.
 However to do that, we need to specify the physical layout of the keyboard, i.e., how many keys there are, where each key is positioned etc. `keymap-drawer` can figure this information out from a few different sources:
 
 - **QMK `info.json` specification**: Each keyboard in the QMK repo has a `info.json` file which specifies physical key locations. Using the keyboard name in the QMK repo, we can fetch this information from the [keyboard metadata API](https://docs.qmk.fm/#/configurator_architecture?id=keyboard-metadata):
@@ -111,8 +111,6 @@ However to do that, we need to specify the physical layout of the keyboard, i.e.
   ```
 
   See [the keymap specification](KEYMAP_SPEC.md) for details.
-
-## Keymap YAML specification
 
 ## Customization
 
