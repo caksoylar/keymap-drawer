@@ -24,6 +24,7 @@ def draw(args, config: DrawConfig) -> None:
 
     qmk_keyboard = args.qmk_keyboard or yaml_data.get("layout", {}).get("qmk_keyboard")
     qmk_layout = args.qmk_layout or yaml_data.get("layout", {}).get("qmk_layout")
+    ortho_layout = args.ortho_layout or yaml_data.get("layout")
 
     if qmk_keyboard or args.qmk_info_json:
         if qmk_keyboard:
@@ -38,12 +39,13 @@ def draw(args, config: DrawConfig) -> None:
         else:
             layout = qmk_info["layouts"][qmk_layout]["layout"]
         layout = {"ltype": "qmk", "layout": layout}
+    elif ortho_layout:
+        layout = {"ltype": "ortho", **ortho_layout}
     else:
-        assert "layout" in yaml_data, (
-            "A physical layout needs to be specified either via --qmk-keyboard/--qmk-layout, "
-            'or in a "layout" field in keymap_yaml using "ortho" parameters'
+        raise ValueError(
+            "A physical layout needs to be specified either via --qmk-keyboard/--qmk-layout/--ortho-layout, "
+            'or in a "layout" field in the keymap_yaml'
         )
-        layout = {"ltype": "ortho", **yaml_data["layout"]}
 
     drawer = KeymapDrawer(config=config, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", []))
     drawer.print_board()
@@ -98,6 +100,13 @@ def main() -> None:
         "--qmk-layout",
         help='Name of the layout (starting with "LAYOUT_") to use in the QMK keyboard info file, '
         "use the first defined one by default",
+    )
+    draw_p.add_argument(
+        "-o",
+        "--ortho-layout",
+        help="Parametrized ortholinear layout definition in a YAML format, "
+        "for example '{split: false, rows: 4, columns: 12}'",
+        type=yaml.safe_load,
     )
     draw_p.add_argument(
         "keymap_yaml",

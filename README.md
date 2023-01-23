@@ -80,7 +80,8 @@ It might be beneficial to start by `draw`'ing the current representation and ite
 Final step is to produce the SVG representation using the **`keymap draw`** command.
 However to do that, we need to specify the physical layout of the keyboard, i.e., how many keys there are, where each key is positioned etc. `keymap-drawer` can figure this information out from a few different sources:
 
-- **QMK `info.json` specification**: Each keyboard in the QMK repo has a `info.json` file which specifies physical key locations. Using the keyboard name in the QMK repo, we can fetch this information from the [keyboard metadata API](https://docs.qmk.fm/#/configurator_architecture?id=keyboard-metadata):
+- **QMK `info.json` specification**: Each keyboard in the QMK repo has a `info.json` file which specifies physical key locations.
+  Using the keyboard name in the QMK repo, we can fetch this information from the [keyboard metadata API](https://docs.qmk.fm/#/configurator_architecture?id=keyboard-metadata):
 
   ```sh
   keymap draw -k ferris/sweep sweep_keymap.yaml >sweep_keymap.svg
@@ -98,19 +99,20 @@ However to do that, we need to specify the physical layout of the keyboard, i.e.
   >
   > If you parsed a QMK keymap, keyboard and layout information will be populated in the keymap YAML already, so you don't need to specify it in the command line.
   >
-  > *Hint*: You can use the [QMK Configurator](https://config.qmk.fm/) to search for keyboard and layout names, and preview the physical layout.
 
-- **Parametrized ortholinear layouts**: You can also specify parameters to automatically generate a split or non-split ortholinear layout, by adding a `layout:` section in the keymap YAML, for example:
+  **Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for keyboard and layout names, and preview the physical layout.
 
-  ```yaml
-  layout:          # for a Sweep-like layout
-      split: true  # split or non-split keyboard
-      rows: 3      # number of rows (excluding thumb row if split)
-      columns: 5   # number of columns (for each half if split)
-      thumbs: 2    # number of thumb keys per side if split, can optionally be "MIT" or "2x2u" for non-split
+- **Parametrized ortholinear layouts**: You can also specify parameters to automatically generate a split or non-split ortholinear layout, for example:
+
+  ```sh
+  keymap draw -o '{split: true, rows: 3, columns: 5, thumbs: 2}' sweep_keymap.yaml >sweep_keymap.ortho.svg
   ```
 
-  See [the keymap specification](KEYMAP_SPEC.md) for details.
+  See [the keymap specification](KEYMAP_SPEC.md) for parameter definitions.
+
+> **Note**
+>
+> If you prefer, you can specify physical layouts in the [keymap YAML file](KEYMAP_SPEC.md) rather than the command line.
 
 ## Customization
 

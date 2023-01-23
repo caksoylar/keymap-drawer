@@ -15,7 +15,6 @@ These are things I plan to implement if there is demand for it, or would welcome
 
 - Physical layouts in KLE format
   - Maybe consider labeled KLE's like VIA/Vial expects to ensure ordering
-- Ability to specify ortho layout from command line
 
 ## Internal
 
