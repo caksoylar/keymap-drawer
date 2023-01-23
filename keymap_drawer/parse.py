@@ -39,11 +39,11 @@ class QmkJsonParser(KeymapParser):
     _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
     _lt_re = re.compile(r"LT\((\S+), *(\S+)\)")
 
-    def _str_to_key_spec(self, key_str: str) -> str | dict:  # pylint: disable=too-many-return-statements
+    def _str_to_key(self, key_str: str) -> LayoutKey:  # pylint: disable=too-many-return-statements
         if key_str in self.cfg.raw_binding_map:
-            return self.cfg.raw_binding_map[key_str]
+            return LayoutKey.from_key_spec(self.cfg.raw_binding_map[key_str])
         if self.cfg.skip_binding_parsing:
-            return key_str
+            return LayoutKey(tap=key_str)
 
         def mapped(key):
             return self.cfg.qmk_keycode_map.get(key, key)
@@ -51,14 +51,14 @@ class QmkJsonParser(KeymapParser):
         key_str = self._prefix_re.sub("", key_str)
 
         if m := self._mo_re.fullmatch(key_str):
-            return f"L{m.group(1).strip()}"
+            return LayoutKey(tap=f"L{m.group(1).strip()}")
         if m := self._mts_re.fullmatch(key_str):
-            return {"t": mapped(m.group(2).strip()), "h": m.group(1)}
+            return LayoutKey(tap=mapped(m.group(2).strip()), hold=m.group(1))
         if m := self._mtl_re.fullmatch(key_str):
-            return {"t": mapped(m.group(2).strip()), "h": m.group(1).strip()}
+            return LayoutKey(tap=mapped(m.group(2).strip()), hold=m.group(1).strip())
         if m := self._lt_re.fullmatch(key_str):
-            return {"t": mapped(m.group(2).strip()), "h": f"L{m.group(1).strip()}"}
-        return mapped(key_str)
+            return LayoutKey(tap=mapped(m.group(2).strip()), hold=f"L{m.group(1).strip()}")
+        return LayoutKey(tap=mapped(key_str))
 
     def parse(self, path: str) -> dict:
         """Parse a JSON keymap with its file path and return a dict representation to be dumped to YAML."""
@@ -73,9 +73,7 @@ class QmkJsonParser(KeymapParser):
             layout["qmk_layout"] = raw["layout"]
 
         layers = {
-            f"L{ind}": self.rearrange_layer(
-                [LayoutKey.from_key_spec(self._str_to_key_spec(key)).dict(**self._dict_args) for key in layer]
-            )
+            f"L{ind}": self.rearrange_layer([self._str_to_key(key).dict(**self._dict_args) for key in layer])
             for ind, layer in enumerate(raw["layers"])
         }
 
@@ -97,11 +95,11 @@ class ZmkKeymapParser(KeymapParser):
         super().__init__(config, columns)
         self.hold_tap_labels = {"&mt", "&lt"}
 
-    def _str_to_key_spec(self, binding: str) -> str | dict:  # pylint: disable=too-many-return-statements
+    def _str_to_key(self, binding: str) -> LayoutKey:  # pylint: disable=too-many-return-statements
         if binding in self.cfg.raw_binding_map:
-            return self.cfg.raw_binding_map[binding]
+            return LayoutKey.from_key_spec(self.cfg.raw_binding_map[binding])
         if self.cfg.skip_binding_parsing:
-            return binding
+            return LayoutKey(tap=binding)
 
         def mapped(key):
             if key in self.cfg.zmk_keycode_map:
@@ -110,26 +108,26 @@ class ZmkKeymapParser(KeymapParser):
 
         match binding.split():
             case ["&none"] | ["&trans"]:
-                return ""
+                return LayoutKey(tap="")
             case [ref]:
-                return ref
+                return LayoutKey(tap=ref)
             case ["&kp", par]:
-                return mapped(par)
+                return LayoutKey(tap=mapped(par))
             case ["&sk", par]:
-                return {"t": mapped(par), "h": "sticky"}
+                return LayoutKey(tap=mapped(par), hold="sticky")
             case [("&out" | "&bt" | "&ext_power" | "&rgb_ug"), *pars]:
-                return " ".join(pars).replace("_", " ").replace(" SEL ", " ")
+                return LayoutKey(tap=" ".join(pars).replace("_", " ").replace(" SEL ", " "))
             case [("&mo" | "&to" | "&tog"), par]:
-                return self.layer_names[int(par)]
+                return LayoutKey(tap=self.layer_names[int(par)])
             case ["&sl", par]:
-                return {"t": self.layer_names[int(par)], "h": "sticky"}
+                return LayoutKey(tap=self.layer_names[int(par)], hold="sticky")
             case [ref, hold_par, tap_par] if ref in self.hold_tap_labels:
                 try:
                     hold_par = self.layer_names[int(hold_par)]
                 except (ValueError, IndexError):  # not a layer-tap, so maybe a keycode?
                     hold_par = mapped(hold_par)
-                return {"t": mapped(tap_par), "h": hold_par}
-        return binding
+                return LayoutKey(tap=mapped(tap_par), hold=hold_par)
+        return LayoutKey(tap=binding)
 
     def _get_prepped(self, path: str) -> str:
         with open(path, "r", encoding="utf-8") if path != "-" else sys.stdin as f:
@@ -188,7 +186,7 @@ class ZmkKeymapParser(KeymapParser):
         for layer_name, node_str in zip(self.layer_names, layer_nodes.values()):
             try:
                 layers[layer_name] = [
-                    LayoutKey.from_key_spec(self._str_to_key_spec("&" + stripped))
+                    self._str_to_key("&" + stripped)
                     for binding in self._bindings_re.search(node_str).group(1).split("&")  # type: ignore
                     if (stripped := binding.strip().removeprefix("&"))
                 ]
@@ -207,7 +205,7 @@ class ZmkKeymapParser(KeymapParser):
                 node_str = " ".join(item for item in node.as_list() if isinstance(item, str))
                 binding = self._bindings_re.search(node_str).group(1)  # type: ignore
                 combo = {
-                    "k": self._str_to_key_spec(binding),
+                    "k": self._str_to_key(binding),
                     "p": [int(pos) for pos in self._keypos_re.search(node_str).group(1).split()],  # type: ignore
                 }
                 if m := self._layers_re.search(node_str):
