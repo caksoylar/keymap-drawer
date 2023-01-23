@@ -1,12 +1,12 @@
 """
 Given keymap description with layers and combos (in a yaml), and physical
-keyboard layout definition (either via QMK info files or with parameters
-specified in the aforementioned yaml), print an SVG representing the keymap
-to standard output.
+keyboard layout definition (either via QMK info files or using a parametrized
+ortho layout), print an SVG representing the keymap to standard output.
 """
 import sys
 import json
 import argparse
+from importlib.metadata import version
 from urllib.request import urlopen
 
 import yaml
@@ -76,6 +76,7 @@ def dump_config(config: Config) -> None:
 def main() -> None:
     """Parse the configuration and print SVG using KeymapDrawer."""
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-v", "--version", action="version", version=version("keymap-drawer"))
     parser.add_argument(
         "-c",
         "--config",
@@ -128,7 +129,7 @@ def main() -> None:
     )
 
     _ = subparsers.add_parser(
-        "dump-config", help="dump default draw and parse config to stdout that can be passed to -s/--settings parameter"
+        "dump-config", help="dump default draw and parse config to stdout that can be passed to -c/--config option"
     )
 
     args = parser.parse_args()
