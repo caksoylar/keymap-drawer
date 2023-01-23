@@ -1,8 +1,9 @@
 layout:
-    split: false
-    rows: 4
-    columns: 12
-    thumbs: MIT
+    ortho_layout:
+        split: false
+        rows: 4
+        columns: 12
+        thumbs: MIT
 layers:
     Qwerty:
         - [Tab,   Q,    W,   E,   R,     T,     Y,     U,     I,    O,    P,   Bksp]

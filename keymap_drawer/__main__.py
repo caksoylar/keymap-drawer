@@ -24,7 +24,7 @@ def draw(args, config: DrawConfig) -> None:
 
     qmk_keyboard = args.qmk_keyboard or yaml_data.get("layout", {}).get("qmk_keyboard")
     qmk_layout = args.qmk_layout or yaml_data.get("layout", {}).get("qmk_layout")
-    ortho_layout = args.ortho_layout or yaml_data.get("layout")
+    ortho_layout = args.ortho_layout or yaml_data.get("layout", {}).get("ortho_layout")
 
     if qmk_keyboard or args.qmk_info_json:
         if qmk_keyboard:

@@ -1,8 +1,9 @@
 layout:
-    split: true
-    rows: 3
-    columns: 5
-    thumbs: 2
+    ortho_layout:
+        split: true
+        rows: 3
+        columns: 5
+        thumbs: 2
 layers:
     DEF:
         - [Q, W, E, R, T, Y, U, I, O, P]

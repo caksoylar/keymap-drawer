@@ -1,8 +1,9 @@
 layout:
-    split: true
-    rows: 3
-    columns: 6
-    thumbs: 3
+    ortho_layout:
+        split: true
+        rows: 3
+        columns: 6
+        thumbs: 3
 layers:
     QWERTY:
         - ["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Bspace"]
