@@ -45,7 +45,7 @@ class QmkJsonParser(KeymapParser):
         if self.cfg.skip_binding_parsing:
             return LayoutKey(tap=key_str)
 
-        def mapped(key):
+        def mapped(key: str) -> str:
             return self.cfg.qmk_keycode_map.get(key, key)
 
         key_str = self._prefix_re.sub("", key_str)
@@ -101,7 +101,7 @@ class ZmkKeymapParser(KeymapParser):
         if self.cfg.skip_binding_parsing:
             return LayoutKey(tap=binding)
 
-        def mapped(key):
+        def mapped(key: str) -> str:
             if key in self.cfg.zmk_keycode_map:
                 return self.cfg.zmk_keycode_map[key]
             return self._numbers_re.sub(r"\3", key).removeprefix("C_").removeprefix("K_").replace("_", " ")
@@ -209,7 +209,7 @@ class ZmkKeymapParser(KeymapParser):
                     "p": [int(pos) for pos in self._keypos_re.search(node_str).group(1).split()],  # type: ignore
                 }
                 if m := self._layers_re.search(node_str):
-                    combo["l"] = [self.layer_names[int(layer)] for layer in m.group(1).split()]  # type: ignore
+                    combo["l"] = [self.layer_names[int(layer)] for layer in m.group(1).split()]
                 combos.append(ComboSpec(**combo))
             except (AttributeError, ValueError):
                 continue

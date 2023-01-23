@@ -40,8 +40,8 @@ class LayoutKey(BaseModel):
 
     def dict(self, *args, **kwargs):
         dict_repr = super().dict(*args, **kwargs)
-        if set(dict_repr.keys()) == {"t"}:
-            return dict_repr["t"]
+        if set(dict_repr.keys()).issubset({"t", "tap"}):
+            return dict_repr.get("t") or dict_repr.get("tap", "")
         return dict_repr
 
 
