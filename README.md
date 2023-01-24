@@ -22,7 +22,7 @@ It also decouples the physical keyboard layout from the keymap (i.e., layer and 
 
 ### Installation
 
-The recommended way to install `keymap-drawer` is through [`pipx`](https://pypa.github.io/pipx/), which sets up an isolated environment and installs the application with a single command:
+The recommended way to install `keymap-drawer` is through [pipx](https://pypa.github.io/pipx/), which sets up an isolated environment and installs the application with a single command:
 
 ```sh
 pipx install keymap-drawer
@@ -35,7 +35,7 @@ keymap --help
 ```
 
 Alternatively, you can `pip install keymap-drawer` in a virtual environment or install into your user install directory with `pip install --user keymap-drawer`.
-See [the development section](#development) to install from source.
+See [the development section](#development) for instructions to install from source.
 
 ### Bootstrapping your keymap representation
 
@@ -48,7 +48,7 @@ See [the development section](#development) to install from source.
   qmk c2json ~/qmk_firmware/keyboards/ferris/keymaps/username/keymap.c | keymap parse -c 10 -q - >sweep_keymap.yaml
   ```
 
-  Due to current limitations of the `keymap.json` format, combos and `#define`'d layer names will not be present in the output.
+  Due to current limitations of the `keymap.json` format, combos and `#define`'d layer names will not be present in the parsing output.
 
 - **ZMK**: `.keymap` files are used for parsing. These will be preprocessed similar to the ZMK build system, so `#define`'s and `#include`s will be expanded.
 
@@ -61,7 +61,7 @@ For layer names, the value of the `label` property will take precedence over the
 
   > **Warning**
   >
-  > Parsing rules currently require that your `keymap` and `combos` nodes be nested one-level deep from the root node and have fixed names. These conditions typically hold for most keymaps by convention.
+  > Parsing rules currently require that your keymap have nodes named `keymap` and `combos` that are nested one-level deep from the root. (These conditions hold for most keymaps by convention.)
 
 ### Tweaking the produced keymap representation
 
@@ -78,7 +78,8 @@ It might be beneficial to start by `draw`'ing the current representation and ite
 ### Producing the SVG
 
 Final step is to produce the SVG representation using the **`keymap draw`** command.
-However to do that, we need to specify the physical layout of the keyboard, i.e., how many keys there are, where each key is positioned etc. `keymap-drawer` can figure this information out from a few different sources:
+However to do that, we need to specify the physical layout of the keyboard, i.e., how many keys there are, where each key is positioned etc.
+You can provide this information to `keymap-drawer` in two ways:
 
 - **QMK `info.json` specification**: Each keyboard in the QMK repo has a `info.json` file which specifies physical key locations.
   Using the keyboard name in the QMK repo, we can fetch this information from the [keyboard metadata API](https://docs.qmk.fm/#/configurator_architecture?id=keyboard-metadata):
@@ -114,6 +115,8 @@ However to do that, we need to specify the physical layout of the keyboard, i.e.
 >
 > If you prefer, you can specify physical layouts in the [keymap YAML file](KEYMAP_SPEC.md) rather than the command line.
 
+Once you produced the SVG representation, you can render it on your browser or use a tool like [CairoSVG](https://cairosvg.org/) or [Inkscape](https://inkscape.org/) to export to a different format.
+
 ## Customization
 
 Both parsing and drawing can be customized using a configuration file passed to the `keymap` executable.
@@ -141,9 +144,9 @@ KEYMAP_raw_binding_map='{"&bootloader": "BOOT"}' keymap parse -z zmk-config/conf
 
 ## Development
 
-This project requires Python 3.10+ and uses [`poetry`](https://python-poetry.org/) for packaging.
+This project requires Python 3.10+ and uses [Poetry](https://python-poetry.org/) for packaging.
 
-To get started, install `poetry`, clone this repo, then install dependencies with `poetry`:
+To get started, [install Poetry](https://python-poetry.org/docs/#installation), clone this repo, then install dependencies with the `poetry` command:
 
 ```sh
 git clone https://github.com/caksoylar/keymap-drawer.git
@@ -151,8 +154,8 @@ cd keymap-drawer
 poetry install  # --with dev,lsp optional dependencies
 ```
 
-`poetry shell` will activate a virtual environment with `keymap_drawer` in Python path and `keymap` executable available.
-Changes in the source code will be reflected.
+`poetry shell` will activate a virtual environment with the `keymap_drawer` module in Python path and `keymap` executable available.
+Changes you make in the source code will be reflected when using the module or the command.
 
 ## Related projects
 
