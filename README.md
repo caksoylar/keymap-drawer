@@ -57,11 +57,12 @@ See [the development section](#development) for instructions to install from sou
   ```
 
   Currently combos, hold-taps (including custom ones), layer names and sticky keys (`&sk`/`&sl`) can be determined via parsing.
-For layer names, the value of the `label` property will take precedence over the layer's node name if provided.
+  For layer names, the value of the `label` property will take precedence over the layer's node name if provided.
 
   > **Warning**
   >
-  > Parsing rules currently require that your keymap have nodes named `keymap` and `combos` that are nested one-level deep from the root. (These conditions hold for most keymaps by convention.)
+  > Parsing rules currently require that your keymap have nodes named `keymap` and `combos` that are nested one level-deep from the root.
+  > (These conditions hold for most keymaps by convention.)
 
 ### Tweaking the produced keymap representation
 
@@ -99,7 +100,6 @@ You can provide this information to `keymap-drawer` in two ways:
   > **Note**
   >
   > If you parsed a QMK keymap, keyboard and layout information will be populated in the keymap YAML already, so you don't need to specify it in the command line.
-  >
 
   **Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for keyboard and layout names, and preview the physical layout.
 
