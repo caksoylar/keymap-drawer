@@ -19,7 +19,7 @@ class LayoutKey(BaseModel):
 
     tap: str = Field(alias="t")
     hold: str = Field(default="", alias="h")
-    type: Literal[None, "held", "combo", "ghost"] = None
+    type: Literal[None, "held", "ghost"] = None
 
     class Config:  # pylint: disable=missing-class-docstring
         allow_population_by_field_name = True
@@ -64,7 +64,7 @@ class ComboSpec(BaseModel):
     @validator("key", pre=True)
     def get_key(cls, val) -> LayoutKey:
         """Parse each key from its key spec."""
-        return LayoutKey.from_key_spec(val)
+        return val if isinstance(val, LayoutKey) else LayoutKey.from_key_spec(val)
 
     @validator("align")
     def normalize_align(cls, val: str) -> str:
@@ -89,7 +89,7 @@ class KeymapData(BaseModel):
         """Parse each key on layer from its key spec, flattening the spec if it contains sublists."""
         return {
             layer_name: [
-                LayoutKey.from_key_spec(val)
+                val if isinstance(val, LayoutKey) else LayoutKey.from_key_spec(val)
                 for val in chain.from_iterable(
                     v if isinstance(v, Sequence) and not isinstance(v, str) else [v] for v in keys
                 )
