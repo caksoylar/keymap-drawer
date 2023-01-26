@@ -70,11 +70,11 @@ While the parsing step aims to create a decent starting point, you will likely w
 Please refer to [the keymap schema specification](KEYMAP_SPEC.md) while making changes:
 
 0. (If starting from a QMK keymap) Add combo definitions using key position indices.
-1. Tweak the display form of parsed keys, e.g, replacing `&bootloader` with `BOOT`. (See [the customization section](#customization) to modify parser's behavior.)
-2. Add `align` and/or `offset` properties to combos between non-adjacent keys or those with 3+ key positions, in order to position them better
+1. Tweak the display form of parsed keys, e.g., replacing `&bootloader` with `BOOT`. (See [the customization section](#customization) to modify parser's behavior.)
+2. If you have combos between non-adjacent keys or 3+ key positions, add `align` and/or `offset` properties in order to position them better
 3. Add `type` specifiers to certain keys, such as `held` for layer keys used to enter the current layer or `ghost` for optional keys
 
-It might be beneficial to start by `draw`'ing the current representation and iterate over these changes, especially for positioning tricky combos.
+It might be beneficial to start by `draw`'ing the current representation and iterate over these changes, especially for tweaking combo positioning.
 
 ### Producing the SVG
 
