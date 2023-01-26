@@ -100,11 +100,11 @@ class KeymapDrawer:
             case "mid":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
-            case "upper":
+            case "top":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - self.cfg.inner_pad_h / 2
                 p_mid.y -= combo_spec.offset * self.keymap.layout.min_height
-            case "lower":
+            case "bottom":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + self.cfg.inner_pad_h / 2
                 p_mid.y += combo_spec.offset * self.keymap.layout.min_height
@@ -120,7 +120,7 @@ class KeymapDrawer:
         # draw dendrons going from box to combo keys
         if combo_spec.dendron is not False:
             match combo_spec.align:
-                case "upper" | "lower":
+                case "top" | "bottom":
                     for k in p_keys:
                         offset = k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < self.cfg.combo_w / 2 else k.height / 3
                         self._draw_arc_dendron(p_mid, p_0 + k.pos, True, offset)
