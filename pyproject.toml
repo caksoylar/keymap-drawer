@@ -26,6 +26,10 @@ optional = true
 [tool.poetry.group.lsp.dependencies]
 python-lsp-server = "^1.6.0"
 
+
+[tool.poetry.group.streamlit.dependencies]
+streamlit = "^1.17.0"
+
 [tool.poetry.scripts]
 keymap = 'keymap_drawer.__main__:main'
 
