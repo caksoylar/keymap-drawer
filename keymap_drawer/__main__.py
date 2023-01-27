@@ -47,7 +47,9 @@ def draw(args, config: DrawConfig) -> None:
             'or in a "layout" field in the keymap_yaml'
         )
 
-    drawer = KeymapDrawer(config=config, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", []))
+    drawer = KeymapDrawer(
+        config=config, out=sys.stdout, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", [])
+    )
     drawer.print_board()
 
 

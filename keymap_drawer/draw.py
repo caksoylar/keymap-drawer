@@ -5,7 +5,7 @@ representation of the keymap using these two.
 """
 from math import copysign
 from html import escape
-from typing import Sequence
+from typing import Sequence, TextIO
 
 from .keymap import KeymapData, ComboSpec, LayoutKey
 from .physical_layout import Point, PhysicalKey
@@ -15,30 +15,30 @@ from .config import DrawConfig
 class KeymapDrawer:
     """Class that draws a keyboard representation in SVG."""
 
-    def __init__(self, config: DrawConfig, **kwargs) -> None:
+    def __init__(self, config: DrawConfig, out: TextIO, **kwargs) -> None:
         self.cfg = config
         self.keymap = KeymapData(config=config, **kwargs)
+        self.out = out
 
     def _draw_rect(self, p: Point, w: float, h: float, cls: str | None = None) -> None:
         class_str = f' class="{cls}"' if cls is not None else ""
-        print(
+        self.out.write(
             f'<rect rx="{self.cfg.key_rx}" ry="{self.cfg.key_ry}" x="{p.x - w / 2}" y="{p.y - h / 2}" '
-            f'width="{w}" height="{h}"{class_str}/>'
+            f'width="{w}" height="{h}"{class_str}/>\n'
         )
 
-    @staticmethod
-    def _draw_text(p: Point, text: str, cls: str | None = None) -> None:
+    def _draw_text(self, p: Point, text: str, cls: str | None = None) -> None:
         if not (words := text.split()):
             return
         class_str = f' class="{cls}"' if cls is not None else ""
         if len(words) == 1:
-            print(f'<text x="{p.x}" y="{p.y}"{class_str}>{escape(words[0])}</text>')
+            self.out.write(f'<text x="{p.x}" y="{p.y}"{class_str}>{escape(words[0])}</text>\n')
             return
-        print(f'<text x="{p.x}" y="{p.y}"{class_str}>')
-        print(f'<tspan x="{p.x}" dy="-{(len(words) - 1) * 0.6}em">{escape(words[0])}</tspan>', end="")
+        self.out.write(f'<text x="{p.x}" y="{p.y}"{class_str}>\n')
+        self.out.write(f'<tspan x="{p.x}" dy="-{(len(words) - 1) * 0.6}em">{escape(words[0])}</tspan>')
         for word in words[1:]:
-            print(f'<tspan x="{p.x}" dy="1.2em">{escape(word)}</tspan>', end="")
-        print("</text>")
+            self.out.write(f'<tspan x="{p.x}" dy="1.2em">{escape(word)}</tspan>')
+        self.out.write("</text>\n")
 
     def _draw_arc_dendron(self, p_1: Point, p_2: Point, x_first: bool, shorten: float) -> None:
         start = f"M{p_1.x},{p_1.y}"
@@ -53,16 +53,15 @@ class KeymapDrawer:
             line_1 = f"v{self.cfg.arc_scale * (p_2.y - p_1.y) - arc_y}"
             line_2 = f"h{p_2.x - p_1.x - arc_x - copysign(shorten, p_2.x - p_1.x)}"
         arc = f"a{self.cfg.arc_radius},{self.cfg.arc_radius} 0 0 {int(clockwise)} {arc_x},{arc_y}"
-        print(f'<path d="{start} {line_1} {arc} {line_2}"/>')
+        self.out.write(f'<path d="{start} {line_1} {arc} {line_2}"/>\n')
 
-    @staticmethod
-    def _draw_line_dendron(p_1: Point, p_2: Point, shorten: float) -> None:
+    def _draw_line_dendron(self, p_1: Point, p_2: Point, shorten: float) -> None:
         start = f"M{p_1.x},{p_1.y}"
         diff = p_2 - p_1
         if shorten and shorten < (magn := abs(diff)):
             diff = Point((1 - shorten / magn) * diff.x, (1 - shorten / magn) * diff.y)
         line = f"l{diff.x},{diff.y}"
-        print(f'<path d="{start} {line}"/>')
+        self.out.write(f'<path d="{start} {line}"/>\n')
 
     def print_key(self, p_0: Point, p_key: PhysicalKey, l_key: LayoutKey) -> None:
         """
@@ -77,12 +76,12 @@ class KeymapDrawer:
             p_key.rotation,
         )
         if r != 0:
-            print(f'<g transform="rotate({r}, {p.x}, {p.y})">')
+            self.out.write(f'<g transform="rotate({r}, {p.x}, {p.y})">\n')
         self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, l_key.type)
         self._draw_text(p, l_key.tap)
         self._draw_text(p + Point(0, h / 2 - self.cfg.line_spacing / 2), l_key.hold, cls="small")
         if r != 0:
-            print("</g>")
+            self.out.write("</g>\n")
 
     def print_combo(self, p_0: Point, combo_spec: ComboSpec) -> None:
         """
@@ -157,11 +156,11 @@ class KeymapDrawer:
         board_h = (
             len(self.keymap.layers) * self.keymap.layout.height + (len(self.keymap.layers) + 1) * self.cfg.outer_pad_h
         )
-        print(
+        self.out.write(
             f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" '
-            'xmlns="http://www.w3.org/2000/svg">'
+            'xmlns="http://www.w3.org/2000/svg">\n'
         )
-        print(f"<style>{self.cfg.svg_style}</style>")
+        self.out.write(f"<style>{self.cfg.svg_style}</style>\n")
 
         p = Point(self.cfg.outer_pad_w, 0.0)
         for name, layer_keys in self.keymap.layers.items():
@@ -170,4 +169,4 @@ class KeymapDrawer:
             self.print_layer(p, name, layer_keys, combos)
             p.y += self.keymap.layout.height
 
-        print("</svg>")
+        self.out.write("</svg>\n")
