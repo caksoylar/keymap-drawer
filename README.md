@@ -2,7 +2,7 @@
 
 Parse QMK & ZMK keymaps and draw them in vector graphics (SVG) format, with support for visualizing hold-taps and combos that are commonly used with smaller keyboards.
 
-(example SVG here)
+![Example keymap](https://caksoylar.github.io/keymap-drawer/3x5.rot.svg)
 
 ## Features
 
