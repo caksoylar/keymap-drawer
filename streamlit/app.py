@@ -5,11 +5,16 @@ import io
 import json
 from urllib.request import urlopen
 
+# from typing import BytesIO
+
 import yaml
 import streamlit as st
 
 from keymap_drawer.draw import KeymapDrawer
-from keymap_drawer.config import Config, DrawConfig
+from keymap_drawer.config import Config, DrawConfig, ParseConfig
+from keymap_drawer.parse import QmkJsonParser, ZmkKeymapParser
+
+# from keymap_drawer.keymap import KeymapData
 
 
 @st.cache
@@ -50,16 +55,16 @@ def draw(yaml_str: str, config: DrawConfig) -> str:
             'or in a "layout" field in the keymap_yaml'
         )
 
-    out = io.StringIO()
-    drawer = KeymapDrawer(
-        config=config, out=out, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", [])
-    )
-    drawer.print_board()
-    return out.getvalue()
+    with io.StringIO() as out:
+        drawer = KeymapDrawer(
+            config=config, out=out, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", [])
+        )
+        drawer.print_board()
+        return out.getvalue()
 
 
 @st.cache
-def get_example_yamls() -> str:
+def get_example_yamls() -> dict[str, str]:
     out = {}
     examples_path = f"{os.path.dirname(__file__)}/../examples"
     for filename in sorted(os.listdir(examples_path)):
@@ -78,9 +83,9 @@ def get_default_config() -> str:
         return dumper.represent_scalar("tag:yaml.org,2002:str", in_str)
 
     yaml.representer.SafeRepresenter.add_representer(str, cfg_str_representer)
-    out = io.StringIO()
-    yaml.safe_dump(Config().dict(), out, indent=4, default_flow_style=False)
-    return out.getvalue()
+    with io.StringIO() as out:
+        yaml.safe_dump(Config().dict(), out, indent=4, default_flow_style=False)
+        return out.getvalue()
 
 
 @st.cache
@@ -88,47 +93,70 @@ def parse_config(config: str) -> Config:
     return Config.parse_obj(yaml.safe_load(config))
 
 
-st.set_page_config(page_title="Keymap Drawer live demo", page_icon=":keyboard:", layout="wide")
-st.write(
-    """
-    <style>
-    textarea[class^="st-"] { font-family: monospace; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-st.header("`keymap-drawer` interactive demo")
-if "config" not in st.session_state:
-    st.session_state.config = get_default_config()
+@st.cache
+def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols: int) -> str:
+    parsed = QmkJsonParser(config, num_cols).parse(qmk_keymap_buf)
+    with io.StringIO() as out:
+        yaml.safe_dump(parsed, out, indent=4, width=160, sort_keys=False, default_flow_style=None)
+        return out.getvalue()
 
 
-examples = get_example_yamls()
-
-left_column, right_column = st.columns(2)
-left_column.subheader("Keymap YAML")
-left_column.selectbox(label="Load example", options=list(examples.keys()), index=0, key="example_yaml")
-left_column.text_area(
-    value=examples[st.session_state.example_yaml],
-    height=800,
-    key="keymap_yaml",
-    label="[Keymap Spec](https://github.com/caksoylar/keymap-drawer/blob/main/KEYMAP_SPEC.md)",
-)
-
-svg = draw(st.session_state.keymap_yaml, parse_config(st.session_state.config).draw_config)
-right_column.subheader("Keymap SVG")
-right_column.write(svg_to_html(svg), unsafe_allow_html=True)
-
-st.download_button(label="Download keymap", data=st.session_state.keymap_yaml, file_name="my_keymap.yaml")
-st.download_button(
-    label="Download SVG",
-    data=svg,
-    file_name="my_keymap.svg",
-)
-with st.expander("Configuration"):
-    st.text_area(
-        label="[Drawing config parameters](https://github.com/caksoylar/keymap-drawer#customization)",
-        key="config",
-        height=400,
-        value=get_default_config(),
+def main():
+    st.set_page_config(page_title="Keymap Drawer live demo", page_icon=":keyboard:", layout="wide")
+    st.write(
+        """
+        <style>
+        textarea[class^="st-"] { font-family: monospace; }
+        </style>
+        """,
+        unsafe_allow_html=True,
     )
-    st.download_button(label="Download config", data=st.session_state.config, file_name="my_config.yaml")
+    st.header("`keymap-drawer` interactive demo")
+    if "config" not in st.session_state:
+        st.session_state.config = get_default_config()
+
+
+    examples = get_example_yamls()
+
+    with st.expander("Parse from firmware files"):
+        num_cols = st.number_input("Number of columns in keymap", min_value=0, max_value=20)
+        qmk_file = st.file_uploader(label="Import QMK JSON keymap", type=["json"], key="qmk_keymap")
+        if qmk_file is not None:
+            parsed = parse_qmk_to_yaml(
+                qmk_file, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
+            )
+            if parsed != st.session_state.get("prev_qmk_parsed"):
+                st.session_state.prev_qmk_parsed = parsed
+                st.session_state.keymap_yaml = parsed
+
+    left_column, right_column = st.columns(2)
+    left_column.subheader("Keymap YAML")
+    left_column.selectbox(label="Load example", options=list(examples.keys()), index=0, key="example_yaml")
+    left_column.text_area(
+        value=examples[st.session_state.example_yaml],
+        height=800,
+        key="keymap_yaml",
+        label="[Keymap Spec](https://github.com/caksoylar/keymap-drawer/blob/main/KEYMAP_SPEC.md)",
+    )
+
+    svg = draw(st.session_state.keymap_yaml, parse_config(st.session_state.config).draw_config)
+    right_column.subheader("Keymap SVG")
+    right_column.write(svg_to_html(svg), unsafe_allow_html=True)
+
+    st.download_button(label="Download keymap", data=st.session_state.keymap_yaml, file_name="my_keymap.yaml")
+    st.download_button(
+        label="Download SVG",
+        data=svg,
+        file_name="my_keymap.svg",
+    )
+    with st.expander("Configuration"):
+        st.text_area(
+            label="[Config parameters](https://github.com/caksoylar/keymap-drawer/blob/main/keymap_drawer/config.py)",
+            key="config",
+            height=400,
+            value=get_default_config(),
+        )
+        st.download_button(label="Download config", data=st.session_state.config, file_name="my_config.yaml")
+
+
+main()
