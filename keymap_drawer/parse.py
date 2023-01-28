@@ -2,10 +2,10 @@
 import sys
 import re
 import json
-from io import StringIO
+from io import StringIO, TextIOWrapper
 from abc import ABC
 from itertools import chain
-from typing import Sequence
+from typing import Sequence, BinaryIO
 
 import pyparsing as pp
 from pcpp.preprocessor import Preprocessor, OutputDirective, Action  # type: ignore
@@ -28,6 +28,20 @@ class KeymapParser(ABC):
         if self.columns:
             return [layer_keys[i : i + self.columns] for i in range(0, len(layer_keys), self.columns)]
         return layer_keys
+
+    def _parse(self, in_buf: BinaryIO):
+        raise NotImplementedError
+
+    def parse(self, in_arg: str | BinaryIO) -> dict:
+        """Wrapper to call parser on a file handle, given a handle or a file path."""
+        match in_arg:
+            case BinaryIO():
+                return self._parse(in_arg)
+            case str():
+                with open(in_arg, "rb") if in_arg != "-" else sys.stdin.buffer as f:
+                    return self._parse(f)
+            case _:
+                raise ValueError("Unknown input argument type for parsing")
 
 
 class QmkJsonParser(KeymapParser):
@@ -60,11 +74,10 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=mapped(m.group(2).strip()), hold=f"L{m.group(1).strip()}")
         return LayoutKey(tap=mapped(key_str))
 
-    def parse(self, path: str) -> dict:
-        """Parse a JSON keymap with its file path and return a dict representation to be dumped to YAML."""
+    def _parse(self, in_buf: BinaryIO) -> dict:
+        """Parse a JSON keymap with its file handle and return a dict representation to be dumped to YAML."""
 
-        with open(path, "rb") if path != "-" else sys.stdin.buffer as f:
-            raw = json.load(f)
+        raw = json.load(in_buf)
 
         layout = {}
         if "keyboard" in raw:
@@ -129,22 +142,22 @@ class ZmkKeymapParser(KeymapParser):
                 return LayoutKey(tap=mapped(tap_par), hold=hold_par)
         return LayoutKey(tap=binding)
 
-    def _get_prepped(self, path: str) -> str:
-        with open(path, "r", encoding="utf-8") if path != "-" else sys.stdin as f:
-            if self.cfg.preprocess:
+    def _get_prepped(self, in_buf: BinaryIO) -> str:
+        wrapper = TextIOWrapper(in_buf, encoding="utf-8")
+        if self.cfg.preprocess:
 
-                def include_handler(*args):
-                    raise OutputDirective(Action.IgnoreAndPassThrough)
+            def include_handler(*args):
+                raise OutputDirective(Action.IgnoreAndPassThrough)
 
-                preprocessor = Preprocessor()
-                preprocessor.line_directive = None
-                preprocessor.on_include_not_found = include_handler
-                preprocessor.parse(f)
-                with StringIO() as f_out:
-                    preprocessor.write(f_out)
-                    prepped = f_out.getvalue()
-            else:
-                prepped = f.read()
+            preprocessor = Preprocessor()
+            preprocessor.line_directive = None
+            preprocessor.on_include_not_found = include_handler
+            preprocessor.parse(wrapper)
+            with StringIO() as f_out:
+                preprocessor.write(f_out)
+                prepped = f_out.getvalue()
+        else:
+            prepped = wrapper.read()
         return re.sub(r"^\s*#.*?$", "", prepped)
 
     def _find_nodes_with_name(
@@ -215,9 +228,9 @@ class ZmkKeymapParser(KeymapParser):
                 continue
         return combos
 
-    def parse(self, path: str) -> dict:
-        """Parse a ZMK keymap with its file path and return a dict representation to be dumped to YAML."""
-        prepped = self._get_prepped(path)
+    def _parse(self, in_buf: BinaryIO) -> dict:
+        """Parse a ZMK keymap with its file handle and return a dict representation to be dumped to YAML."""
+        prepped = self._get_prepped(in_buf)
         parsed = [
             node
             for node in (
