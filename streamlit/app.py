@@ -101,6 +101,14 @@ def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols:
         return out.getvalue()
 
 
+@st.cache
+def parse_zmk_to_yaml(zmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols: int) -> str:
+    parsed = ZmkKeymapParser(config, num_cols).parse(zmk_keymap_buf)
+    with io.StringIO() as out:
+        yaml.safe_dump(parsed, out, indent=4, width=160, sort_keys=False, default_flow_style=None)
+        return out.getvalue()
+
+
 def main():
     st.set_page_config(page_title="Keymap Drawer live demo", page_icon=":keyboard:", layout="wide")
     st.write(
@@ -115,12 +123,14 @@ def main():
     if "config" not in st.session_state:
         st.session_state.config = get_default_config()
 
-
     examples = get_example_yamls()
 
-    with st.expander("Parse from firmware files"):
-        num_cols = st.number_input("Number of columns in keymap", min_value=0, max_value=20)
-        qmk_file = st.file_uploader(label="Import QMK JSON keymap", type=["json"], key="qmk_keymap")
+    tab_ex, tab_qmk, tab_zmk = st.tabs(["Example keymaps", "Parse QMK", "Parse ZMK"])
+    with tab_ex:
+        st.selectbox(label="Load example", options=list(examples.keys()), index=0, key="example_yaml")
+    with tab_qmk:
+        num_cols = st.number_input("Number of columns in keymap", min_value=0, max_value=20, key="qmk_cols")
+        qmk_file = st.file_uploader(label="Import QMK `keymap.json`", type=["json"])
         if qmk_file is not None:
             parsed = parse_qmk_to_yaml(
                 qmk_file, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
@@ -128,10 +138,30 @@ def main():
             if parsed != st.session_state.get("prev_qmk_parsed"):
                 st.session_state.prev_qmk_parsed = parsed
                 st.session_state.keymap_yaml = parsed
+    with tab_zmk:
+        num_cols = st.number_input("Number of columns in keymap", min_value=0, max_value=20, key="zmk_cols")
+        zmk_file = st.file_uploader(label="Import ZMK `<keyboard>.keymap`", type=["keymap"])
+        if zmk_file is not None:
+            parsed = parse_zmk_to_yaml(
+                zmk_file, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
+            )
+            if parsed != st.session_state.get("prev_zmk_parsed_file"):
+                st.session_state.prev_zmk_parsed_file = parsed
+                st.session_state.keymap_yaml = parsed
+        zmk_url = st.text_input(
+            label="GitHub URL to keymap",
+            placeholder="https://github.com/caksoylar/zmk-config/blob/main/config/hypergolic.keymap",
+        )
+        if zmk_url is not None and zmk_url != st.session_state.get("prev_zmk_url"):
+            parsed = parse_zmk_to_yaml(
+                zmk_url, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
+            )
+            st.session_state.prev_zmk_url = parsed
+            st.session_state.keymap_yaml = parsed
+        st.text("Please add a `layout` field with physical layout specification below after parsing")
 
     left_column, right_column = st.columns(2)
     left_column.subheader("Keymap YAML")
-    left_column.selectbox(label="Load example", options=list(examples.keys()), index=0, key="example_yaml")
     left_column.text_area(
         value=examples[st.session_state.example_yaml],
         height=800,
