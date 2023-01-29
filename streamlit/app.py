@@ -110,7 +110,7 @@ def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_col
 
 
 @st.cache
-def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> str:
+def _get_zmk_zip(zmk_url: str) -> bytes:
     if not zmk_url.startswith("https") and not zmk_url.startswith("//"):
         zmk_url = "//" + zmk_url
     split_url = urlsplit(zmk_url, scheme="https")
@@ -120,7 +120,12 @@ def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> s
     assert path.parts[-1].endswith(".keymap"), "Please provide URL to a .keymap file"
     zip_url = f"https://github.com/{path.parts[1]}/{path.parts[2]}/archive/refs/heads/{path.parts[4]}.zip"
     with urlopen(zip_url) as f:
-        zip_bytes = f.read()
+        return f.read(), path
+
+
+@st.cache
+def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> str:
+    zip_bytes, path = _get_zmk_zip(zmk_url)
     with TemporaryDirectory() as tmpdir:
         with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zipped:
             zipped.extractall(tmpdir)
@@ -172,11 +177,12 @@ def main():
             label="or, input GitHub URL to keymap",
             placeholder="https://github.com/caksoylar/zmk-config/blob/main/config/hypergolic.keymap",
         )
-        if zmk_url and zmk_url != st.session_state.get("prev_zmk_url"):
+        if zmk_url and (zmk_url != st.session_state.get("prev_zmk_url") or num_cols != st.session_state.get("prev_zmk_cols")):
             parsed = parse_zmk_url_to_yaml(
                 zmk_url, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
             )
             st.session_state.prev_zmk_url = zmk_url
+            st.session_state.prev_zmk_cols = num_cols
             st.session_state.keymap_yaml = parsed
         st.caption("Please add a `layout` field with physical layout specification below after parsing")
 
