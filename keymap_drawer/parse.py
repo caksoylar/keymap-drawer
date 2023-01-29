@@ -35,13 +35,16 @@ class KeymapParser(ABC):
     def parse(self, in_arg: str | BinaryIO) -> dict:
         """Wrapper to call parser on a file handle, given a handle or a file path."""
         match in_arg:
-            case BinaryIO():
-                return self._parse(in_arg)
+            # TODO: Figure out why BinaryIO doesn't match open file handle `_io.BufferedReader` or
+            # UploadedFile returned by streamlit's file_uploader widget
+            # case BinaryIO():
+            #     return self._parse(in_arg)
             case str():
                 with open(in_arg, "rb") if in_arg != "-" else sys.stdin.buffer as f:
                     return self._parse(f)
             case _:
-                raise ValueError("Unknown input argument type for parsing")
+                return self._parse(in_arg)
+                # raise ValueError(f"Unknown input argument {in_arg} with type {type(in_arg)} for parsing")
 
 
 class QmkJsonParser(KeymapParser):

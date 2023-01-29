@@ -3,9 +3,11 @@ import os
 import base64
 import io
 import json
+import zipfile
+from tempfile import TemporaryDirectory
+from pathlib import PurePosixPath
+from urllib.parse import urlsplit
 from urllib.request import urlopen
-
-# from typing import BytesIO
 
 import yaml
 import streamlit as st
@@ -13,8 +15,6 @@ import streamlit as st
 from keymap_drawer.draw import KeymapDrawer
 from keymap_drawer.config import Config, DrawConfig, ParseConfig
 from keymap_drawer.parse import QmkJsonParser, ZmkKeymapParser
-
-# from keymap_drawer.keymap import KeymapData
 
 
 @st.cache
@@ -70,7 +70,7 @@ def get_example_yamls() -> dict[str, str]:
     for filename in sorted(os.listdir(examples_path)):
         full_path = f"{examples_path}/{filename}"
         if os.path.isfile(full_path):
-            with open(full_path) as f:
+            with open(full_path, encoding="utf-8") as f:
                 out[filename] = f.read()
     return out
 
@@ -102,11 +102,30 @@ def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols:
 
 
 @st.cache
-def parse_zmk_to_yaml(zmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols: int) -> str:
-    parsed = ZmkKeymapParser(config, num_cols).parse(zmk_keymap_buf)
+def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_cols: int) -> str:
+    parsed = ZmkKeymapParser(config, num_cols).parse(zmk_keymap)
     with io.StringIO() as out:
         yaml.safe_dump(parsed, out, indent=4, width=160, sort_keys=False, default_flow_style=None)
         return out.getvalue()
+
+
+@st.cache
+def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> str:
+    if not zmk_url.startswith("https") and not zmk_url.startswith("//"):
+        zmk_url = "//" + zmk_url
+    split_url = urlsplit(zmk_url, scheme="https")
+    path = PurePosixPath(split_url.path)
+    assert split_url.netloc == "github.com", "Please provide a Github URL"
+    assert path.parts[3] == "blob", "Please provide URL for a file"
+    assert path.parts[-1].endswith(".keymap"), "Please provide URL to a .keymap file"
+    zip_url = f"https://github.com/{path.parts[1]}/{path.parts[2]}/archive/refs/heads/{path.parts[4]}.zip"
+    with urlopen(zip_url) as f:
+        zip_bytes = f.read()
+    with TemporaryDirectory() as tmpdir:
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zipped:
+            zipped.extractall(tmpdir)
+        keymap_file = f"{tmpdir}/{path.parts[2]}-{path.parts[4]}/{'/'.join(path.parts[5:])}"
+        return parse_zmk_to_yaml(keymap_file, config, num_cols)
 
 
 def main():
@@ -120,6 +139,7 @@ def main():
         unsafe_allow_html=True,
     )
     st.header("`keymap-drawer` interactive demo")
+    st.subheader("[GitHub repo](https://github.com/caksoylar/keymap-drawer)")
     if "config" not in st.session_state:
         st.session_state.config = get_default_config()
 
@@ -140,7 +160,7 @@ def main():
                 st.session_state.keymap_yaml = parsed
     with tab_zmk:
         num_cols = st.number_input("Number of columns in keymap", min_value=0, max_value=20, key="zmk_cols")
-        zmk_file = st.file_uploader(label="Import ZMK `<keyboard>.keymap`", type=["keymap"])
+        zmk_file = st.file_uploader(label="Import a ZMK `<keyboard>.keymap` file", type=["keymap"])
         if zmk_file is not None:
             parsed = parse_zmk_to_yaml(
                 zmk_file, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
@@ -149,16 +169,16 @@ def main():
                 st.session_state.prev_zmk_parsed_file = parsed
                 st.session_state.keymap_yaml = parsed
         zmk_url = st.text_input(
-            label="GitHub URL to keymap",
+            label="or, input GitHub URL to keymap",
             placeholder="https://github.com/caksoylar/zmk-config/blob/main/config/hypergolic.keymap",
         )
-        if zmk_url is not None and zmk_url != st.session_state.get("prev_zmk_url"):
-            parsed = parse_zmk_to_yaml(
+        if zmk_url and zmk_url != st.session_state.get("prev_zmk_url"):
+            parsed = parse_zmk_url_to_yaml(
                 zmk_url, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
             )
-            st.session_state.prev_zmk_url = parsed
+            st.session_state.prev_zmk_url = zmk_url
             st.session_state.keymap_yaml = parsed
-        st.text("Please add a `layout` field with physical layout specification below after parsing")
+        st.caption("Please add a `layout` field with physical layout specification below after parsing")
 
     left_column, right_column = st.columns(2)
     left_column.subheader("Keymap YAML")
