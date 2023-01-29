@@ -139,12 +139,10 @@ class KeymapDrawer:
             p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.line_spacing / 5), combo_spec.key.hold, cls="smaller"
         )
 
-    def print_layer(self, p_0: Point, name: str, layer_keys: Sequence[LayoutKey], combos: Sequence[ComboSpec]) -> None:
+    def print_layer(self, p_0: Point, layer_keys: Sequence[LayoutKey], combos: Sequence[ComboSpec]) -> None:
         """
-        Given anchor coordinates p_0, print SVG code for keys and combos for a given layer,
-        and a layer label (name) at the top.
+        Given anchor coordinates p_0, print SVG code for keys and combos for a given layer.
         """
-        self._draw_text(p_0 - Point(0, self.cfg.outer_pad_h / 2), f"{name}:", cls="label")
         for p_key, l_key in zip(self.keymap.layout.keys, layer_keys):
             self.print_key(p_0, p_key, l_key)
         for combo_spec in combos:
@@ -164,9 +162,21 @@ class KeymapDrawer:
 
         p = Point(self.cfg.outer_pad_w, 0.0)
         for name, layer_keys in self.keymap.layers.items():
-            p.y += self.cfg.outer_pad_h
+            # draw layer name
+            self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), f"{name}:", cls="label")
+
+            # get combos on layer and compute offsets added by their alignments
             combos = self.keymap.get_combos_for_layer(name)
-            self.print_layer(p, name, layer_keys, combos)
-            p.y += self.keymap.layout.height
+            combo_offset_top = max(
+                (c.offset * self.keymap.layout.min_height for c in combos if c.align == "top"), default=0.0
+            )
+            combo_offset_bot = max(
+                (c.offset * self.keymap.layout.min_height for c in combos if c.align == "bottom"), default=0.0
+            )
+
+            # draw keys and combos
+            p.y += self.cfg.outer_pad_h + combo_offset_top
+            self.print_layer(p, layer_keys, combos)
+            p.y += self.keymap.layout.height + combo_offset_bot
 
         self.out.write("</svg>\n")
