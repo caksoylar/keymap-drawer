@@ -24,6 +24,8 @@ These are things I plan to implement if there is demand for it, or would welcome
   - We can already specify display representations for arbitrary keys in config
   - Currently cannot specify combo properties like `align` and `offset` before parsing
 
-## Long term
+## Web UX
 
-- Set up a web interface?
+- Improve UX w.r.t. multiple different input types (parsing vs. examples)
+- Syntax highlighting in text area
+- Better error messages

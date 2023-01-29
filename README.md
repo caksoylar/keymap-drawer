@@ -2,6 +2,8 @@
 
 Parse QMK & ZMK keymaps and draw them in vector graphics (SVG) format, with support for visualizing hold-taps and combos that are commonly used with smaller keyboards.
 
+Available as a [command-line tool](#command-line-tool-installation) or a [web application](https://caksoylar.github.io/keymap-drawer).
+
 ![Example keymap](https://caksoylar.github.io/keymap-drawer/3x5.rot.svg)
 
 ## Features
@@ -13,14 +15,19 @@ Parse QMK & ZMK keymaps and draw them in vector graphics (SVG) format, with supp
 - Arbitrary physical keyboard layouts (with rotated keys!) supported, along with parametrized ortho layouts
 - Both parsing and drawing are customizable with a config file, see ["Customization" section](#customization)
 
-See [examples folder](examples/) for example inputs and outputs.
+See examples in [the live web demo](https://caksoylar.github.io/keymap-drawer) for example inputs and outputs.
 
 Compared to to visual editors like [KLE](http://www.keyboard-layout-editor.com/), `keymap-drawer` takes a more programmatic approach.
 It also decouples the physical keyboard layout from the keymap (i.e., layer and combo definitions) and provides the tooling to bootstrap it quickly from existing firmware configuration.
 
 ## Usage
 
-### Installation
+### Try it as a web application
+
+You can try the keymap parsing and drawing functionalities with a [Streamlit](https://streamlit.io) web application available at https://caksoylar.github.io/keymap-drawer.
+Below instructions mostly apply for the web interface, where subcommands and option flags are mapped to different widgets in the UX.
+
+### Command-line tool installation
 
 The recommended way to install `keymap-drawer` is through [pipx](https://pypa.github.io/pipx/), which sets up an isolated environment and installs the application with a single command:
 
@@ -63,6 +70,8 @@ See [the development section](#development) for instructions to install from sou
   >
   > Parsing rules currently require that your keymap have nodes named `keymap` and `combos` that are nested one level-deep from the root.
   > (These conditions hold for most keymaps by convention.)
+
+As an alternative to parsing, you can also check out the [examples](examples/) to find a layout similar to yours to use as a starting point.
 
 ### Tweaking the produced keymap representation
 
@@ -114,6 +123,7 @@ You can provide this information to `keymap-drawer` in two ways:
 > **Note**
 >
 > If you prefer, you can specify physical layouts in the [keymap YAML file](KEYMAP_SPEC.md) rather than the command line.
+> This is also necessary for the web interface.
 
 Once you produced the SVG representation, you can render it on your browser or use a tool like [CairoSVG](https://cairosvg.org/) or [Inkscape](https://inkscape.org/) to export to a different format.
 
@@ -151,11 +161,13 @@ To get started, [install Poetry](https://python-poetry.org/docs/#installation), 
 ```sh
 git clone https://github.com/caksoylar/keymap-drawer.git
 cd keymap-drawer
-poetry install  # --with dev,lsp optional dependencies
+poetry install  # --with dev,lsp,streamlit optional dependencies
 ```
 
 `poetry shell` will activate a virtual environment with the `keymap_drawer` module in Python path and `keymap` executable available.
 Changes you make in the source code will be reflected when using the module or the command.
+
+If you prefer not to use Poetry, You can get an editable install with `pip install --editable .` inside the `keymap-drawer` folder.
 
 ## Related projects
 
