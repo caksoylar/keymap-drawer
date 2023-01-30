@@ -1,0 +1,92 @@
+# parsed and updated from https://github.com/manna-harbour/miryoku_zmk/blob/master/config/microdox.keymap
+# uses MIRYOKU_KLUDGE_MOUSEKEYSPR and omits shift functions and double tap guards to simplify
+layout:
+    qmk_keyboard: boardsource/microdox/v1
+layers:
+    Base:
+    - [Q, W, F, P, B, J, L, U, Y, '"']
+    - [{t: A, h: LGUI}, {t: R, h: LALT}, {t: S, h: LCTRL}, {t: T, h: LSHFT}, G, M, {t: N, h: LSHFT}, {t: E, h: LCTRL}, {t: I, h: LALT}, {t: O, h: LGUI}]
+    - [{t: Z, h: Button}, {t: X, h: RALT}, C, D, V, K, H, ',', {t: ., h: RALT}, {t: /, h: Button}]
+    - [{t: ESC, h: Media}, {t: SPC, h: Nav}, {t: TAB, h: Mouse}, {t: RET, h: Sym}, {t: BSPC, h: Num}, {t: DEL, h: Fun}]
+    Extra:
+    - [Q, W, E, R, T, Y, U, I, O, P]
+    - [{t: A, h: LGUI}, {t: S, h: LALT}, {t: D, h: LCTRL}, {t: F, h: LSHFT}, G, H, {t: J, h: LSHFT}, {t: K, h: LCTRL}, {t: L, h: LALT}, {t: '"', h: LGUI}]
+    - [{t: Z, h: Button}, {t: X, h: RALT}, C, V, B, N, M, ',', {t: ., h: RALT}, {t: /, h: Button}]
+    - [{t: ESC, h: Media}, {t: SPC, h: Nav}, {t: TAB, h: Mouse}, {t: RET, h: Sym}, {t: BSPC, h: Num}, {t: DEL, h: Fun}]
+    Tap:
+    - [Q, W, F, P, B, J, L, U, Y, '"']
+    - [A, R, S, T, G, M, N, E, I, O]
+    - [Z, X, C, D, V, K, H, ',', ., /]
+    - [ESC, SPC, TAB, RET, BSPC, DEL]
+    Button:
+    - [UNDO, LS(DEL), LC(INS), LS(INS), AGAIN, AGAIN, LS(INS), LC(INS), LS(DEL), UNDO]
+    - [LGUI, LALT, LCTRL, LSHFT, '', '', LSHFT, LCTRL, LALT, LGUI]
+    - [{t: UNDO, type: held}, LS(DEL), LC(INS), LS(INS), AGAIN, AGAIN, LS(INS), LC(INS), LS(DEL), {t: UNDO, type: held}]
+    - [Mouse B3, Mouse B1, Mouse B2, Mouse B2, Mouse B1, Mouse B3]
+    Nav:
+    - [BOOT, To Tap, To Extra, To Base, '', AGAIN, LS(INS), LC(INS), LS(DEL), UNDO]
+    - [LGUI, LALT, LCTRL, LSHFT, '', Caps Word, LEFT, DOWN, UP, RIGHT]
+    - ['', RALT, To Num, To Nav, '', INS, HOME, PG DN, PG UP, END]
+    - ['', {t: '', type: held}, '', RET, BSPC, DEL]
+    Mouse:
+    - [BOOT, To Tap, To Extra, To Base, '', AGAIN, LS(INS), LC(INS), LS(DEL), UNDO]
+    - [LGUI, LALT, LCTRL, LSHFT, '', '', KP 4, KP 2, KP 8, KP 6]
+    - ['', RALT, To Sym, To Mouse, '', '', '', '', '', '']
+    - ['', '', {t: '', type: held}, Mouse B2, Mouse B1, Mouse B3]
+    Media:
+    - [BOOT, To Tap, To Extra, To Base, '', RGB TOG, RGB EFF, RGB HUI, RGB SAI, RGB BRI]
+    - [LGUI, LALT, LCTRL, LSHFT, '', EP TOG, PREV, VOL DN, VOL UP, NEXT]
+    - ['', RALT, To Fun, To Media, '', Out Tog, BT 0, BT 1, BT 2, BT 3]
+    - [{t: '', type: held}, '', '', STOP, PP, MUTE]
+    Num:
+    - [']', '7', '8', '9', ']', '', To Base, To Extra, To Tap, BOOT]
+    - [;, '4', '5', '6', EQL, '', LSHFT, LCTRL, LALT, LGUI]
+    - ['`', '1', '2', '3', \, '', To Num, To Nav, RALT, '']
+    - [., '0', '-', '', {t: '', type: held}, '']
+    Sym:
+    - ['{', '&', '*', (, '}', '', To Base, To Extra, To Tap, BOOT]
+    - ['''', $, PRCT, CRRT, +, '', LSHFT, LCTRL, LALT, LGUI]
+    - ['~', '!', '@', '#', '|', '', To Sym, To Mouse, RALT, '']
+    - [(, ), _, {t: '', type: held}, '', '']
+    Fun:
+    - [F12, F7, F8, F9, PSCRN, '', To Base, To Extra, To Tap, BOOT]
+    - [F11, F4, F5, F6, SLCK, '', LSHFT, LCTRL, LALT, LGUI]
+    - [F10, F1, F2, F3, PAUSE BREAK, '', To Fun, To Media, RALT, '']
+    - [APP, SPC, TAB, '', '', {t: '', type: held}]
+combos:
+-   p: [31, 32]
+    k: {t: ESC, h: Media}
+    l: [Base]
+-   p: [31, 32]
+    k: {t: ESC, h: Media}
+    l: [Extra]
+-   p: [31, 32]
+    k: Mouse B3
+    l: [Button]
+-   p: [31, 32]
+    k: .
+    l: [Num]
+-   p: [31, 32]
+    k: (
+    l: [Sym]
+-   p: [31, 32]
+    k: APP
+    l: [Fun]
+-   p: [33, 34]
+    k: {t: DEL, h: Fun}
+    l: [Base]
+-   p: [33, 34]
+    k: {t: DEL, h: Fun}
+    l: [Extra]
+-   p: [33, 34]
+    k: Mouse B3
+    l: [Button]
+-   p: [33, 34]
+    k: DEL
+    l: [Nav]
+-   p: [33, 34]
+    k: Mouse B3
+    l: [Mouse]
+-   p: [33, 34]
+    k: MUTE
+    l: [Media]

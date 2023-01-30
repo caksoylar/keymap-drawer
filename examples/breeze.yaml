@@ -1,9 +1,0 @@
-layout:
-    qmk_keyboard: afternoonlabs/breeze/rev1
-layers:
-    default:
-        - ["ESC", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "BSPC", "MINS", "EQL", "GRV"]
-        - ["TAB", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "DEL", "LBRC", "RBRC", "BSLS"]
-        - ["LCTL", "A", "S", "D", "F", "G", "H", "J", "K", "L", "SCLN", "QUOT", "UP"]
-        - ["LSFT", "Z", "X", "C", "V", "B", "N", "M", "COMM", "DOT", "SLSH", "RSFT", "LEFT", "DOWN", "RGHT"]
-        - ["LCTL", "LALT", "LGUI", "SPC", "ENT", "MO(2)", "MO(1)", "NO"]

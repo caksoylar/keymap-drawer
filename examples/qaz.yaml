@@ -1,0 +1,20 @@
+# default QMK keymap, bootstrapped from QMK Configurator export
+layout:
+    qmk_keyboard: tominabox1/qaz
+    qmk_layout: LAYOUT_split_space
+layers:
+    BASE:
+    - [Q, W, E, R, T, Y, U, I, O, P]
+    - [{t: A, h: LGUI}, {t: S, h: LALT}, {t: D, h: LCTL}, {t: F, h: LSFT}, G, H, {t: J, h: RSFT}, {t: K, h: RCTL}, {t: L, h: RALT}, ENT]
+    - [Z, X, C, V, B, N, M, ',', .]
+    - [LCTL, LALT, LGUI, BSPC, {t: SPC, h: NUM_SYM}, RALT, RGUI, RCTL]
+    NUM_SYM:
+    - ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
+    - ['!', '@', '#', $, '%', ^, '&', '*', '=', '-']
+    - ['{', '[', (, _, ), ']', '}', ;, '''']
+    - ["RGB TOG", "RGB MOD", '', '', {t: '', type: held}, '', '', '']
+combos:
+    - {p: [8, 9], k: BSPC}
+    - {p: [0, 1], k: TAB, l: [BASE]}
+    - {p: [1, 2], k: ESC, l: [BASE]}
+    - {p: [18, 19], k: DEL, l: [NUM_SYM]}
