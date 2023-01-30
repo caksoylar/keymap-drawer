@@ -1,6 +1,6 @@
 # Potential future improvements
 
-These are things I plan to implement if there is demand for it, or would welcome contributions on.
+These are things I plan to implement if there is demand for it, contributions are also welcome.
 
 ## Parse
 
@@ -15,6 +15,8 @@ These are things I plan to implement if there is demand for it, or would welcome
 
 - Physical layouts in KLE format
   - Maybe consider labeled KLE's like VIA/Vial expects to ensure ordering
+- Physical layouts from Ergogen specs
+- Encoders
 
 ## Internal
 
@@ -23,6 +25,8 @@ These are things I plan to implement if there is demand for it, or would welcome
   - This would allow better automation, going from `parse` to `draw` directly for any layout
   - We can already specify display representations for arbitrary keys in config
   - Currently cannot specify combo properties like `align` and `offset` before parsing
+- Allow specifying some configs in keymap YAML? Might be useful to tweak combo box sizes
+  for certain layouts, etc.
 
 ## Web UX
 
