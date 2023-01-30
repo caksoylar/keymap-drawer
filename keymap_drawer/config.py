@@ -261,7 +261,7 @@ class ParseConfig(BaseSettings):
         "GREATER_THAN": ">",
         "GT": ">",
         "LEFT_BRACKET": "[",
-        "LBKT": "]",
+        "LBKT": "[",
         "LEFT_BRACE": "{",
         "LBRC": "{",
         "RIGHT_BRACKET": "]",
