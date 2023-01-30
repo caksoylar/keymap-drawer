@@ -4,6 +4,10 @@ layout:
         split: false
         rows: 2
         columns: 4
+draw_config:
+    combo_h: 22
+    combo_w: 24
+    arc_radius: 12
 layers:
     ARDUX:
     - [{t: S, h: Number}, T, R, {t: A, h: Paren}]

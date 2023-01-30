@@ -55,6 +55,9 @@ def draw(yaml_str: str, config: DrawConfig) -> str:
             'or in a "layout" field in the keymap_yaml'
         )
 
+    if custom_config := yaml_data.get("draw_config"):
+        config = config.copy(update=custom_config)
+
     with io.StringIO() as out:
         drawer = KeymapDrawer(
             config=config, out=out, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", [])

@@ -118,11 +118,11 @@ You can provide this information to `keymap-drawer` in two ways:
   keymap draw -o '{split: true, rows: 3, columns: 5, thumbs: 2}' sweep_keymap.yaml >sweep_keymap.ortho.svg
   ```
 
-  See [the keymap specification](KEYMAP_SPEC.md) for parameter definitions.
+  See [the keymap specification](KEYMAP_SPEC.md#layout) for parameter definitions.
 
 > **Note**
 >
-> If you prefer, you can specify physical layouts in the [keymap YAML file](KEYMAP_SPEC.md) rather than the command line.
+> If you prefer, you can specify physical layouts in the [keymap YAML file](KEYMAP_SPEC.md#layout) rather than the command line.
 > This is also necessary for the web interface.
 
 Once you produced the SVG representation, you can render it on your browser or use a tool like [CairoSVG](https://cairosvg.org/) or [Inkscape](https://inkscape.org/) to export to a different format.
@@ -151,6 +151,8 @@ Since configuration classes are [Pydantic settings](https://docs.pydantic.dev/us
 ```sh
 KEYMAP_raw_binding_map='{"&bootloader": "BOOT"}' keymap parse -z zmk-config/config/cradio.keymap >cradio.yaml
 ```
+
+Drawing parameters that are specified in the `draw_config` field can also be overridden in [the keymap YAML](KEYMAP_SPEC.md#draw_config).
 
 ## Development
 

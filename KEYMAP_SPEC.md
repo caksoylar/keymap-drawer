@@ -5,15 +5,17 @@ This page documents the YAML-format keymap representation that is output by `key
 At the root, three key values are expected, which are detailed in respective sections. A typical keymap will have the following structure:
 
 ```yaml
-layout:     # physical layout specs, optional
+layout:      # physical layout specs, optional
   ...
-layers:     # ordered mapping of layer name to contents
-  layer_1:  # list of (lists of) key specs
+layers:      # ordered mapping of layer name to contents
+  layer_1:   # list of (lists of) key specs
     - [Q, W, ...]
     ...
   layer_2:
     ...
-combos:     # list of combo specs, optional
+combos:      # list of combo specs, optional
+  - ...
+draw_config: # config overrides for drawing, optional
   - ...
 ```
 
@@ -87,3 +89,9 @@ This is an optional field that contains a list of combo specs, each of which is 
 [^2]: Key indices start from `0` on the first key position and increase by columns and then rows, corresponding to their ordering in the `layers` field. This matches the `key-positions` property in ZMK combo definitions.
 [^3]: Just like for keys in a layer under the `layers` field, `key` field can be specified with a string value as a shortcut, or a mapping (where the `type` field will be ignored).
 [^4]: The default value of empty list corresponds to all layers in the keymap, similar to the `layers` property in ZMK.
+
+## `draw_config`
+
+This optional field lets you override [config parameters](README.md#customization) for SVG drawing.
+This way you can specify drawing configuration for a specific layout and store in the keymap specification.
+It is a mapping from field names in [`DrawConfig` class](keymap_drawer/config.py) to values.
