@@ -150,9 +150,19 @@ class KeymapDrawer:
 
     def print_board(self) -> None:
         """Print SVG code representing the keymap."""
+        combos_per_layer = self.keymap.get_combos_per_layer()
+        offsets_per_layer = {
+            name: (
+                max((c.offset * self.keymap.layout.min_height for c in combos if c.align == "top"), default=0.0),
+                max((c.offset * self.keymap.layout.min_height for c in combos if c.align == "bottom"), default=0.0),
+            )
+            for name, combos in combos_per_layer.items()
+        }
+
         board_w = self.keymap.layout.width + 2 * self.cfg.outer_pad_w
         board_h = (
             len(self.keymap.layers) * self.keymap.layout.height + (len(self.keymap.layers) + 1) * self.cfg.outer_pad_h
+            + sum(top_offset + bot_offset for top_offset, bot_offset in offsets_per_layer.values())
         )
         self.out.write(
             f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" '
@@ -165,14 +175,9 @@ class KeymapDrawer:
             # draw layer name
             self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), f"{name}:", cls="label")
 
-            # get combos on layer and compute offsets added by their alignments
-            combos = self.keymap.get_combos_for_layer(name)
-            combo_offset_top = max(
-                (c.offset * self.keymap.layout.min_height for c in combos if c.align == "top"), default=0.0
-            )
-            combo_offset_bot = max(
-                (c.offset * self.keymap.layout.min_height for c in combos if c.align == "bottom"), default=0.0
-            )
+            # get combos on layer and offsets added by their alignments
+            combos = combos_per_layer[name]
+            combo_offset_top, combo_offset_bot = offsets_per_layer[name]
 
             # draw keys and combos
             p.y += self.cfg.outer_pad_h + combo_offset_top

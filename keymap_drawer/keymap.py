@@ -75,9 +75,13 @@ class KeymapData(BaseModel):
     combos: Sequence[ComboSpec] = []
     config: DrawConfig
 
-    def get_combos_for_layer(self, layer_name: str) -> list[ComboSpec]:
-        """Return all combos that are present for layer as specified by its name."""
-        return [combo for combo in self.combos if not combo.layers or layer_name in combo.layers]
+    def get_combos_per_layer(self) -> dict[str, list[ComboSpec]]:
+        """Return a mapping of layer names to combos that are present on that layer."""
+        out: dict[str, list[ComboSpec]] = {layer_name: [] for layer_name in self.layers}
+        for combo in self.combos:
+            for layer_name in combo.layers if combo.layers else self.layers:
+                out[layer_name].append(combo)
+        return out
 
     @validator("layers", pre=True)
     def parse_layers(cls, val) -> Mapping[str, Sequence[LayoutKey]]:
