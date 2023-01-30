@@ -46,7 +46,7 @@ combos:
     k: ;
     l: [Def, Sym, Num]
 -   p: [1, 11]
-    k: ']'
+    k: '['
     l: [Def, Sym, Num]
 -   p: [8, 18]
     k: ']'

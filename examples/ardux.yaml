@@ -20,7 +20,7 @@ layers:
     - ['=', '-', '?', Symbol]
     Paren:
     - ['{', (, ), Paren]
-    - ['}', ']', ']', '']
+    - ['}', '[', ']', '']
     Nav:
     - [PG UP, HOME, UP, END]
     - [PG DN, LEFT, DOWN, RIGHT]

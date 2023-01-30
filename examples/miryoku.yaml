@@ -39,7 +39,7 @@ layers:
     - ['', RALT, To Fun, To Media, '', Out Tog, BT 0, BT 1, BT 2, BT 3]
     - [{t: '', type: held}, '', '', STOP, PP, MUTE]
     Num:
-    - [']', '7', '8', '9', ']', '', To Base, To Extra, To Tap, BOOT]
+    - ['[', '7', '8', '9', ']', '', To Base, To Extra, To Tap, BOOT]
     - [;, '4', '5', '6', EQL, '', LSHFT, LCTRL, LALT, LGUI]
     - ['`', '1', '2', '3', \, '', To Num, To Nav, RALT, '']
     - [., '0', '-', '', {t: '', type: held}, '']
