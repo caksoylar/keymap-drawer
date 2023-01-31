@@ -4,17 +4,17 @@ layout:
     qmk_keyboard: boardsource/microdox/v1
 layers:
     Base:
-    - [Q, W, F, P, B, J, L, U, Y, '"']
+    - [Q, W, F, P, B, J, L, U, Y, "'"]
     - [{t: A, h: LGUI}, {t: R, h: LALT}, {t: S, h: LCTRL}, {t: T, h: LSHFT}, G, M, {t: N, h: LSHFT}, {t: E, h: LCTRL}, {t: I, h: LALT}, {t: O, h: LGUI}]
     - [{t: Z, h: Button}, {t: X, h: RALT}, C, D, V, K, H, ',', {t: ., h: RALT}, {t: /, h: Button}]
     - [{t: ESC, h: Media}, {t: SPC, h: Nav}, {t: TAB, h: Mouse}, {t: RET, h: Sym}, {t: BSPC, h: Num}, {t: DEL, h: Fun}]
     Extra:
     - [Q, W, E, R, T, Y, U, I, O, P]
-    - [{t: A, h: LGUI}, {t: S, h: LALT}, {t: D, h: LCTRL}, {t: F, h: LSHFT}, G, H, {t: J, h: LSHFT}, {t: K, h: LCTRL}, {t: L, h: LALT}, {t: '"', h: LGUI}]
+    - [{t: A, h: LGUI}, {t: S, h: LALT}, {t: D, h: LCTRL}, {t: F, h: LSHFT}, G, H, {t: J, h: LSHFT}, {t: K, h: LCTRL}, {t: L, h: LALT}, {t: "'", h: LGUI}]
     - [{t: Z, h: Button}, {t: X, h: RALT}, C, V, B, N, M, ',', {t: ., h: RALT}, {t: /, h: Button}]
     - [{t: ESC, h: Media}, {t: SPC, h: Nav}, {t: TAB, h: Mouse}, {t: RET, h: Sym}, {t: BSPC, h: Num}, {t: DEL, h: Fun}]
     Tap:
-    - [Q, W, F, P, B, J, L, U, Y, '"']
+    - [Q, W, F, P, B, J, L, U, Y, "'"]
     - [A, R, S, T, G, M, N, E, I, O]
     - [Z, X, C, D, V, K, H, ',', ., /]
     - [ESC, SPC, TAB, RET, BSPC, DEL]
@@ -45,7 +45,7 @@ layers:
     - [., '0', '-', '', {t: '', type: held}, '']
     Sym:
     - ['{', '&', '*', (, '}', '', To Base, To Extra, To Tap, BOOT]
-    - ['''', $, PRCT, CRRT, +, '', LSHFT, LCTRL, LALT, LGUI]
+    - [':', $, PRCT, CRRT, +, '', LSHFT, LCTRL, LALT, LGUI]
     - ['~', '!', '@', '#', '|', '', To Sym, To Mouse, RALT, '']
     - [(, ), _, {t: '', type: held}, '', '']
     Fun:
