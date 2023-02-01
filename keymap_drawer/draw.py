@@ -150,14 +150,19 @@ class KeymapDrawer:
         for combo_spec in combos:
             self.print_combo(p_0, combo_spec)
 
-    def print_board(self, draw_layers: Sequence[str] | None = None, combos_only: bool = False) -> None:
+    def print_board(
+        self, draw_layers: Sequence[str] | None = None, keys_only: bool = False, combos_only: bool = False
+    ) -> None:
         """Print SVG code representing the keymap."""
         layers = self.keymap.layers
         if draw_layers:
             assert all(l in layers for l in draw_layers), "Some layer names selected for drawing are not in the keymap"
             layers = {name: layer for name, layer in layers.items() if name in draw_layers}
 
-        combos_per_layer = self.keymap.get_combos_per_layer(layers)
+        if not keys_only:
+            combos_per_layer = self.keymap.get_combos_per_layer(layers)
+        else:
+            combos_per_layer = {layer_name: [] for layer_name in layers}
         offsets_per_layer = {
             name: (
                 max((c.offset * self.keymap.layout.min_height for c in combos if c.align == "top"), default=0.0),
