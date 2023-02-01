@@ -17,8 +17,8 @@ class LayoutKey(BaseModel):
     can optionally have a hold property, or be "held", be a "ghost" key, or be a combo.
     """
 
-    tap: str = Field(alias="t")
-    hold: str = Field(default="", alias="h")
+    tap: str = Field(alias="t", default="")
+    hold: str = Field(alias="h", default="")
     type: Literal[None, "held", "ghost"] = None
 
     class Config:  # pylint: disable=missing-class-docstring
@@ -35,7 +35,7 @@ class LayoutKey(BaseModel):
             case int():
                 return cls(tap=str(key_spec))
             case None:
-                return cls(tap="")
+                return cls()
         raise ValueError(f'Invalid key specification "{key_spec}", provide a dict, string or null')
 
     def dict(self, *args, **kwargs):

@@ -51,11 +51,11 @@ Following physical layout parameters ([mentioned in the README](README.md#produc
 This field is an ordered mapping of layer names to a list of `LayoutKey` specs that represent the keys on that layer.
 A `LayoutKey` can be defined with either a string value or with a mapping with the following fields:
 
-| field name (alias) | type                        | required? | default value | description                                                                                                                                 |
-| ------------------ | --------------------------- | --------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tap` (`t`)        | `str`                       | yes       |               | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks                                            |
-| `hold` (`h`)       | `str`                       | no        | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                    |
-| `type`             | `null \| "held" \| "ghost"` | no        | `null`        | the styling of the key: `held` adds a red shading to denote held down keys, `ghost` adds a gray shading to denote optional keys in a layout |
+| field name (alias) | type                        | default value | description                                                                                                                                 |
+| ------------------ | --------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tap` (`t`)        | `str`                       | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks                                            |
+| `hold` (`h`)       | `str`                       | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                    |
+| `type`             | `null \| "held" \| "ghost"` | `null`        | the styling of the key: `held` adds a red shading to denote held down keys, `ghost` adds a gray shading to denote optional keys in a layout |
 
 Using a string value such as `"A"` for a key spec is equivalent to defining a mapping with only the tap field, i.e., `{tap: "A"}`.
 It is meant to be used as a shortcut for keys that do not need `hold` or `type` fields.

@@ -124,7 +124,7 @@ class ZmkKeymapParser(KeymapParser):
 
         match binding.split():
             case ["&none"] | ["&trans"]:
-                return LayoutKey(tap="")
+                return LayoutKey()
             case [ref]:
                 return LayoutKey(tap=ref)
             case ["&kp", par]:
