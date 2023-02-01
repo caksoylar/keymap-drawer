@@ -3,7 +3,7 @@ Module with classes that define the keymap representation, with multiple layers
 containing key and combo specifications, paired with the physical keyboard layout.
 """
 from itertools import chain
-from typing import Literal, Sequence, Mapping
+from typing import Literal, Sequence, Mapping, Iterable
 
 from pydantic import BaseModel, Field, validator, root_validator
 
@@ -75,12 +75,16 @@ class KeymapData(BaseModel):
     combos: Sequence[ComboSpec] = []
     config: DrawConfig
 
-    def get_combos_per_layer(self) -> dict[str, list[ComboSpec]]:
+    def get_combos_per_layer(self, layers: Iterable[str] | None = None) -> dict[str, list[ComboSpec]]:
         """Return a mapping of layer names to combos that are present on that layer."""
-        out: dict[str, list[ComboSpec]] = {layer_name: [] for layer_name in self.layers}
+        if layers is None:
+            layers = self.layers
+
+        out: dict[str, list[ComboSpec]] = {layer_name: [] for layer_name in layers}
         for combo in self.combos:
-            for layer_name in combo.layers if combo.layers else self.layers:
-                out[layer_name].append(combo)
+            for layer_name in combo.layers if combo.layers else layers:
+                if layer_name in layers:
+                    out[layer_name].append(combo)
         return out
 
     @validator("layers", pre=True)

@@ -139,18 +139,25 @@ class KeymapDrawer:
             p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.line_spacing / 5), combo_spec.key.hold, cls="smaller"
         )
 
-    def print_layer(self, p_0: Point, layer_keys: Sequence[LayoutKey], combos: Sequence[ComboSpec]) -> None:
+    def print_layer(
+        self, p_0: Point, layer_keys: Sequence[LayoutKey], combos: Sequence[ComboSpec], empty_layer: bool = False
+    ) -> None:
         """
         Given anchor coordinates p_0, print SVG code for keys and combos for a given layer.
         """
         for p_key, l_key in zip(self.keymap.layout.keys, layer_keys):
-            self.print_key(p_0, p_key, l_key)
+            self.print_key(p_0, p_key, l_key if not empty_layer else LayoutKey())
         for combo_spec in combos:
             self.print_combo(p_0, combo_spec)
 
-    def print_board(self) -> None:
+    def print_board(self, draw_layers: Sequence[str] | None = None, combos_only: bool = False) -> None:
         """Print SVG code representing the keymap."""
-        combos_per_layer = self.keymap.get_combos_per_layer()
+        layers = self.keymap.layers
+        if draw_layers:
+            assert all(l in layers for l in draw_layers), "Some layer names selected for drawing are not in the keymap"
+            layers = {name: layer for name, layer in layers.items() if name in draw_layers}
+
+        combos_per_layer = self.keymap.get_combos_per_layer(layers)
         offsets_per_layer = {
             name: (
                 max((c.offset * self.keymap.layout.min_height for c in combos if c.align == "top"), default=0.0),
@@ -161,7 +168,8 @@ class KeymapDrawer:
 
         board_w = self.keymap.layout.width + 2 * self.cfg.outer_pad_w
         board_h = (
-            len(self.keymap.layers) * self.keymap.layout.height + (len(self.keymap.layers) + 1) * self.cfg.outer_pad_h
+            len(layers) * self.keymap.layout.height
+            + (len(layers) + 1) * self.cfg.outer_pad_h
             + sum(top_offset + bot_offset for top_offset, bot_offset in offsets_per_layer.values())
         )
         self.out.write(
@@ -171,7 +179,7 @@ class KeymapDrawer:
         self.out.write(f"<style>{self.cfg.svg_style}</style>\n")
 
         p = Point(self.cfg.outer_pad_w, 0.0)
-        for name, layer_keys in self.keymap.layers.items():
+        for name, layer_keys in layers.items():
             # draw layer name
             self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), f"{name}:", cls="label")
 
@@ -181,7 +189,7 @@ class KeymapDrawer:
 
             # draw keys and combos
             p.y += self.cfg.outer_pad_h + combo_offset_top
-            self.print_layer(p, layer_keys, combos)
+            self.print_layer(p, layer_keys, combos, empty_layer=combos_only)
             p.y += self.keymap.layout.height + combo_offset_bot
 
         self.out.write("</svg>\n")

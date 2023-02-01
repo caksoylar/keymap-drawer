@@ -53,7 +53,7 @@ def draw(args, config: DrawConfig) -> None:
     drawer = KeymapDrawer(
         config=config, out=sys.stdout, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", [])
     )
-    drawer.print_board()
+    drawer.print_board(draw_layers=args.select_layers, combos_only=args.combos_only)
 
 
 def parse(args, config: ParseConfig) -> None:
@@ -114,6 +114,8 @@ def main() -> None:
         "for example '{split: false, rows: 4, columns: 12}'",
         type=yaml.safe_load,
     )
+    draw_p.add_argument("-s", "--select-layers", help="A list of layer names to draw, draw all by default", nargs="+")
+    draw_p.add_argument("-c", "--combos-only", help="Only draw combos, not keys on layers", action="store_true")
     draw_p.add_argument(
         "keymap_yaml",
         help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
