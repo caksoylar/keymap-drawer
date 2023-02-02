@@ -32,7 +32,8 @@ def _get_qmk_keyboard(qmk_keyboard: str) -> dict:
             return json.load(f)["keyboards"][qmk_keyboard]
     except HTTPError as exc:
         raise ValueError(
-            "QMK keyboard not found, please make sure you specify an existing keyboard (hint: check from https://config.qmk.fm)"
+            "QMK keyboard not found, please make sure you specify an existing keyboard "
+            "(hint: check from https://config.qmk.fm)"
         ) from exc
 
 
@@ -150,9 +151,9 @@ def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> s
         return parse_zmk_to_yaml(keymap_file, config, num_cols)
 
 
-def _handle_exception(message: str, exc: Exception):
-    st.error(icon="❗", body=message)
-    st.exception(exc)
+def _handle_exception(container, message: str, exc: Exception):
+    container.error(icon="❗", body=message)
+    container.exception(exc)
 
 
 def main():
@@ -188,7 +189,7 @@ def main():
                     st.session_state.prev_qmk_parsed = parsed
                     st.session_state.keymap_yaml = parsed
             except Exception as err:
-                _handle_exception("Error while parsing QMK keymap", err)
+                _handle_exception(tab_qmk, "Error while parsing QMK keymap", err)
     with tab_zmk:
         num_cols = st.number_input("Number of columns in keymap", min_value=0, max_value=20, key="zmk_cols")
         zmk_file = st.file_uploader(label="Import a ZMK `<keyboard>.keymap` file", type=["keymap"])
@@ -203,7 +204,7 @@ def main():
                     st.session_state.prev_zmk_parsed_file = parsed
                     st.session_state.keymap_yaml = parsed
             except Exception as err:
-                _handle_exception("Error while parsing ZMK keymap", err)
+                _handle_exception(tab_zmk, "Error while parsing ZMK keymap", err)
         zmk_url = st.text_input(
             label="or, input GitHub URL to keymap",
             placeholder="https://github.com/caksoylar/zmk-config/blob/main/config/hypergolic.keymap",
@@ -219,7 +220,7 @@ def main():
                 st.session_state.prev_zmk_cols = num_cols
                 st.session_state.keymap_yaml = parsed
             except Exception as err:
-                _handle_exception("Error while parsing ZMK keymap from URL", err)
+                _handle_exception(tab_zmk, "Error while parsing ZMK keymap from URL", err)
         st.caption("Please add a `layout` field with physical layout specification below after parsing")
 
     left_column, right_column = st.columns(2)
@@ -243,7 +244,7 @@ def main():
             file_name="my_keymap.svg",
         )
     except Exception as err:
-        _handle_exception("Error while drawing SVG from keymap YAML", err)
+        _handle_exception(right_column, "Error while drawing SVG from keymap YAML", err)
 
     with st.expander("Configuration"):
         st.text_area(
