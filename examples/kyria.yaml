@@ -1,40 +1,40 @@
 # parsed and tweaked from the default QMK keymap
 layout:
-    qmk_keyboard: splitkb/kyria/rev1
-    qmk_layout: LAYOUT
+  qmk_keyboard: splitkb/kyria/rev1
+  qmk_layout: LAYOUT
 layers:
-    QWERTY:
-    - [TAB, Q, W, E, R, T, Y, U, I, O, P, BSPC]
-    - [{t: ESC, h: LCTL}, A, S, D, F, G, H, J, K, L, ;, {t: '''', h: RCTL}]
-    - [LSFT, Z, X, C, V, B, '[', CAPS, FUNC, ']', N, M, ',', ., /, RSFT]
-    - [ADJUST, LGUI, {t: ENT, h: LALT}, SPC, NAV, SYM, SPC, RALT, RGUI, APP]
-    DVORAK:
-    - [TAB, '''', ',', ., P, Y, F, G, C, R, L, BSPC]
-    - [{t: ESC, h: LCTL}, A, O, E, U, I, D, H, T, N, S, {t: '-', h: RCTL}]
-    - [LSFT, ;, Q, J, K, X, '[', CAPS, FUNC, ']', B, M, W, V, Z, RSFT]
-    - [ADJUST, LGUI, {t: ENT, h: LALT}, SPC, NAV, SYM, SPC, RALT, RGUI, APP]
-    COLEMAK DH:
-    - [TAB, Q, W, F, P, B, J, L, U, Y, ;, BSPC]
-    - [{t: ESC, h: LCTL}, A, R, S, T, G, M, N, E, I, O, {t: '''', h: RCTL}]
-    - [LSFT, Z, X, C, D, V, '[', CAPS, FUNC, ']', K, H, ',', ., /, RSFT]
-    - [ADJUST, LGUI, {t: ENT, h: LALT}, SPC, NAV, SYM, SPC, RALT, RGUI, APP]
-    NAV:
-    - ['', '', '', '', '', '', PGUP, HOME, UP, END, VOLU, DEL]
-    - ['', LGUI, LALT, LCTL, LSFT, '', PGDN, LEFT, DOWN, RGHT, VOLD, INS]
-    - ['', '', '', '', '', '', '', SCRL, '', '', PAUS, MPRV, MPLY, MNXT, MUTE, PSCR]
-    - ['', '', '', '', {t: '', type: held}, '', '', '', '', '']
-    SYM:
-    - ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '=']
-    - ['~', '!', '@', '#', $, '%', ^, '&', '*', (, ), +]
-    - ['|', \, ':', ;, '-', '[', '{', '', '', '}', ']', _, ',', ., /, '?']
-    - ['', '', '', '', '', {t: '', type: held}, '', '', '', '']
-    FUNC:
-    - ['', F9, F10, F11, F12, '', '', '', '', '', '', '']
-    - ['', F5, F6, F7, F8, '', '', RSFT, RCTL, LALT, RGUI, '']
-    - ['', F1, F2, F3, F4, '', '', '', {t: '', type: held}, '', '', '', '', '', '', '']
-    - ['', '', '', '', '', '', '', '', '', '']
-    ADJUST:
-    - ['', '', '', QWERTY, '', '', '', '', '', '', '', '']
-    - ['', '', '', DVORAK, '', '', RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD, '']
-    - ['', '', '', COLEMAK DH, '', '', '', '', '', '', '', RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD, '']
-    - [{t: '', type: held}, '', '', '', '', '', '', '', '', '']
+  QWERTY:
+  - [TAB, Q, W, E, R, T, Y, U, I, O, P, BSPC]
+  - [{t: ESC, h: LCTL}, A, S, D, F, G, H, J, K, L, ;, {t: '''', h: RCTL}]
+  - [LSFT, Z, X, C, V, B, '[', CAPS, FUNC, ']', N, M, ',', ., /, RSFT]
+  - [ADJUST, LGUI, {t: ENT, h: LALT}, SPC, NAV, SYM, SPC, RALT, RGUI, APP]
+  DVORAK:
+  - [TAB, '''', ',', ., P, Y, F, G, C, R, L, BSPC]
+  - [{t: ESC, h: LCTL}, A, O, E, U, I, D, H, T, N, S, {t: '-', h: RCTL}]
+  - [LSFT, ;, Q, J, K, X, '[', CAPS, FUNC, ']', B, M, W, V, Z, RSFT]
+  - [ADJUST, LGUI, {t: ENT, h: LALT}, SPC, NAV, SYM, SPC, RALT, RGUI, APP]
+  COLEMAK DH:
+  - [TAB, Q, W, F, P, B, J, L, U, Y, ;, BSPC]
+  - [{t: ESC, h: LCTL}, A, R, S, T, G, M, N, E, I, O, {t: '''', h: RCTL}]
+  - [LSFT, Z, X, C, D, V, '[', CAPS, FUNC, ']', K, H, ',', ., /, RSFT]
+  - [ADJUST, LGUI, {t: ENT, h: LALT}, SPC, NAV, SYM, SPC, RALT, RGUI, APP]
+  NAV:
+  - ['', '', '', '', '', '', PGUP, HOME, UP, END, VOLU, DEL]
+  - ['', LGUI, LALT, LCTL, LSFT, '', PGDN, LEFT, DOWN, RGHT, VOLD, INS]
+  - ['', '', '', '', '', '', '', SCRL, '', '', PAUS, MPRV, MPLY, MNXT, MUTE, PSCR]
+  - ['', '', '', '', {t: '', type: held}, '', '', '', '', '']
+  SYM:
+  - ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '=']
+  - ['~', '!', '@', '#', $, '%', ^, '&', '*', (, ), +]
+  - ['|', \, ':', ;, '-', '[', '{', '', '', '}', ']', _, ',', ., /, '?']
+  - ['', '', '', '', '', {t: '', type: held}, '', '', '', '']
+  FUNC:
+  - ['', F9, F10, F11, F12, '', '', '', '', '', '', '']
+  - ['', F5, F6, F7, F8, '', '', RSFT, RCTL, LALT, RGUI, '']
+  - ['', F1, F2, F3, F4, '', '', '', {t: '', type: held}, '', '', '', '', '', '', '']
+  - ['', '', '', '', '', '', '', '', '', '']
+  ADJUST:
+  - ['', '', '', QWERTY, '', '', '', '', '', '', '', '']
+  - ['', '', '', DVORAK, '', '', RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD, '']
+  - ['', '', '', COLEMAK DH, '', '', '', '', '', '', '', RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD, '']
+  - [{t: '', type: held}, '', '', '', '', '', '', '', '', '']

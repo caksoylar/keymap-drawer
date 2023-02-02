@@ -1,23 +1,23 @@
 # parsed and then tweaked from https://github.com/LOWPROKB/zmk-config-zen-2/blob/main/config/corneish_zen.keymap
 layout:
-    ortho_layout:
-        split: true
-        rows: 3
-        columns: 6
-        thumbs: 3
+  ortho_layout:
+    split: true
+    rows: 3
+    columns: 6
+    thumbs: 3
 layers:
-    QWERTY:
-        - ["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Bspace"]
-        - ["LCtrl", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'"]
-        - ["LShft", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Esc"]
-        - ["LGui", "Number", "Space", "Enter", "Symbol", "RAlt"]
-    NUMBER:
-        - ["Tab", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Bspace"]
-        - ["BT CLR", "BT 1", "BT 2", "BT 3", "BT 4", "BT 5", "Left", "Down", "Up", "Right", null, null]
-        - ["LShft", null, null, null, null, null, null, null, null, null, null, null]
-        - ["LGui", {t: "", type: held}, "Space", "Enter", null, "RAlt"]
-    SYMBOL:
-        - ["Tab", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "Bspace"]
-        - ["LCtrl", null, null, null, null, null, "-", "=", "[", "]", "\\", "`"]
-        - ["LShft", null, null, null, null, null, "_", "+", "{", "}", "|", "~"]
-        - ["LGui", null, "Space", "Enter", {t: "", type: held}, "RAlt"]
+  QWERTY:
+    - ["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Bspace"]
+    - ["LCtrl", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'"]
+    - ["LShft", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Esc"]
+    - ["LGui", "Number", "Space", "Enter", "Symbol", "RAlt"]
+  NUMBER:
+    - ["Tab", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Bspace"]
+    - ["BT CLR", "BT 1", "BT 2", "BT 3", "BT 4", "BT 5", "Left", "Down", "Up", "Right", null, null]
+    - ["LShft", null, null, null, null, null, null, null, null, null, null, null]
+    - ["LGui", {t: "", type: held}, "Space", "Enter", null, "RAlt"]
+  SYMBOL:
+    - ["Tab", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "Bspace"]
+    - ["LCtrl", null, null, null, null, null, "-", "=", "[", "]", "\\", "`"]
+    - ["LShft", null, null, null, null, null, "_", "+", "{", "}", "|", "~"]
+    - ["LGui", null, "Space", "Enter", {t: "", type: held}, "RAlt"]

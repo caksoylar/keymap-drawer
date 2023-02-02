@@ -1,76 +1,76 @@
 # parsed and then tweaked from https://github.com/arduxio/zmk-ardux/blob/main/config/boards/shields/artboard/artboard_left.keymap
 layout:
-    ortho_layout:
-        split: false
-        rows: 2
-        columns: 4
+  ortho_layout:
+    split: false
+    rows: 2
+    columns: 4
 draw_config:
-    combo_h: 22
-    combo_w: 24
-    arc_radius: 12
+  combo_h: 22
+  combo_w: 24
+  arc_radius: 12
 layers:
-    ARDUX:
-    - [{t: S, h: Number}, T, R, {t: A, h: Paren}]
-    - [{t: O, h: Custom}, I, Y, {t: E, h: Symbol}]
-    Number:
-    - [Number, '3', '2', '1']
-    - ['', '6', '5', '4']
-    Symbol:
-    - ['`', ;, \, '!']
-    - ['=', '-', '?', Symbol]
-    Paren:
-    - ['{', (, ), Paren]
-    - ['}', '[', ']', '']
-    Nav:
-    - [PG UP, HOME, UP, END]
-    - [PG DN, LEFT, DOWN, RIGHT]
-    BT:
-    - [OUT BLE, BT 2, BT 1, BT 0]
-    - [OUT USB, BT 5, BT 4, BT 3]
-    Custom:
-    - ['', VOL UP, INS, MUTE]
-    - [Custom, VOL DN, PSCRN, {t: RSHFT, h: sticky}]
+  ARDUX:
+  - [{t: S, h: Number}, T, R, {t: A, h: Paren}]
+  - [{t: O, h: Custom}, I, Y, {t: E, h: Symbol}]
+  Number:
+  - [Number, '3', '2', '1']
+  - ['', '6', '5', '4']
+  Symbol:
+  - ['`', ;, \, '!']
+  - ['=', '-', '?', Symbol]
+  Paren:
+  - ['{', (, ), Paren]
+  - ['}', '[', ']', '']
+  Nav:
+  - [PG UP, HOME, UP, END]
+  - [PG DN, LEFT, DOWN, RIGHT]
+  BT:
+  - [OUT BLE, BT 2, BT 1, BT 0]
+  - [OUT USB, BT 5, BT 4, BT 3]
+  Custom:
+  - ['', VOL UP, INS, MUTE]
+  - [Custom, VOL DN, PSCRN, {t: RSHFT, h: sticky}]
 combos:
--   {p: [3, 7],       k: ENT, a: right}
--   {p: [5, 2],       k: DEL, d: true}
--   {p: [2, 6],       k: 'SFT'}
--   {p: [7, 6],       k: C,    l: [ARDUX]}
--   {p: [5, 4],       k: N,    l: [ARDUX]}
--   {p: [3, 2],       k: F,    l: [ARDUX]}
--   {p: [2, 1],       k: G,    l: [ARDUX]}
--   {p: [6, 5],       k: U,    l: [ARDUX]}
--   {p: [1, 0],       k: J,    l: [ARDUX]}
--   {p: [3, 6],       k: .,    l: [ARDUX], d: True}
--   {p: [1, 5],       k: '!',  l: [ARDUX]}
--   {p: [2, 0],       k: V,    l: [ARDUX], a: top,    o: 1.75}
--   {p: [3, 2, 1, 0], k: Z,    l: [ARDUX], a: top,    o: 1.45}
--   {p: [3, 1, 0],    k: Q,    l: [ARDUX], a: top,    o: 1.0}
--   {p: [3, 0],       k: W,    l: [ARDUX], a: top,    o: 0.55}
--   {p: [3, 2, 1],    k: D,    l: [ARDUX], a: top,    o: 0.25}
--   {p: [2, 1, 0],    k: X,    l: [ARDUX], a: top,    o: 0.0}
--   {p: [6, 4],       k: K,    l: [ARDUX], a: bottom, o: 1.75}
--   {p: [7, 5],       k: H,    l: [ARDUX], a: bottom, o: 1.5}
--   {p: [7, 6, 5, 4], k: SPC,  l: [ARDUX], a: bottom, o: 1.2}
--   {p: [7, 5, 4],    k: P,    l: [ARDUX], a: bottom, o: 0.75}
--   {p: [7, 6, 5],    k: L,    l: [ARDUX], a: bottom, o: 0.5}
--   {p: [7, 4],       k: B,    l: [ARDUX], a: bottom, o: 0.25}
--   {p: [6, 5, 4],    k: M,    l: [ARDUX], a: bottom, o: 0.0}
--   {p: [3, 2],       k: '7',  l: [Number]}
--   {p: [2, 1],       k: '8',  l: [Number]}
--   {p: [7, 6],       k: '9',  l: [Number]}
--   {p: [6, 5],       k: '0',  l: [Number]}
--   {p: [7, 2],       k: BSPC, l: [Number, Symbol, Paren, Nav, BT, Custom], d: true}
--   {p: [7, 6, 5, 4], k: SPC,  l: [Number, Symbol, Paren, Nav, BT, Custom], a: bottom}
-# -   {p: [3, 5],       k: ',',  l: [ARDUX]}
-# -   {p: [3, 4],       k: /,    l: [ARDUX]}
-# -   {p: [3, 2, 4],    k: ESC}
-# -   {p: [2, 7, 5],    k: Nav}
-# -   {p: [3, 6, 5],    k: "'", l: [ARDUX]}
-# -   {p: [3, 2, 1, 4], k: TAB}
-# -   {p: [7, 2, 1, 0], k: {t: LSHFT, h: sticky}}
-# -   {p: [3, 7, 0, 4], k: BT}
-# -   {p: [2, 6, 1, 5], k: BT CLR}
-# -   {p: [4, 5, 6, 3], k: CAPS, l: [ARDUX]}
-# -   {p: [7, 0],       k: {t: LCTRL, h: sticky}}
-# -   {p: [6, 0],       k: {t: LGUI, h: sticky}}
-# -   {p: [5, 0],       k: {t: LALT, h: sticky}}
+  - {p: [3, 7],       k: ENT, a: right}
+  - {p: [5, 2],       k: DEL, d: true}
+  - {p: [2, 6],       k: 'SFT'}
+  - {p: [7, 6],       k: C,    l: [ARDUX]}
+  - {p: [5, 4],       k: N,    l: [ARDUX]}
+  - {p: [3, 2],       k: F,    l: [ARDUX]}
+  - {p: [2, 1],       k: G,    l: [ARDUX]}
+  - {p: [6, 5],       k: U,    l: [ARDUX]}
+  - {p: [1, 0],       k: J,    l: [ARDUX]}
+  - {p: [3, 6],       k: .,    l: [ARDUX], d: True}
+  - {p: [1, 5],       k: '!',  l: [ARDUX]}
+  - {p: [2, 0],       k: V,    l: [ARDUX], a: top,    o: 1.75}
+  - {p: [3, 2, 1, 0], k: Z,    l: [ARDUX], a: top,    o: 1.45}
+  - {p: [3, 1, 0],    k: Q,    l: [ARDUX], a: top,    o: 1.0}
+  - {p: [3, 0],       k: W,    l: [ARDUX], a: top,    o: 0.55}
+  - {p: [3, 2, 1],    k: D,    l: [ARDUX], a: top,    o: 0.25}
+  - {p: [2, 1, 0],    k: X,    l: [ARDUX], a: top,    o: 0.0}
+  - {p: [6, 4],       k: K,    l: [ARDUX], a: bottom, o: 1.75}
+  - {p: [7, 5],       k: H,    l: [ARDUX], a: bottom, o: 1.5}
+  - {p: [7, 6, 5, 4], k: SPC,  l: [ARDUX], a: bottom, o: 1.2}
+  - {p: [7, 5, 4],    k: P,    l: [ARDUX], a: bottom, o: 0.75}
+  - {p: [7, 6, 5],    k: L,    l: [ARDUX], a: bottom, o: 0.5}
+  - {p: [7, 4],       k: B,    l: [ARDUX], a: bottom, o: 0.25}
+  - {p: [6, 5, 4],    k: M,    l: [ARDUX], a: bottom, o: 0.0}
+  - {p: [3, 2],       k: '7',  l: [Number]}
+  - {p: [2, 1],       k: '8',  l: [Number]}
+  - {p: [7, 6],       k: '9',  l: [Number]}
+  - {p: [6, 5],       k: '0',  l: [Number]}
+  - {p: [7, 2],       k: BSPC, l: [Number, Symbol, Paren, Nav, BT, Custom], d: true}
+  - {p: [7, 6, 5, 4], k: SPC,  l: [Number, Symbol, Paren, Nav, BT, Custom], a: bottom}
+# - {p: [3, 5],       k: ',',  l: [ARDUX]}
+# - {p: [3, 4],       k: /,    l: [ARDUX]}
+# - {p: [3, 2, 4],    k: ESC}
+# - {p: [2, 7, 5],    k: Nav}
+# - {p: [3, 6, 5],    k: "'", l: [ARDUX]}
+# - {p: [3, 2, 1, 4], k: TAB}
+# - {p: [7, 2, 1, 0], k: {t: LSHFT, h: sticky}}
+# - {p: [3, 7, 0, 4], k: BT}
+# - {p: [2, 6, 1, 5], k: BT CLR}
+# - {p: [4, 5, 6, 3], k: CAPS, l: [ARDUX]}
+# - {p: [7, 0],       k: {t: LCTRL, h: sticky}}
+# - {p: [6, 0],       k: {t: LGUI, h: sticky}}
+# - {p: [5, 0],       k: {t: LALT, h: sticky}}

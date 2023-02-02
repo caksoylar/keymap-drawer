@@ -1,92 +1,92 @@
 # parsed and updated from https://github.com/manna-harbour/miryoku_zmk/blob/master/config/microdox.keymap
 # uses MIRYOKU_KLUDGE_MOUSEKEYSPR and omits thumb combos and double tap guards to simplify
 layout:
-    qmk_keyboard: boardsource/microdox/v1
+  qmk_keyboard: boardsource/microdox/v1
 layers:
-    Base:
-    - [Q, W, F, P, B, J, L, U, Y, "'"]
-    - [{t: A, h: Meta}, {t: R, h: Alt}, {t: S, h: Control}, {t: T, h: Shift}, G, M, {t: N, h: Shift}, {t: E, h: Control}, {t: I, h: Alt}, {t: O, h: Meta}]
-    - [{t: Z, h: Button}, {t: X, h: AltGr}, C, D, V, K, H, {t: ',', s: '<'}, {t: ., h: AltGr, s: '>'}, {t: /, h: Button, s: '?'}]
-    - [{t: Esc, h: Media}, {t: Space, h: Nav}, {t: Tab, h: Mouse}, {t: Enter, h: Sym}, {t: Bckspc, h: Num}, {t: Delete, h: Fun}]
-    Extra:
-    - [Q, W, E, R, T, Y, U, I, O, P]
-    - [{t: A, h: Meta}, {t: S, h: Alt}, {t: D, h: Control}, {t: F, h: Shift}, G, H, {t: J, h: Shift}, {t: K, h: Control}, {t: L, h: Alt}, {t: "'", h: Meta}]
-    - [{t: Z, h: Button}, {t: X, h: AltGr}, C, V, B, N, M, ',', {t: ., h: AltGr}, {t: /, h: Button}]
-    - [{t: Esc, h: Media}, {t: Space, h: Nav}, {t: Tab, h: Mouse}, {t: Enter, h: Sym}, {t: Bckspc, h: Num}, {t: Delete, h: Fun}]
-    Tap:
-    - [Q, W, F, P, B, J, L, U, Y, "'"]
-    - [A, R, S, T, G, M, N, E, I, O]
-    - [Z, X, C, D, V, K, H, ',', ., /]
-    - [Esc, Space, Tab, Enter, Bckspc, Delete]
-    Button:
-    - [Undo, Cut, Copy, Paste, Again, Again, Paste, Copy, Cut, Undo]
-    - [Meta, Alt, Control, Shift, '', '', Shift, Control, Alt, Meta]
-    - [{t: Undo, type: held}, Cut, Copy, Paste, Again, Again, Paste, Copy, Cut, {t: Undo, type: held}]
-    - [Middle Button, Left Button, Right Button, Right Button, Left Button, Middle Button]
-    Nav:
-    - [Boot, To Tap, To Extra, To Base, '', Again, Paste, Copy, Cut, Undo]
-    - [Meta, Alt, Control, Shift, '', {t: "Cps  Wrd", s: "Cps Lck"}, Left, Down, Up, Right]
-    - ['', AltGr, To Num, To Nav, '', Ins, Home, Pg Dn, Pg Up, End]
-    - ['', {t: '', type: held}, '', Enter, Bckspc, Delete]
-    Mouse:
-    - [Boot, To Tap, To Extra, To Base, '', Again, Paste, Copy, Cut, Undo]
-    - [Meta, Alt, Control, Shift, '', '', Mouse Left, Mouse Down, Mouse Up, Mouse Right]
-    - ['', AltGr, To Sym, To Mouse, '', '', '', '', '', '']
-    - ['', '', {t: '', type: held}, Right Button, Left Button, Middle Button]
-    Media:
-    - [Boot, To Tap, To Extra, To Base, '', {t: "RGB  Tog", s: "RGB Off"}, {t: "RGB  M+", s: "RGB M-"}, {t: "RGB  H+", s: "RGB H-"}, {t: "RGB  S+", s: "RGB S-"}, {t: "RGB  V+", s: "RGB V-"}]
-    - [Meta, Alt, Control, Shift, '', {t: "EP  Tog", s: "EP Off"}, Prev, Volume Down, Volume Up, Next]
-    - ['', AltGr, To Fun, To Media, '', {t: Out  Tog, s: Out USB}, {t: "BT  0", s: "BT Clr 0"}, {t: "BT  1", s: "BT Clr 1"}, {t: "BT  2", s: "BT Clr 2"}, {t: "BT  3", s: "BT Clr 3"}]
-    - [{t: '', type: held}, '', '', Stop, Play Pause, Mute]
-    Num:
-    - [{t: '[', s: '{'}, {t: '7', s: '&'}, {t: '8', s: '*'}, {t: '9', s: '('}, {t: ']', s: '}'}, '', To Base, To Extra, To Tap, Boot]
-    - [{t: ';', s: ':'}, {t: '4', s: '$'}, {t: '5', s: '%'}, {t: '6', s: '^'}, {t: '=', s: '+'}, '', Shift, Control, Alt, Meta]
-    - [{t: '`', s: '~'}, {t: '1', s: '!'}, {t: '2', s: '@'}, {t: '3', s: '#'}, {t: '\', s: '|'}, '', To Num, To Nav, AltGr, '']
-    - [{t: ., s: '>'}, {t: '0', s: ')'}, {t: '-', s: '_'}, '', {t: '', type: held}, '']
-    Sym:
-    - ['{', '&', '*', (, '}', '', To Base, To Extra, To Tap, Boot]
-    - [':', '$', '%', '^', '+', '', Shift, Control, Alt, Meta]
-    - ['~', '!', '@', '#', '|', '', To Sym, To Mouse, AltGr, '']
-    - [(, ), _, {t: '', type: held}, '', '']
-    Fun:
-    - [F12, F7, F8, F9, PrtScn SysRq, '', To Base, To Extra, To Tap, Boot]
-    - [F11, F4, F5, F6, Scroll Lock, '', Shift, Control, Alt, Meta]
-    - [F10, F1, F2, F3, Pause Break, '', To Fun, To Media, AltGr, '']
-    - [App, Space, Tab, '', '', {t: '', type: held}]
+  Base:
+  - [Q, W, F, P, B, J, L, U, Y, "'"]
+  - [{t: A, h: Meta}, {t: R, h: Alt}, {t: S, h: Control}, {t: T, h: Shift}, G, M, {t: N, h: Shift}, {t: E, h: Control}, {t: I, h: Alt}, {t: O, h: Meta}]
+  - [{t: Z, h: Button}, {t: X, h: AltGr}, C, D, V, K, H, {t: ',', s: '<'}, {t: ., h: AltGr, s: '>'}, {t: /, h: Button, s: '?'}]
+  - [{t: Esc, h: Media}, {t: Space, h: Nav}, {t: Tab, h: Mouse}, {t: Enter, h: Sym}, {t: Bckspc, h: Num}, {t: Delete, h: Fun}]
+  Extra:
+  - [Q, W, E, R, T, Y, U, I, O, P]
+  - [{t: A, h: Meta}, {t: S, h: Alt}, {t: D, h: Control}, {t: F, h: Shift}, G, H, {t: J, h: Shift}, {t: K, h: Control}, {t: L, h: Alt}, {t: "'", h: Meta}]
+  - [{t: Z, h: Button}, {t: X, h: AltGr}, C, V, B, N, M, ',', {t: ., h: AltGr}, {t: /, h: Button}]
+  - [{t: Esc, h: Media}, {t: Space, h: Nav}, {t: Tab, h: Mouse}, {t: Enter, h: Sym}, {t: Bckspc, h: Num}, {t: Delete, h: Fun}]
+  Tap:
+  - [Q, W, F, P, B, J, L, U, Y, "'"]
+  - [A, R, S, T, G, M, N, E, I, O]
+  - [Z, X, C, D, V, K, H, ',', ., /]
+  - [Esc, Space, Tab, Enter, Bckspc, Delete]
+  Button:
+  - [Undo, Cut, Copy, Paste, Again, Again, Paste, Copy, Cut, Undo]
+  - [Meta, Alt, Control, Shift, '', '', Shift, Control, Alt, Meta]
+  - [{t: Undo, type: held}, Cut, Copy, Paste, Again, Again, Paste, Copy, Cut, {t: Undo, type: held}]
+  - [Middle Button, Left Button, Right Button, Right Button, Left Button, Middle Button]
+  Nav:
+  - [Boot, To Tap, To Extra, To Base, '', Again, Paste, Copy, Cut, Undo]
+  - [Meta, Alt, Control, Shift, '', {t: "Cps  Wrd", s: "Cps Lck"}, Left, Down, Up, Right]
+  - ['', AltGr, To Num, To Nav, '', Ins, Home, Pg Dn, Pg Up, End]
+  - ['', {t: '', type: held}, '', Enter, Bckspc, Delete]
+  Mouse:
+  - [Boot, To Tap, To Extra, To Base, '', Again, Paste, Copy, Cut, Undo]
+  - [Meta, Alt, Control, Shift, '', '', Mouse Left, Mouse Down, Mouse Up, Mouse Right]
+  - ['', AltGr, To Sym, To Mouse, '', '', '', '', '', '']
+  - ['', '', {t: '', type: held}, Right Button, Left Button, Middle Button]
+  Media:
+  - [Boot, To Tap, To Extra, To Base, '', {t: "RGB  Tog", s: "RGB Off"}, {t: "RGB  M+", s: "RGB M-"}, {t: "RGB  H+", s: "RGB H-"}, {t: "RGB  S+", s: "RGB S-"}, {t: "RGB  V+", s: "RGB V-"}]
+  - [Meta, Alt, Control, Shift, '', {t: "EP  Tog", s: "EP Off"}, Prev, Volume Down, Volume Up, Next]
+  - ['', AltGr, To Fun, To Media, '', {t: Out  Tog, s: Out USB}, {t: "BT  0", s: "BT Clr 0"}, {t: "BT  1", s: "BT Clr 1"}, {t: "BT  2", s: "BT Clr 2"}, {t: "BT  3", s: "BT Clr 3"}]
+  - [{t: '', type: held}, '', '', Stop, Play Pause, Mute]
+  Num:
+  - [{t: '[', s: '{'}, {t: '7', s: '&'}, {t: '8', s: '*'}, {t: '9', s: '('}, {t: ']', s: '}'}, '', To Base, To Extra, To Tap, Boot]
+  - [{t: ';', s: ':'}, {t: '4', s: '$'}, {t: '5', s: '%'}, {t: '6', s: '^'}, {t: '=', s: '+'}, '', Shift, Control, Alt, Meta]
+  - [{t: '`', s: '~'}, {t: '1', s: '!'}, {t: '2', s: '@'}, {t: '3', s: '#'}, {t: '\', s: '|'}, '', To Num, To Nav, AltGr, '']
+  - [{t: ., s: '>'}, {t: '0', s: ')'}, {t: '-', s: '_'}, '', {t: '', type: held}, '']
+  Sym:
+  - ['{', '&', '*', (, '}', '', To Base, To Extra, To Tap, Boot]
+  - [':', '$', '%', '^', '+', '', Shift, Control, Alt, Meta]
+  - ['~', '!', '@', '#', '|', '', To Sym, To Mouse, AltGr, '']
+  - [(, ), _, {t: '', type: held}, '', '']
+  Fun:
+  - [F12, F7, F8, F9, PrtScn SysRq, '', To Base, To Extra, To Tap, Boot]
+  - [F11, F4, F5, F6, Scroll Lock, '', Shift, Control, Alt, Meta]
+  - [F10, F1, F2, F3, Pause Break, '', To Fun, To Media, AltGr, '']
+  - [App, Space, Tab, '', '', {t: '', type: held}]
 # combos:
-#     - p: [31, 32]
-#       k: {t: Esc, h: Media}
-#       l: [Base]
-#     - p: [31, 32]
-#       k: {t: Esc, h: Media}
-#       l: [Extra]
-#     - p: [31, 32]
-#       k: Mid Btn
-#       l: [Button]
-#     - p: [31, 32]
-#       k: .
-#       l: [Num]
-#     - p: [31, 32]
-#       k: (
-#       l: [Sym]
-#     - p: [31, 32]
-#       k: App
-#       l: [Fun]
-#     - p: [33, 34]
-#       k: {t: Delete, h: Fun}
-#       l: [Base]
-#     - p: [33, 34]
-#       k: {t: Delete, h: Fun}
-#       l: [Extra]
-#     - p: [33, 34]
-#       k: Mid Btn
-#       l: [Button]
-#     - p: [33, 34]
-#       k: Delete
-#       l: [Nav]
-#     - p: [33, 34]
-#       k: Mid Btn
-#       l: [Mouse]
-#     - p: [33, 34]
-#       k: Mute
-#       l: [Media]
+#   - p: [31, 32]
+#     k: {t: Esc, h: Media}
+#     l: [Base]
+#   - p: [31, 32]
+#     k: {t: Esc, h: Media}
+#     l: [Extra]
+#   - p: [31, 32]
+#     k: Mid Btn
+#     l: [Button]
+#   - p: [31, 32]
+#     k: .
+#     l: [Num]
+#   - p: [31, 32]
+#     k: (
+#     l: [Sym]
+#   - p: [31, 32]
+#     k: App
+#     l: [Fun]
+#   - p: [33, 34]
+#     k: {t: Delete, h: Fun}
+#     l: [Base]
+#   - p: [33, 34]
+#     k: {t: Delete, h: Fun}
+#     l: [Extra]
+#   - p: [33, 34]
+#     k: Mid Btn
+#     l: [Button]
+#   - p: [33, 34]
+#     k: Delete
+#     l: [Nav]
+#   - p: [33, 34]
+#     k: Mid Btn
+#     l: [Mouse]
+#   - p: [33, 34]
+#     k: Mute
+#     l: [Media]
