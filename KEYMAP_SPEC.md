@@ -53,10 +53,12 @@ A `LayoutKey` can be defined with either a string value or with a mapping with t
 
 | field name (alias) | type                        | default value | description                                                                                                                                 |
 | ------------------ | --------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tap` (`t`)        | `str`                       | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks                                            |
+| `tap` (`t`)        | `str`                       | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks[^2]                                        |
 | `hold` (`h`)       | `str`                       | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                    |
 | `shifted` (`s`)    | `str`                       | `""`          | the "shifted" action of a key, drawn on the top of the key                                                                                  |
 | `type`             | `null \| "held" \| "ghost"` | `null`        | the styling of the key: `held` adds a red shading to denote held down keys, `ghost` adds a gray shading to denote optional keys in a layout |
+
+[^2]: You can prevent line breaks by using double spaces `"  "` to denote a single non-breaking space.
 
 Using a string value such as `"A"` for a key spec is equivalent to defining a mapping with only the tap field, i.e., `{tap: "A"}`.
 It is meant to be used as a shortcut for keys that do not need `hold` or `type` fields.
@@ -80,16 +82,16 @@ This is an optional field that contains a list of combo specs, each of which is 
 
 | field name (alias)    | type                                              | required? | default value | description                                                                                                                                                                       |
 | --------------------- | ------------------------------------------------- | --------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `key_positions` (`p`) | `list[int]`                                       | yes       |               | list of key indices that trigger the combo[^2]                                                                                                                                    |
-| `key` (`k`)           | `LayoutKey`[^3]                                   | yes       |               | key produced by the combo when triggered                                                                                                                                          |
-| `layers` (`l`)        | `list[str]`                                       | no        | `[]`[^4]      | list of layers the combo can trigger on, specified using layer names in `layers` field                                                                                            |
+| `key_positions` (`p`) | `list[int]`                                       | yes       |               | list of key indices that trigger the combo[^3]                                                                                                                                    |
+| `key` (`k`)           | `LayoutKey`[^4]                                   | yes       |               | key produced by the combo when triggered                                                                                                                                          |
+| `layers` (`l`)        | `list[str]`                                       | no        | `[]`[^5]      | list of layers the combo can trigger on, specified using layer names in `layers` field                                                                                            |
 | `align` (`a`)         | `"mid" \| "top" \| "bottom" \| "left" \| "right"` | no        | `"mid"`       | where to draw the combo: `mid` draws on the mid-point of triggering keys' center coordinates, or to the `top`/`bottom`/`left`/`right` of the triggering keys                      |
 | `offset` (`o`)        | `float`                                           | no        | `0.0`         | additional offset to `top`/`bottom`/`left`/`right` positioning, specified in units of key width/height: useful for combos that would otherwise overlap                            |
 | `dendron` (`d`)       | `null \| bool`                                    | no        | `null`        | whether to draw dendrons going from combo to triggering key coordinates, default is to draw for non-`mid` alignments and draw for `mid` if key coordinates are far from the combo |
 
-[^2]: Key indices start from `0` on the first key position and increase by columns and then rows, corresponding to their ordering in the `layers` field. This matches the `key-positions` property in ZMK combo definitions.
-[^3]: Just like for keys in a layer under the `layers` field, `key` field can be specified with a string value as a shortcut, or a mapping (where the `type` field will be ignored).
-[^4]: The default value of empty list corresponds to all layers in the keymap, similar to the `layers` property in ZMK.
+[^3]: Key indices start from `0` on the first key position and increase by columns and then rows, corresponding to their ordering in the `layers` field. This matches the `key-positions` property in ZMK combo definitions.
+[^4]: Just like for keys in a layer under the `layers` field, `key` field can be specified with a string value as a shortcut, or a mapping (where the `type` field will be ignored).
+[^5]: The default value of empty list corresponds to all layers in the keymap, similar to the `layers` property in ZMK.
 
 ## `draw_config`
 

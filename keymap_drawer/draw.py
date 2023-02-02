@@ -27,9 +27,16 @@ class KeymapDrawer:
             f'width="{w}" height="{h}"{class_str}/>\n'
         )
 
-    def _draw_text(self, p: Point, text: str, cls: str | None = None) -> None:
-        if not (words := text.split()):
+    def _draw_text(self, p: Point, text: str, cls: str | None = None, split: bool = False) -> None:
+        if not text:
             return
+
+        # do not split on double spaces
+        if split:
+            words = [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
+        else:
+            words = [text]
+
         class_str = f' class="{cls}"' if cls is not None else ""
         if len(words) == 1:
             self.out.write(f'<text x="{p.x}" y="{p.y}"{class_str}>{escape(words[0])}</text>\n')
@@ -78,7 +85,7 @@ class KeymapDrawer:
         if r != 0:
             self.out.write(f'<g transform="rotate({r}, {p.x}, {p.y})">\n')
         self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, l_key.type)
-        self._draw_text(p, l_key.tap)
+        self._draw_text(p, l_key.tap, split=True)
         self._draw_text(p + Point(0, h / 2 - self.cfg.line_spacing / 2), l_key.hold, cls="small")
         self._draw_text(p - Point(0, h / 2 - self.cfg.line_spacing / 2), l_key.shifted, cls="small")
         if r != 0:
@@ -134,8 +141,8 @@ class KeymapDrawer:
                             self._draw_line_dendron(p_mid, p_0 + k.pos, k.width / 3)
 
         # draw combo box with text
-        self._draw_rect(p_mid, self.cfg.combo_w, self.cfg.combo_h, "combo")
-        self._draw_text(p_mid, combo_spec.key.tap, cls="small")
+        self._draw_rect(p_mid, self.cfg.combo_w, self.cfg.combo_h, cls="combo")
+        self._draw_text(p_mid, combo_spec.key.tap, cls="small", split=True)
         self._draw_text(
             p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.line_spacing / 5), combo_spec.key.hold, cls="smaller"
         )
