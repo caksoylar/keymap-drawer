@@ -80,6 +80,7 @@ class KeymapDrawer:
         self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, l_key.type)
         self._draw_text(p, l_key.tap)
         self._draw_text(p + Point(0, h / 2 - self.cfg.line_spacing / 2), l_key.hold, cls="small")
+        self._draw_text(p - Point(0, h / 2 - self.cfg.line_spacing / 2), l_key.shifted, cls="small")
         if r != 0:
             self.out.write("</g>\n")
 

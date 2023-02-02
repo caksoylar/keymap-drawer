@@ -55,6 +55,7 @@ A `LayoutKey` can be defined with either a string value or with a mapping with t
 | ------------------ | --------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tap` (`t`)        | `str`                       | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks                                            |
 | `hold` (`h`)       | `str`                       | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                    |
+| `shifted` (`s`)    | `str`                       | `""`          | the "shifted" action of a key, drawn on the top of the key                                                                                  |
 | `type`             | `null \| "held" \| "ghost"` | `null`        | the styling of the key: `held` adds a red shading to denote held down keys, `ghost` adds a gray shading to denote optional keys in a layout |
 
 Using a string value such as `"A"` for a key spec is equivalent to defining a mapping with only the tap field, i.e., `{tap: "A"}`.

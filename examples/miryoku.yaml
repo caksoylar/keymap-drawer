@@ -39,13 +39,13 @@ layers:
     - ['', RALT, To Fun, To Media, '', Out Tog, BT 0, BT 1, BT 2, BT 3]
     - [{t: '', type: held}, '', '', STOP, PP, MUTE]
     Num:
-    - ['[', '7', '8', '9', ']', '', To Base, To Extra, To Tap, BOOT]
-    - [;, '4', '5', '6', EQL, '', LSHFT, LCTRL, LALT, LGUI]
-    - ['`', '1', '2', '3', \, '', To Num, To Nav, RALT, '']
-    - [., '0', '-', '', {t: '', type: held}, '']
+    - [{t: '[', s: '{'}, {t: '7', s: '&'}, {t: '8', s: '*'}, {t: '9', s: '('}, {t: ']', s: '}'}, '', To Base, To Extra, To Tap, BOOT]
+    - [;, {t: '4', s: '$'}, {t: '5', s: '%'}, {t: '6', s: '^'}, '=', '', LSHFT, LCTRL, LALT, LGUI]
+    - [{t: '`', s: '~'}, {t: '1', s: '!'}, {t: '2', s: '@'}, {t: '3', s: '#'}, \, '', To Num, To Nav, RALT, '']
+    - [., {t: '0', s: ')'}, {t: '-', s: '_'}, '', {t:  '', type: held}, '']
     Sym:
     - ['{', '&', '*', (, '}', '', To Base, To Extra, To Tap, BOOT]
-    - [':', $, PRCT, CRRT, +, '', LSHFT, LCTRL, LALT, LGUI]
+    - [':', '$', '%', '^', '+', '', LSHFT, LCTRL, LALT, LGUI]
     - ['~', '!', '@', '#', '|', '', To Sym, To Mouse, RALT, '']
     - [(, ), _, {t: '', type: held}, '', '']
     Fun:

@@ -14,11 +14,12 @@ from .config import DrawConfig
 class LayoutKey(BaseModel):
     """
     Represents a binding in the keymap, which has a tap property by default and
-    can optionally have a hold property, or be "held", be a "ghost" key, or be a combo.
+    can optionally have hold or shifted properties, or be "held" or be a "ghost" key.
     """
 
     tap: str = Field(alias="t", default="")
     hold: str = Field(alias="h", default="")
+    shifted: str = Field(alias="s", default="")
     type: Literal[None, "held", "ghost"] = None
 
     class Config:  # pylint: disable=missing-class-docstring
