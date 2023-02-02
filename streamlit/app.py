@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 from pathlib import PurePosixPath
 from urllib.parse import urlsplit
 from urllib.request import urlopen
+from urllib.error import HTTPError
 
 import yaml
 import streamlit as st
@@ -26,15 +27,24 @@ def svg_to_html(svg_string: str) -> str:
 
 @st.cache
 def _get_qmk_keyboard(qmk_keyboard: str) -> dict:
-    with urlopen(f"https://keyboards.qmk.fm/v1/keyboards/{qmk_keyboard}/info.json") as f:
-        return json.load(f)["keyboards"][qmk_keyboard]
+    try:
+        with urlopen(f"https://keyboards.qmk.fm/v1/keyboards/{qmk_keyboard}/info.json") as f:
+            return json.load(f)["keyboards"][qmk_keyboard]
+    except HTTPError as exc:
+        raise ValueError(
+            "QMK keyboard not found, please make sure you specify an existing keyboard (hint: check from https://config.qmk.fm)"
+        ) from exc
 
 
 @st.cache
 def draw(yaml_str: str, config: DrawConfig) -> str:
     """Given a YAML keymap string, draw the keymap in SVG format to a string."""
-    yaml_data = yaml.safe_load(yaml_str)
-    assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
+    try:
+        yaml_data = yaml.safe_load(yaml_str)
+    except yaml.YAMLError as err:
+        st.error(icon="❗", body="Could not parse keymap YAML, please check for syntax errors")
+        raise err
+    assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap YAML'
 
     qmk_keyboard = yaml_data.get("layout", {}).get("qmk_keyboard")
     qmk_layout = yaml_data.get("layout", {}).get("qmk_layout")
@@ -50,10 +60,7 @@ def draw(yaml_str: str, config: DrawConfig) -> str:
     elif ortho_layout:
         layout = {"ltype": "ortho", **ortho_layout}
     else:
-        raise ValueError(
-            "A physical layout needs to be specified either via --qmk-keyboard/--qmk-layout/--ortho-layout, "
-            'or in a "layout" field in the keymap_yaml'
-        )
+        raise ValueError('A physical layout needs to be specified in a "layout" field in the keymap YAML')
 
     if custom_config := yaml_data.get("draw_config"):
         config = config.copy(update=custom_config)
@@ -68,6 +75,7 @@ def draw(yaml_str: str, config: DrawConfig) -> str:
 
 @st.cache
 def get_example_yamls() -> dict[str, str]:
+    """Return mapping of example keymap YAML names to contents."""
     out = {}
     examples_path = f"{os.path.dirname(__file__)}/../examples"
     for filename in sorted(os.listdir(examples_path)):
@@ -80,6 +88,8 @@ def get_example_yamls() -> dict[str, str]:
 
 @st.cache
 def get_default_config() -> str:
+    """Get and dump default config."""
+
     def cfg_str_representer(dumper, in_str):
         if "\n" in in_str:  # use '|' style for multiline strings
             return dumper.represent_scalar("tag:yaml.org,2002:str", in_str, style="|")
@@ -93,11 +103,13 @@ def get_default_config() -> str:
 
 @st.cache
 def parse_config(config: str) -> Config:
+    """Parse config from YAML format."""
     return Config.parse_obj(yaml.safe_load(config))
 
 
 @st.cache
 def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols: int) -> str:
+    """Parse a given QMK keymap JSON (buffer) into keymap YAML."""
     parsed = QmkJsonParser(config, num_cols).parse(qmk_keymap_buf)
     with io.StringIO() as out:
         yaml.safe_dump(parsed, out, indent=4, width=160, sort_keys=False, default_flow_style=None)
@@ -106,6 +118,7 @@ def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols:
 
 @st.cache
 def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_cols: int) -> str:
+    """Parse a given ZMK keymap file (file path or buffer) into keymap YAML."""
     parsed = ZmkKeymapParser(config, num_cols).parse(zmk_keymap)
     with io.StringIO() as out:
         yaml.safe_dump(parsed, out, indent=4, width=160, sort_keys=False, default_flow_style=None)
@@ -113,7 +126,7 @@ def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_col
 
 
 @st.cache
-def _get_zmk_zip(zmk_url: str) -> bytes:
+def _get_zmk_zip(zmk_url: str) -> tuple[bytes, PurePosixPath]:
     if not zmk_url.startswith("https") and not zmk_url.startswith("//"):
         zmk_url = "//" + zmk_url
     split_url = urlsplit(zmk_url, scheme="https")
@@ -128,6 +141,7 @@ def _get_zmk_zip(zmk_url: str) -> bytes:
 
 @st.cache
 def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> str:
+    """Parse a given ZMK keymap URL on Github into keymap YAML."""
     zip_bytes, path = _get_zmk_zip(zmk_url)
     with TemporaryDirectory() as tmpdir:
         with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zipped:
@@ -136,7 +150,13 @@ def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> s
         return parse_zmk_to_yaml(keymap_file, config, num_cols)
 
 
+def _handle_exception(message: str, exc: Exception):
+    st.error(icon="❗", body=message)
+    st.exception(exc)
+
+
 def main():
+    """Lay out Streamlit elements and widgets, run parsing and drawing logic."""
     st.set_page_config(page_title="Keymap Drawer live demo", page_icon=":keyboard:", layout="wide")
     st.write(
         """
@@ -160,33 +180,46 @@ def main():
         num_cols = st.number_input("Number of columns in keymap", min_value=0, max_value=20, key="qmk_cols")
         qmk_file = st.file_uploader(label="Import QMK `keymap.json`", type=["json"])
         if qmk_file is not None:
-            parsed = parse_qmk_to_yaml(
-                qmk_file, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
-            )
-            if parsed != st.session_state.get("prev_qmk_parsed"):
-                st.session_state.prev_qmk_parsed = parsed
-                st.session_state.keymap_yaml = parsed
+            try:
+                parsed = parse_qmk_to_yaml(
+                    qmk_file, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
+                )
+                if parsed != st.session_state.get("prev_qmk_parsed"):
+                    st.session_state.prev_qmk_parsed = parsed
+                    st.session_state.keymap_yaml = parsed
+            except Exception as err:
+                _handle_exception("Error while parsing QMK keymap", err)
     with tab_zmk:
         num_cols = st.number_input("Number of columns in keymap", min_value=0, max_value=20, key="zmk_cols")
         zmk_file = st.file_uploader(label="Import a ZMK `<keyboard>.keymap` file", type=["keymap"])
         if zmk_file is not None:
-            parsed = parse_zmk_to_yaml(
-                zmk_file, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
-            )
-            if parsed != st.session_state.get("prev_zmk_parsed_file"):
-                st.session_state.prev_zmk_parsed_file = parsed
-                st.session_state.keymap_yaml = parsed
+            try:
+                parsed = parse_zmk_to_yaml(
+                    zmk_file, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
+                )
+                if parsed != st.session_state.get("prev_zmk_parsed_file") or num_cols != st.session_state.get(
+                    "prev_zmk_cols"
+                ):
+                    st.session_state.prev_zmk_parsed_file = parsed
+                    st.session_state.keymap_yaml = parsed
+            except Exception as err:
+                _handle_exception("Error while parsing ZMK keymap", err)
         zmk_url = st.text_input(
             label="or, input GitHub URL to keymap",
             placeholder="https://github.com/caksoylar/zmk-config/blob/main/config/hypergolic.keymap",
         )
-        if zmk_url and (zmk_url != st.session_state.get("prev_zmk_url") or num_cols != st.session_state.get("prev_zmk_cols")):
-            parsed = parse_zmk_url_to_yaml(
-                zmk_url, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
-            )
-            st.session_state.prev_zmk_url = zmk_url
-            st.session_state.prev_zmk_cols = num_cols
-            st.session_state.keymap_yaml = parsed
+        if zmk_url and (
+            zmk_url != st.session_state.get("prev_zmk_url") or num_cols != st.session_state.get("prev_zmk_cols")
+        ):
+            try:
+                parsed = parse_zmk_url_to_yaml(
+                    zmk_url, parse_config(st.session_state.config).parse_config, None if not num_cols else num_cols
+                )
+                st.session_state.prev_zmk_url = zmk_url
+                st.session_state.prev_zmk_cols = num_cols
+                st.session_state.keymap_yaml = parsed
+            except Exception as err:
+                _handle_exception("Error while parsing ZMK keymap from URL", err)
         st.caption("Please add a `layout` field with physical layout specification below after parsing")
 
     left_column, right_column = st.columns(2)
@@ -198,16 +231,20 @@ def main():
         label="[Keymap Spec](https://github.com/caksoylar/keymap-drawer/blob/main/KEYMAP_SPEC.md)",
     )
 
-    svg = draw(st.session_state.keymap_yaml, parse_config(st.session_state.config).draw_config)
-    right_column.subheader("Keymap SVG")
-    right_column.write(svg_to_html(svg), unsafe_allow_html=True)
-
     st.download_button(label="Download keymap", data=st.session_state.keymap_yaml, file_name="my_keymap.yaml")
-    st.download_button(
-        label="Download SVG",
-        data=svg,
-        file_name="my_keymap.svg",
-    )
+
+    try:
+        svg = draw(st.session_state.keymap_yaml, parse_config(st.session_state.config).draw_config)
+        right_column.subheader("Keymap SVG")
+        right_column.write(svg_to_html(svg), unsafe_allow_html=True)
+        st.download_button(
+            label="Download SVG",
+            data=svg,
+            file_name="my_keymap.svg",
+        )
+    except Exception as err:
+        _handle_exception("Error while drawing SVG from keymap YAML", err)
+
     with st.expander("Configuration"):
         st.text_area(
             label="[Config parameters](https://github.com/caksoylar/keymap-drawer/blob/main/keymap_drawer/config.py)",
