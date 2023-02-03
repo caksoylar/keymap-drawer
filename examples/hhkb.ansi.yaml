@@ -13,5 +13,5 @@ layers:
   - [PWR, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, INS, DEL]
   - [CAPS, '', '', '', '', '', '', '', PSCR, SCRL, PAUS, UP, '', BSPC]
   - ['', VOL DOWN, VOL UP, MUTE, '', '', 'KP *', 'KP /', HOME, PGUP, LEFT, RIGHT, KP ENT]
-  - ['', '', '', '', '', '', 'KP +', 'KP -', END, PGDN, DOWN, '', {t: '', type: held}]
+  - ['', '', '', '', '', '', 'KP +', 'KP -', END, PGDN, DOWN, '', {type: held}]
   - ['', '', '', '', '']

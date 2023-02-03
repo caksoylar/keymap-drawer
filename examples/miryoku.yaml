@@ -27,32 +27,32 @@ layers:
   - [Boot, To Tap, To Extra, To Base, '', Again, Paste, Copy, Cut, Undo]
   - [Meta, Alt, Control, Shift, '', {t: "Cps  Wrd", s: "Cps Lck"}, Left, Down, Up, Right]
   - ['', AltGr, To Num, To Nav, '', Ins, Home, Pg Dn, Pg Up, End]
-  - ['', {t: '', type: held}, '', Enter, Bckspc, Delete]
+  - ['', {type: held}, '', Enter, Bckspc, Delete]
   Mouse:
   - [Boot, To Tap, To Extra, To Base, '', Again, Paste, Copy, Cut, Undo]
   - [Meta, Alt, Control, Shift, '', '', Mouse Left, Mouse Down, Mouse Up, Mouse Right]
   - ['', AltGr, To Sym, To Mouse, '', '', '', '', '', '']
-  - ['', '', {t: '', type: held}, Right Button, Left Button, Middle Button]
+  - ['', '', {type: held}, Right Button, Left Button, Middle Button]
   Media:
   - [Boot, To Tap, To Extra, To Base, '', {t: "RGB  Tog", s: "RGB Off"}, {t: "RGB  M+", s: "RGB M-"}, {t: "RGB  H+", s: "RGB H-"}, {t: "RGB  S+", s: "RGB S-"}, {t: "RGB  V+", s: "RGB V-"}]
   - [Meta, Alt, Control, Shift, '', {t: "EP  Tog", s: "EP Off"}, Prev, Volume Down, Volume Up, Next]
   - ['', AltGr, To Fun, To Media, '', {t: Out  Tog, s: Out USB}, {t: "BT  0", s: "BT Clr 0"}, {t: "BT  1", s: "BT Clr 1"}, {t: "BT  2", s: "BT Clr 2"}, {t: "BT  3", s: "BT Clr 3"}]
-  - [{t: '', type: held}, '', '', Stop, Play Pause, Mute]
+  - [{type: held}, '', '', Stop, Play Pause, Mute]
   Num:
   - [{t: '[', s: '{'}, {t: '7', s: '&'}, {t: '8', s: '*'}, {t: '9', s: '('}, {t: ']', s: '}'}, '', To Base, To Extra, To Tap, Boot]
   - [{t: ';', s: ':'}, {t: '4', s: '$'}, {t: '5', s: '%'}, {t: '6', s: '^'}, {t: '=', s: '+'}, '', Shift, Control, Alt, Meta]
   - [{t: '`', s: '~'}, {t: '1', s: '!'}, {t: '2', s: '@'}, {t: '3', s: '#'}, {t: '\', s: '|'}, '', To Num, To Nav, AltGr, '']
-  - [{t: ., s: '>'}, {t: '0', s: ')'}, {t: '-', s: '_'}, '', {t: '', type: held}, '']
+  - [{t: ., s: '>'}, {t: '0', s: ')'}, {t: '-', s: '_'}, '', {type: held}, '']
   Sym:
   - ['{', '&', '*', (, '}', '', To Base, To Extra, To Tap, Boot]
   - [':', '$', '%', '^', '+', '', Shift, Control, Alt, Meta]
   - ['~', '!', '@', '#', '|', '', To Sym, To Mouse, AltGr, '']
-  - [(, ), _, {t: '', type: held}, '', '']
+  - [(, ), _, {type: held}, '', '']
   Fun:
   - [F12, F7, F8, F9, PrtScn SysRq, '', To Base, To Extra, To Tap, Boot]
   - [F11, F4, F5, F6, Scroll Lock, '', Shift, Control, Alt, Meta]
   - [F10, F1, F2, F3, Pause Break, '', To Fun, To Media, AltGr, '']
-  - [App, Space, Tab, '', '', {t: '', type: held}]
+  - [App, Space, Tab, '', '', {type: held}]
 # combos:
 #   - p: [31, 32]
 #     k: {t: Esc, h: Media}

@@ -20,54 +20,54 @@ layers:
   - [F1, F2, F3, F4, F5, ESC, HOME, UARW, END, PG UP]
   - [{t: LGUI, h: sticky}, {t: LALT, h: sticky}, {t: LSHFT, h: sticky}, {t: LCTRL, h: sticky}, LC(Z), DEL, LARW, ENTER, RARW, PG DN]
   - [LC(X), LC(C), LC(V), BSPC, DARW, TAB]
-  - [{t: '', type: held}, '', '', '']
+  - [{type: held}, '', '', '']
   Sym:
   - ['!', '@', '#', $, '%', ^, '&', ':', '`', '"']
   - ['?', '-', '=', '*', '|', '~', LCTRL, LSHFT, LALT, LGUI]
   - [+, _, /, \, <, '>']
-  - ['', '', '', {t: '', type: held}]
+  - ['', '', '', {type: held}]
   Num:
   - ['', '', '', '', '', '', '', '', '', '']
   - ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
   - ['', '', '', '', '', '']
-  - [{t: '', type: held}, '', '', {t: '', type: held}]
+  - [{type: held}, '', '', {type: held}]
 combos:
--   p: [1, 2]
-  k: V
-  l: [Def]
--   p: [1, 3]
-  k: Q
-  l: [Def]
-  a: top
--   p: [20, 21]
-  k: Z
-  l: [Def]
--   p: [24, 25]
-  k: ;
-  l: [Def, Sym, Num]
--   p: [1, 11]
-  k: '['
-  l: [Def, Sym, Num]
--   p: [8, 18]
-  k: ']'
-  l: [Def, Sym, Num]
--   p: [2, 12]
-  k: (
-  l: [Def, Sym, Num]
--   p: [7, 17]
-  k: )
-  l: [Def, Sym, Num]
--   p: [3, 13]
-  k: '{'
-  l: [Def, Sym, Num]
--   p: [6, 16]
-  k: '}'
-  l: [Def, Sym, Num]
--   p: [3, 4]
-  k: ESC
--   p: [13, 14]
-  k: DEL
--   p: [20, 21]
-  k: LC(A)
-  l: [Nav]
-  a: bottom
+  - p: [1, 2]
+    k: V
+    l: [Def]
+  - p: [1, 3]
+    k: Q
+    l: [Def]
+    a: top
+  - p: [20, 21]
+    k: Z
+    l: [Def]
+  - p: [24, 25]
+    k: ;
+    l: [Def, Sym, Num]
+  - p: [1, 11]
+    k: '['
+    l: [Def, Sym, Num]
+  - p: [8, 18]
+    k: ']'
+    l: [Def, Sym, Num]
+  - p: [2, 12]
+    k: (
+    l: [Def, Sym, Num]
+  - p: [7, 17]
+    k: )
+    l: [Def, Sym, Num]
+  - p: [3, 13]
+    k: '{'
+    l: [Def, Sym, Num]
+  - p: [6, 16]
+    k: '}'
+    l: [Def, Sym, Num]
+  - p: [3, 4]
+    k: ESC
+  - p: [13, 14]
+    k: DEL
+  - p: [20, 21]
+    k: LC(A)
+    l: [Nav]
+    a: bottom

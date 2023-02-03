@@ -19,7 +19,7 @@ layers:
     - {t: Gui, type: ghost}
     - Space
     - {t: Bspace, h: FUN}
-    - {t: "", type: held}
+    - {type: held}
     - Shift
     - {t: Alt, type: ghost}
   NAV:
@@ -28,7 +28,7 @@ layers:
     - [null, "Win Prev", "Win Next", "Paste", "Play Pause", Insert, Delete, Prev, Next, null]
     - {t: Gui, type: ghost}
     - Ctrl
-    - {t: "", type: held}
+    - {type: held}
     - {t: Space, h: FUN}
     - Shift
     - {t: Alt, type: ghost}
@@ -38,8 +38,8 @@ layers:
     - [null, "Desk Prev", "Desk Next", F11, F12, "Out USB", "Out BLE", "Print Scrn", "Pause Break", "BT CLR"]
     - {t: Boot, type: ghost}
     - Reset
-    - {t: "", type: held}
-    - {t: "", type: held}
+    - {type: held}
+    - {type: held}
     - Reset
     - {t: Boot, type: ghost}
 combos:
