@@ -105,6 +105,9 @@ You can provide this information to `keymap-drawer` in two ways:
   ```
 
   `-j` flag also allows you to pass a local `info.json` file instead of the keyboard name.
+  You can use this option with custom created physical layout definitions, for instance via [this very handy script by @crides](https://gist.github.com/crides/6d12d1033368e24873b0142941311e5d)
+  that can auto-generate a `keymap-drawer`-compatible `info.json` definition directly from KiCad PCB files, or via [KLE-to-QMK converter](https://qmk.fm/converter/)
+  (which doesn't support key rotation unlike the former).
 
   > **Note**
   >
