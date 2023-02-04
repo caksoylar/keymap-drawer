@@ -30,7 +30,5 @@ These are things I plan to implement if there is demand for it, contributions ar
 
 ## Web UX
 
-- Improve UX w.r.t. multiple different input types (parsing vs. examples)
-  - Currently repeated parses require page refresh
 - Syntax highlighting in text area
 - More advanced caching using [experimental primitives](https://docs.streamlit.io/library/advanced-features/experimental-cache-primitives)
