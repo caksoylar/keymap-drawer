@@ -99,7 +99,7 @@ class QmkJsonParser(KeymapParser):
 class ZmkKeymapParser(KeymapParser):
     """Parser for ZMK devicetree keymaps, using C preprocessor and hacky pyparsing-based parsers."""
 
-    _bindings_re = re.compile(r"bindings = <(.*?)>")
+    _bindings_re = re.compile(r"(?<!sensor-)bindings = <(.*?)>")
     _keypos_re = re.compile(r"key-positions = <(.*?)>")
     _layers_re = re.compile(r"layers = <(.*?)>")
     _label_re = re.compile(r'label = "(.*?)"')
