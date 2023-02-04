@@ -5,7 +5,7 @@ import io
 import json
 import zipfile
 from tempfile import TemporaryDirectory
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 from urllib.request import urlopen
 from urllib.error import HTTPError
@@ -126,8 +126,38 @@ def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_col
         return out.getvalue()
 
 
+def _get_zmk_ref(owner: str, repo: str, head: str) -> str:
+    try:
+        with urlopen(f"https://api.github.com/repos/{owner}/{repo}/git/ref/heads/{head}") as resp:
+            sha = json.load(resp)["object"]["sha"]
+    except HTTPError:
+        # assume we are provided with a reference directly, like a commit SHA
+        sha = head
+    return sha
+
+
+@st.cache(persist=True)
+def _download_zip(owner: str, repo: str, sha: str) -> bytes:
+    """Use `sha` only used for caching purposes to make sure we are fetching from the same repo state."""
+    zip_url = f"https://api.github.com/repos/{owner}/{repo}/zipball/{sha}"
+    with urlopen(zip_url) as f:
+        return f.read()
+
+
 @st.cache
-def _get_zmk_zip(zmk_url: str) -> tuple[bytes, PurePosixPath]:
+def _extract_zip_and_parse(zip_bytes: bytes, keymap_path: PurePosixPath, config: ParseConfig, num_cols: int) -> str:
+    with TemporaryDirectory() as tmpdir:
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zipped:
+            zipped.extractall(tmpdir)
+        keymap_file = next(path for path in Path(tmpdir).iterdir() if path.is_dir()) / keymap_path
+        return parse_zmk_to_yaml(str(keymap_file), config, num_cols)
+
+
+def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> str:
+    """
+    Parse a given ZMK keymap URL on Github into keymap YAML. Normalize URL, extract owner/repo/head name,
+    get reference (not cached), download contents from reference (cached) and parse keymap (cached).
+    """
     if not zmk_url.startswith("https") and not zmk_url.startswith("//"):
         zmk_url = "//" + zmk_url
     split_url = urlsplit(zmk_url, scheme="https")
@@ -135,20 +165,13 @@ def _get_zmk_zip(zmk_url: str) -> tuple[bytes, PurePosixPath]:
     assert split_url.netloc == "github.com", "Please provide a Github URL"
     assert path.parts[3] == "blob", "Please provide URL for a file"
     assert path.parts[-1].endswith(".keymap"), "Please provide URL to a .keymap file"
-    zip_url = f"https://github.com/{path.parts[1]}/{path.parts[2]}/archive/refs/heads/{path.parts[4]}.zip"
-    with urlopen(zip_url) as f:
-        return f.read(), path
 
+    owner, repo, head = path.parts[1], path.parts[2], path.parts[4]
+    keymap_path = PurePosixPath(*path.parts[5:])
 
-@st.cache
-def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> str:
-    """Parse a given ZMK keymap URL on Github into keymap YAML."""
-    zip_bytes, path = _get_zmk_zip(zmk_url)
-    with TemporaryDirectory() as tmpdir:
-        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zipped:
-            zipped.extractall(tmpdir)
-        keymap_file = f"{tmpdir}/{path.parts[2]}-{path.parts[4]}/{'/'.join(path.parts[5:])}"
-        return parse_zmk_to_yaml(keymap_file, config, num_cols)
+    sha = _get_zmk_ref(owner, repo, head)
+    zip_bytes = _download_zip(owner, repo, sha)
+    return _extract_zip_and_parse(zip_bytes, keymap_path, config, num_cols)
 
 
 def _handle_exception(container, message: str, exc: Exception):
@@ -219,6 +242,12 @@ def main():
                 st.session_state.prev_zmk_url = zmk_url
                 st.session_state.prev_zmk_cols = num_cols
                 st.session_state.keymap_yaml = parsed
+            except HTTPError as err:
+                _handle_exception(
+                    tab_zmk,
+                    "Could not get repo contents, make sure you use a branch name or commit SHA and not a tag in the URL",
+                    err,
+                )
             except Exception as err:
                 _handle_exception(tab_zmk, "Error while parsing ZMK keymap from URL", err)
         st.caption("Please add a `layout` field with physical layout specification below after parsing")
