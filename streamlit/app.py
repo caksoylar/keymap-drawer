@@ -18,6 +18,14 @@ from keymap_drawer.config import Config, DrawConfig, ParseConfig
 from keymap_drawer.parse import QmkJsonParser, ZmkKeymapParser
 
 
+LAYOUT_PREAMBLE = """\
+# FILL IN below field with a value like {qmk_keyboard: ferris/sweep}
+# or {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2}}
+# see https://github.com/caksoylar/keymap-drawer/blob/main/KEYMAP_SPEC.md#layout
+#layout:
+"""
+
+
 @st.cache
 def svg_to_html(svg_string: str) -> str:
     """Convert SVG string in SVG/XML format to one embedded in a img tag."""
@@ -119,18 +127,18 @@ def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols:
 
 
 @st.cache
-def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_cols: int) -> str:
+def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_cols: int, layout: str) -> str:
     """Parse a given ZMK keymap file (file path or buffer) into keymap YAML."""
     parsed = ZmkKeymapParser(config, num_cols).parse(zmk_keymap)
-    preamble = dedent("""\
-    # FILL IN below field with a value like {qmk_keyboard: ferris/sweep}
-    # or {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2}}
-    # see https://github.com/caksoylar/keymap-drawer/blob/main/KEYMAP_SPEC.md#layout
-    #layout:
-    """)
     with io.StringIO() as out:
+        if layout:
+            yaml.safe_dump(
+                {"layout": json.loads(layout)}, out, indent=4, width=160, sort_keys=False, default_flow_style=None
+            )
         yaml.safe_dump(parsed, out, indent=4, width=160, sort_keys=False, default_flow_style=None)
-        return preamble + out.getvalue()
+        if layout:
+            return out.getvalue()
+        return LAYOUT_PREAMBLE + out.getvalue()
 
 
 def _get_zmk_ref(owner: str, repo: str, head: str) -> str:
@@ -152,17 +160,19 @@ def _download_zip(owner: str, repo: str, sha: str) -> bytes:
 
 
 @st.cache
-def _extract_zip_and_parse(zip_bytes: bytes, keymap_path: PurePosixPath, config: ParseConfig, num_cols: int) -> str:
+def _extract_zip_and_parse(
+    zip_bytes: bytes, keymap_path: PurePosixPath, config: ParseConfig, num_cols: int, layout: str
+) -> str:
     with tempfile.TemporaryDirectory() as tmpdir:
         with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zipped:
             zipped.extractall(tmpdir)
         keymap_file = next(path for path in Path(tmpdir).iterdir() if path.is_dir()) / keymap_path
         if not keymap_file.exists():
             raise ValueError(f"Could not find '{keymap_path}' in the repo, please check URL")
-        return parse_zmk_to_yaml(str(keymap_file), config, num_cols)
+        return parse_zmk_to_yaml(str(keymap_file), config, num_cols, layout)
 
 
-def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> str:
+def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int, layout: str) -> str:
     """
     Parse a given ZMK keymap URL on Github into keymap YAML. Normalize URL, extract owner/repo/head name,
     get reference (not cached), download contents from reference (cached) and parse keymap (cached).
@@ -180,7 +190,7 @@ def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int) -> s
 
     sha = _get_zmk_ref(owner, repo, head)
     zip_bytes = _download_zip(owner, repo, sha)
-    return _extract_zip_and_parse(zip_bytes, keymap_path, config, num_cols)
+    return _extract_zip_and_parse(zip_bytes, keymap_path, config, num_cols, layout)
 
 
 def _handle_exception(container, message: str, exc: Exception):
@@ -206,18 +216,24 @@ def main():
         st.session_state.config = get_default_config()
 
     examples = get_example_yamls()
+    query_params = st.experimental_get_query_params()
+    if st.session_state.get("user_query", True):
+        st.session_state.example_yaml = query_params.get("example_yaml", [list(examples)[0]])[0]
+        st.session_state.qmk_cols = query_params.get("num_cols", [0])[0]
+        st.session_state.zmk_cols = query_params.get("num_cols", [0])[0]
+        st.session_state.zmk_url = query_params.get("zmk_url", [""])[0]
 
     col_ex, col_qmk, col_zmk = st.columns(3)
     error_placeholder = st.empty()
     with col_ex:
         with st.expander("Example keymaps", expanded=st.session_state.get("example_expanded", False)):
             with st.form("example_form"):
-                example_keymap = st.selectbox(
-                    label="Load example", options=list(examples.keys()), index=0, key="example_yaml"
-                )
+                st.selectbox(label="Load example", options=list(examples), index=0, key="example_yaml")
                 example_submitted = st.form_submit_button(label="Show!", on_click=_set_state, args=["example_expanded"])
-                if example_submitted:
-                    st.session_state.keymap_yaml = examples[example_keymap]
+                if example_submitted or st.session_state.get("user_query", True) and "example_yaml" in query_params:
+                    if example_submitted:
+                        st.experimental_set_query_params(example_yaml=st.session_state.example_yaml)
+                    st.session_state.keymap_yaml = examples[st.session_state.example_yaml]
     with col_qmk:
         with st.expander("Parse from QMK keymap", expanded=st.session_state.get("qmk_expanded", False)):
             with st.form("qmk_form"):
@@ -252,27 +268,34 @@ def main():
                     else:
                         try:
                             st.session_state.keymap_yaml = parse_zmk_to_yaml(
-                                zmk_file, parse_config(st.session_state.config).parse_config, num_cols
+                                zmk_file,
+                                parse_config(st.session_state.config).parse_config,
+                                num_cols,
+                                query_params.get("layout", [""])[0],
                             )
                         except Exception as err:
                             _handle_exception(error_placeholder, "Error while parsing ZMK keymap", err)
 
-                zmk_url = st.text_input(
+                st.text_input(
                     label="or, input GitHub URL to keymap",
                     placeholder="https://github.com/caksoylar/zmk-config/blob/main/config/hypergolic.keymap",
+                    key="zmk_url",
                 )
                 zmk_url_submitted = st.form_submit_button(
                     label="Parse from URL!", on_click=_set_state, args=["zmk_expanded"]
                 )
-                if zmk_url_submitted:
-                    if not zmk_url:
+                if zmk_url_submitted or st.session_state.get("user_query", True) and "zmk_url" in query_params:
+                    if zmk_url_submitted:
+                        st.experimental_set_query_params(zmk_url=st.session_state.zmk_url)
+                    if not st.session_state.zmk_url:
                         st.error(icon="❗", body="Please enter a URL")
                     else:
                         try:
                             st.session_state.keymap_yaml = parse_zmk_url_to_yaml(
-                                zmk_url,
+                                st.session_state.zmk_url,
                                 parse_config(st.session_state.config).parse_config,
-                                None if not num_cols else num_cols,
+                                num_cols,
+                                query_params.get("layout", [""])[0],
                             )
                         except HTTPError as err:
                             _handle_exception(
@@ -315,6 +338,8 @@ def main():
             value=get_default_config(),
         )
         st.download_button(label="Download config", data=st.session_state.config, file_name="my_config.yaml")
+
+    st.session_state.user_query = False
 
 
 main()
