@@ -1,12 +1,12 @@
 """Simple streamlit app for interactive parsing and drawing."""
-import base64
 import io
 import json
+import gzip
+import base64
 import zipfile
 import tempfile
-from textwrap import dedent
 from pathlib import Path, PurePosixPath
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, quote_plus, unquote_plus
 from urllib.request import urlopen
 from urllib.error import HTTPError
 
@@ -24,6 +24,7 @@ LAYOUT_PREAMBLE = """\
 # see https://github.com/caksoylar/keymap-drawer/blob/main/KEYMAP_SPEC.md#layout
 #layout:
 """
+APP_URL = "https://caksoylar.github.io/keymap-drawer"
 
 
 @st.cache
@@ -193,6 +194,17 @@ def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int, layo
     return _extract_zip_and_parse(zip_bytes, keymap_path, config, num_cols, layout)
 
 
+def get_permalink(keymap_yaml: str) -> str:
+    """Encode a keymap using a compressed base64 string and place it in query params to create a permalink."""
+    b64_bytes = base64.b64encode(gzip.compress(keymap_yaml.encode("utf-8"), mtime=0), altchars=b"*$")
+    return f"{APP_URL}?keymap_yaml={quote_plus(b64_bytes.decode('utf-8'))}"
+
+
+def decode_permalink_param(param: str) -> str:
+    """Get a compressed base64 string from query params and decode it to keymap YAML."""
+    return gzip.decompress(base64.b64decode(unquote_plus(param).encode("utf-8"), altchars=b"*$")).decode("utf-8")
+
+
 def _handle_exception(container, message: str, exc: Exception):
     container.error(icon="❗", body=message)
     container.exception(exc)
@@ -218,6 +230,9 @@ def main():
     examples = get_example_yamls()
     query_params = st.experimental_get_query_params()
     if st.session_state.get("user_query", True):
+        if "keymap_yaml" in query_params:
+            st.session_state.keymap_yaml = decode_permalink_param(query_params["keymap_yaml"][0])
+            st.experimental_set_query_params()
         st.session_state.example_yaml = query_params.get("example_yaml", [list(examples)[0]])[0]
         st.session_state.qmk_cols = query_params.get("num_cols", [0])[0]
         st.session_state.zmk_cols = query_params.get("num_cols", [0])[0]
@@ -320,6 +335,9 @@ def main():
         )
 
         st.download_button(label="Download keymap", data=st.session_state.keymap_yaml, file_name="my_keymap.yaml")
+        permabutton = st.button(label="Get permalink to keymap")
+        if permabutton:
+            st.code(get_permalink(st.session_state.keymap_yaml), language=None)
 
     with draw_col:
         try:
