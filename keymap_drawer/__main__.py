@@ -63,7 +63,7 @@ def parse(args, config: ParseConfig) -> None:
     else:
         parsed = ZmkKeymapParser(config, args.columns).parse(args.zmk_keymap)
 
-    yaml.safe_dump(parsed, sys.stdout, indent=4, width=160, sort_keys=False, default_flow_style=None)
+    yaml.safe_dump(parsed, sys.stdout, indent=2, width=160, sort_keys=False, default_flow_style=None)
 
 
 def dump_config(config: Config) -> None:
@@ -75,7 +75,7 @@ def dump_config(config: Config) -> None:
         return dumper.represent_scalar("tag:yaml.org,2002:str", in_str)
 
     yaml.representer.SafeRepresenter.add_representer(str, cfg_str_representer)
-    yaml.safe_dump(config.dict(), sys.stdout, indent=4, default_flow_style=False)
+    yaml.safe_dump(config.dict(), sys.stdout, indent=2, default_flow_style=False)
 
 
 def main() -> None:

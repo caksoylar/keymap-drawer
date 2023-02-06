@@ -108,7 +108,7 @@ def get_default_config() -> str:
 
     yaml.representer.SafeRepresenter.add_representer(str, cfg_str_representer)
     with io.StringIO() as out:
-        yaml.safe_dump(Config().dict(), out, indent=4, default_flow_style=False)
+        yaml.safe_dump(Config().dict(), out, indent=2, default_flow_style=False)
         return out.getvalue()
 
 
@@ -123,7 +123,7 @@ def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols:
     """Parse a given QMK keymap JSON (buffer) into keymap YAML."""
     parsed = QmkJsonParser(config, num_cols).parse(qmk_keymap_buf)
     with io.StringIO() as out:
-        yaml.safe_dump(parsed, out, indent=4, width=160, sort_keys=False, default_flow_style=None)
+        yaml.safe_dump(parsed, out, indent=2, width=160, sort_keys=False, default_flow_style=None)
         return out.getvalue()
 
 
@@ -134,9 +134,9 @@ def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_col
     with io.StringIO() as out:
         if layout:
             yaml.safe_dump(
-                {"layout": json.loads(layout)}, out, indent=4, width=160, sort_keys=False, default_flow_style=None
+                {"layout": json.loads(layout)}, out, indent=2, width=160, sort_keys=False, default_flow_style=None
             )
-        yaml.safe_dump(parsed, out, indent=4, width=160, sort_keys=False, default_flow_style=None)
+        yaml.safe_dump(parsed, out, indent=2, width=160, sort_keys=False, default_flow_style=None)
         if layout:
             return out.getvalue()
         return LAYOUT_PREAMBLE + out.getvalue()
