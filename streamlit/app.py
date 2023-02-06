@@ -6,7 +6,7 @@ import base64
 import zipfile
 import tempfile
 from pathlib import Path, PurePosixPath
-from urllib.parse import urlsplit, quote_plus, unquote_plus
+from urllib.parse import urlsplit, quote_from_bytes, unquote_to_bytes
 from urllib.request import urlopen
 from urllib.error import HTTPError
 
@@ -196,13 +196,13 @@ def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int, layo
 
 def get_permalink(keymap_yaml: str) -> str:
     """Encode a keymap using a compressed base64 string and place it in query params to create a permalink."""
-    b64_bytes = base64.b64encode(gzip.compress(keymap_yaml.encode("utf-8"), mtime=0), altchars=b"*$")
-    return f"{APP_URL}?keymap_yaml={quote_plus(b64_bytes.decode('utf-8'))}"
+    b64_bytes = base64.b64encode(gzip.compress(keymap_yaml.encode("utf-8"), mtime=0), altchars=b"-_")
+    return f"{APP_URL}?keymap_yaml={quote_from_bytes(b64_bytes)}"
 
 
 def decode_permalink_param(param: str) -> str:
     """Get a compressed base64 string from query params and decode it to keymap YAML."""
-    return gzip.decompress(base64.b64decode(unquote_plus(param).encode("utf-8"), altchars=b"*$")).decode("utf-8")
+    return gzip.decompress(base64.b64decode(unquote_to_bytes(param), altchars=b"-_")).decode("utf-8")
 
 
 def _handle_exception(container, message: str, exc: Exception):
