@@ -17,7 +17,6 @@ These are things I plan to implement if there is demand for it, contributions ar
   - Maybe consider labeled KLE's like VIA/Vial expects to ensure ordering
 - Physical layouts from Ergogen specs
 - Encoders
-- Add shifted key field to draw text above center
 - Add html-based icon specs like KLE (not sure how yet)
 
 ## Internal
