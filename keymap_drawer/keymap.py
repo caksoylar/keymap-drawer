@@ -71,10 +71,12 @@ class ComboSpec(BaseModel):
 class KeymapData(BaseModel):
     """Represents all data pertaining to a keymap, including layers, combos and physical layout."""
 
-    layout: PhysicalLayout
     layers: Mapping[str, Sequence[LayoutKey]]
     combos: Sequence[ComboSpec] = []
-    config: DrawConfig
+
+    # None-values only for use while parsing, i.e. no-layout mode
+    layout: PhysicalLayout | None
+    config: DrawConfig | None
 
     def get_combos_per_layer(self, layers: Iterable[str] | None = None) -> dict[str, list[ComboSpec]]:
         """Return a mapping of layer names to combos that are present on that layer."""
@@ -87,6 +89,16 @@ class KeymapData(BaseModel):
                 if layer_name in layers:
                     out[layer_name].append(combo)
         return out
+
+    def dump(self, num_cols: int = 0) -> dict:
+        """Returns a dict-valued dump of the keymap representation."""
+        dump = self.dict(exclude_defaults=True, exclude_unset=True, by_alias=True)
+        if num_cols > 0:
+            dump["layers"] = {
+                name: [layer_keys[i : i + num_cols] for i in range(0, len(layer_keys), num_cols)]
+                for name, layer_keys in dump["layers"]
+            }
+        return dump
 
     @validator("layers", pre=True)
     def parse_layers(cls, val) -> Mapping[str, Sequence[LayoutKey]]:
@@ -104,6 +116,8 @@ class KeymapData(BaseModel):
     @root_validator(pre=True, skip_on_failure=True)
     def create_layout(cls, vals):
         """Create layout with type given by ltype."""
+        if vals["layout"] is None:  # ignore for no-layout mode
+            return vals
         assert "ltype" in vals["layout"], 'Specifying a layout type key "ltype" is mandatory under "layout"'
         vals["layout"] = layout_factory(config=vals["config"], **vals["layout"])
         return vals
@@ -112,7 +126,7 @@ class KeymapData(BaseModel):
     def check_combos(cls, vals):
         """Validate combo positions are legitimate ones we can draw."""
         for combo in vals["combos"]:
-            assert all(
+            assert vals["layout"] is None or all(
                 pos < len(vals["layout"]) for pos in combo.key_positions
             ), f"Combo positions exceed number of keys for combo '{combo}'"
             assert not combo.layers or all(
@@ -123,6 +137,8 @@ class KeymapData(BaseModel):
     @root_validator(skip_on_failure=True)
     def check_dimensions(cls, vals):
         """Validate that physical layout and layers have the same number of keys."""
+        if vals["layout"] is None:  # ignore for no-layout mode
+            return vals
         for name, layer in vals["layers"].items():
             assert len(layer) == len(
                 vals["layout"]

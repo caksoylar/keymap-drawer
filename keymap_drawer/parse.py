@@ -1,4 +1,4 @@
-"""Module to parse QMK/ZMK keymaps to a simplified KeymapData-like format."""
+"""Module to parse QMK/ZMK keymaps into KeymapData and then dump them to dict."""
 import sys
 import re
 import json
@@ -10,7 +10,7 @@ from typing import Sequence, BinaryIO
 import pyparsing as pp
 from pcpp.preprocessor import Preprocessor, OutputDirective, Action  # type: ignore
 
-from .keymap import LayoutKey, ComboSpec
+from .keymap import LayoutKey, ComboSpec, KeymapData
 from .config import ParseConfig
 
 
@@ -19,9 +19,8 @@ class KeymapParser(ABC):
 
     def __init__(self, config: ParseConfig, columns: int | None):
         self.cfg = config
-        self.columns = columns
+        self.columns = columns if columns is not None else 0
         self.layer_names: list[str] | None = None
-        self._dict_args = {"exclude_defaults": True, "exclude_unset": True, "by_alias": True}
 
     def rearrange_layer(self, layer_keys: Sequence[LayoutKey]) -> Sequence[LayoutKey | Sequence[LayoutKey]]:
         """Convert a list of keys to list of list of keys to roughly correspond to rows."""
@@ -88,12 +87,13 @@ class QmkJsonParser(KeymapParser):
         if "layout" in raw:
             layout["qmk_layout"] = raw["layout"]
 
-        layers = {
-            f"L{ind}": self.rearrange_layer([self._str_to_key(key).dict(**self._dict_args) for key in layer])
-            for ind, layer in enumerate(raw["layers"])
-        }
+        keymap_data = KeymapData(
+            layers={f"L{ind}": [self._str_to_key(key) for key in layer] for ind, layer in enumerate(raw["layers"])},
+            layout=None,
+            config=None,
+        )
 
-        return {"layout": layout, "layers": layers}
+        return {"layout": layout} | keymap_data.dump(self.columns)
 
 
 class ZmkKeymapParser(KeymapParser):
@@ -248,12 +248,5 @@ class ZmkKeymapParser(KeymapParser):
         layers = self._get_layers(parsed)
         combos = self._get_combos(parsed)
 
-        out = {
-            "layers": {
-                name: self.rearrange_layer([key.dict(**self._dict_args) for key in layer])
-                for name, layer in layers.items()
-            }
-        }
-        if combos:
-            out["combos"] = [combo.dict(**self._dict_args) for combo in combos]  # type: ignore
-        return out
+        keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
+        return keymap_data.dump(self.columns)
