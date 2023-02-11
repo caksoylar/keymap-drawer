@@ -20,7 +20,7 @@ pyparsing = "^3.0.9"
 pyyaml = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^0.971"
+mypy = "^1.0.0"
 pylint = "^2.15.2"
 black = "^22.8.0"
 pylint-pydantic = "^0.1.4"
