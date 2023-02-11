@@ -27,14 +27,13 @@ LAYOUT_PREAMBLE = """\
 APP_URL = "https://caksoylar.github.io/keymap-drawer"
 
 
-@st.cache
 def svg_to_html(svg_string: str) -> str:
     """Convert SVG string in SVG/XML format to one embedded in a img tag."""
     b64 = base64.b64encode(svg_string.encode("utf-8")).decode("utf-8")
     return f'<img src="data:image/svg+xml;base64,{b64}"/>'
 
 
-@st.cache
+@st.cache_data(max_entries=128)
 def _get_qmk_keyboard(qmk_keyboard: str) -> dict:
     try:
         with urlopen(f"https://keyboards.qmk.fm/v1/keyboards/{qmk_keyboard}/info.json") as f:
@@ -46,7 +45,6 @@ def _get_qmk_keyboard(qmk_keyboard: str) -> dict:
         ) from exc
 
 
-@st.cache
 def draw(yaml_str: str, config: DrawConfig) -> str:
     """Given a YAML keymap string, draw the keymap in SVG format to a string."""
     yaml_data = yaml.safe_load(yaml_str)
@@ -80,7 +78,7 @@ def draw(yaml_str: str, config: DrawConfig) -> str:
         return out.getvalue()
 
 
-@st.cache
+@st.cache_resource
 def get_example_yamls() -> dict[str, str]:
     """Return mapping of example keymap YAML names to contents."""
     out = {}
@@ -93,7 +91,7 @@ def get_example_yamls() -> dict[str, str]:
     return out
 
 
-@st.cache
+@st.cache_resource
 def get_default_config() -> str:
     """Get and dump default config."""
 
@@ -108,13 +106,12 @@ def get_default_config() -> str:
         return out.getvalue()
 
 
-@st.cache
+@st.cache_data(max_entries=16)
 def parse_config(config: str) -> Config:
     """Parse config from YAML format."""
     return Config.parse_obj(yaml.safe_load(config))
 
 
-@st.cache
 def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols: int) -> str:
     """Parse a given QMK keymap JSON (buffer) into keymap YAML."""
     parsed = QmkJsonParser(config, num_cols).parse(qmk_keymap_buf)
@@ -123,7 +120,6 @@ def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols:
         return out.getvalue()
 
 
-@st.cache
 def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_cols: int, layout: str) -> str:
     """Parse a given ZMK keymap file (file path or buffer) into keymap YAML."""
     parsed = ZmkKeymapParser(config, num_cols).parse(zmk_keymap)
@@ -148,7 +144,7 @@ def _get_zmk_ref(owner: str, repo: str, head: str) -> str:
     return sha
 
 
-@st.cache(persist=True)
+@st.cache_data(ttl=1800)
 def _download_zip(owner: str, repo: str, sha: str) -> bytes:
     """Use `sha` only used for caching purposes to make sure we are fetching from the same repo state."""
     zip_url = f"https://api.github.com/repos/{owner}/{repo}/zipball/{sha}"
@@ -156,7 +152,6 @@ def _download_zip(owner: str, repo: str, sha: str) -> bytes:
         return f.read()
 
 
-@st.cache
 def _extract_zip_and_parse(
     zip_bytes: bytes, keymap_path: PurePosixPath, config: ParseConfig, num_cols: int, layout: str
 ) -> str:
@@ -240,7 +235,9 @@ def main():
         with st.expander("Example keymaps", expanded=st.session_state.get("example_expanded", False)):
             with st.form("example_form"):
                 st.selectbox(label="Load example", options=list(examples), index=0, key="example_yaml")
-                example_submitted = st.form_submit_button(label="Show!", on_click=_set_state, args=["example_expanded"])
+                example_submitted = st.form_submit_button(
+                    label="Show!", on_click=_set_state, args=["example_expanded"], use_container_width=True
+                )
                 if example_submitted or st.session_state.get("user_query", True) and "example_yaml" in query_params:
                     if example_submitted:
                         st.experimental_set_query_params(example_yaml=st.session_state.example_yaml)
@@ -252,7 +249,9 @@ def main():
                     "Number of columns in keymap (optional)", min_value=0, max_value=20, key="qmk_cols"
                 )
                 qmk_file = st.file_uploader(label="Import QMK `keymap.json`", type=["json"])
-                qmk_submitted = st.form_submit_button(label="Parse!", on_click=_set_state, args=["qmk_expanded"])
+                qmk_submitted = st.form_submit_button(
+                    label="Parse!", on_click=_set_state, args=["qmk_expanded"], use_container_width=True
+                )
                 if qmk_submitted:
                     if not qmk_file:
                         st.error(icon="❗", body="Please upload a keymap file")
@@ -271,7 +270,7 @@ def main():
                 )
                 zmk_file = st.file_uploader(label="Import a ZMK `<keyboard>.keymap` file", type=["keymap"])
                 zmk_file_submitted = st.form_submit_button(
-                    label="Parse from file!", on_click=_set_state, args=["zmk_expanded"]
+                    label="Parse from file!", on_click=_set_state, args=["zmk_expanded"], use_container_width=True
                 )
                 if zmk_file_submitted:
                     if not zmk_file:
@@ -293,7 +292,7 @@ def main():
                     key="zmk_url",
                 )
                 zmk_url_submitted = st.form_submit_button(
-                    label="Parse from URL!", on_click=_set_state, args=["zmk_expanded"]
+                    label="Parse from URL!", on_click=_set_state, args=["zmk_expanded"], use_container_width=True
                 )
                 if zmk_url_submitted or st.session_state.get("user_query", True) and "zmk_url" in query_params:
                     if zmk_url_submitted:
