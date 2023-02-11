@@ -49,11 +49,7 @@ def _get_qmk_keyboard(qmk_keyboard: str) -> dict:
 @st.cache
 def draw(yaml_str: str, config: DrawConfig) -> str:
     """Given a YAML keymap string, draw the keymap in SVG format to a string."""
-    try:
-        yaml_data = yaml.safe_load(yaml_str)
-    except yaml.YAMLError as err:
-        st.error(icon="❗", body="Could not parse keymap YAML, please check for syntax errors")
-        raise err
+    yaml_data = yaml.safe_load(yaml_str)
     assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap YAML'
     assert "layout" in yaml_data, 'Physical layout needs to be specified via the "layout" field in keymap YAML'
 
@@ -345,6 +341,8 @@ def main():
             st.subheader("Keymap SVG")
             st.write(svg_to_html(svg), unsafe_allow_html=True)
             st.download_button(label="Download SVG", data=svg, file_name="my_keymap.svg")
+        except yaml.YAMLError as err:
+            _handle_exception(st, "Could not parse keymap YAML, please check for syntax errors", err)
         except Exception as err:
             _handle_exception(st, "Error while drawing SVG from keymap YAML", err)
 
