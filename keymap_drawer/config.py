@@ -62,7 +62,7 @@ class DrawConfig(BaseSettings):
         /* default key styling */
         rect {
             fill: #f6f8fa;
-            stroke: #d6d8da;
+            stroke: #c9cccf;
             stroke-width: 1;
         }
 
