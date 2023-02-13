@@ -197,7 +197,10 @@ class KeymapDrawer:
         p = Point(self.cfg.outer_pad_w, 0.0)
         for name, layer_keys in layers.items():
             # draw layer name
-            self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), f"{name}:", cls="label")
+            layer_header = name
+            if self.cfg.append_colon_to_layer_header:
+                layer_header += ":"
+            self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), layer_header, cls="label")
 
             # get combos on layer and offsets added by their alignments
             combos = combos_per_layer[name]

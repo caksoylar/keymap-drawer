@@ -45,6 +45,9 @@ class DrawConfig(BaseSettings):
     # length multiplier for dendrons
     arc_scale: float = 1.0
 
+    # whether to add a colon after layer name while printing the layer header
+    append_colon_to_layer_header: bool = True
+
     svg_style: str = dedent(
         """\
         /* font and background color specifications */
