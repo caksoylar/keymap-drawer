@@ -23,6 +23,11 @@ class KeymapDrawer:
         self.layout = self.keymap.layout
         self.out = out
 
+    @staticmethod
+    def _split_text(text: str) -> list[str]:
+        # do not split on double spaces, but do split on single
+        return [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
+
     def _draw_rect(self, p: Point, w: float, h: float, cls: str | None = None) -> None:
         class_str = f' class="{cls}"' if cls is not None else ""
         self.out.write(
@@ -30,15 +35,9 @@ class KeymapDrawer:
             f'width="{w}" height="{h}"{class_str}/>\n'
         )
 
-    def _draw_text(self, p: Point, text: str, cls: str | None = None, split: bool = False) -> None:
-        if not text:
+    def _draw_text(self, p: Point, words: Sequence[str], cls: str | None = None) -> None:
+        if not words or not words[0]:
             return
-
-        # do not split on double spaces
-        if split:
-            words = [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
-        else:
-            words = [text]
 
         class_str = f' class="{cls}"' if cls is not None else ""
         if len(words) == 1:
@@ -88,9 +87,20 @@ class KeymapDrawer:
         if r != 0:
             self.out.write(f'<g transform="rotate({r}, {p.x}, {p.y})">\n')
         self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, l_key.type)
-        self._draw_text(p, l_key.tap, split=True)
-        self._draw_text(p + Point(0, h / 2 - self.cfg.line_spacing / 2), l_key.hold, cls="small")
-        self._draw_text(p - Point(0, h / 2 - self.cfg.line_spacing / 2), l_key.shifted, cls="small")
+
+        tap_words = self._split_text(l_key.tap)
+
+        # auto-adjust vertical alignment up/down if there are two lines and either hold/shifted is present
+        tap_p = Point(p.x, p.y)
+        if len(tap_words) == 2:
+            if l_key.shifted and not l_key.hold:  # shift down
+                tap_p.y += h / 3 - self.cfg.line_spacing / 2
+            elif l_key.hold and not l_key.shifted:  # shift up
+                tap_p.y -= h / 3 - self.cfg.line_spacing / 2
+        self._draw_text(tap_p, tap_words)
+
+        self._draw_text(p + Point(0, h / 2 - self.cfg.line_spacing / 2), [l_key.hold], cls="small")
+        self._draw_text(p - Point(0, h / 2 - self.cfg.line_spacing / 2), [l_key.shifted], cls="small")
         if r != 0:
             self.out.write("</g>\n")
 
@@ -145,9 +155,9 @@ class KeymapDrawer:
 
         # draw combo box with text
         self._draw_rect(p_mid, self.cfg.combo_w, self.cfg.combo_h, cls="combo")
-        self._draw_text(p_mid, combo_spec.key.tap, cls="small", split=True)
+        self._draw_text(p_mid, self._split_text(combo_spec.key.tap), cls="small")
         self._draw_text(
-            p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.line_spacing / 5), combo_spec.key.hold, cls="smaller"
+            p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.line_spacing / 5), [combo_spec.key.hold], cls="smaller"
         )
 
     def print_layer(
@@ -200,15 +210,14 @@ class KeymapDrawer:
             layer_header = name
             if self.cfg.append_colon_to_layer_header:
                 layer_header += ":"
-            self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), layer_header, cls="label")
+            self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), [layer_header], cls="label")
 
-            # get combos on layer and offsets added by their alignments
-            combos = combos_per_layer[name]
+            # get offsets added by combo alignments
             combo_offset_top, combo_offset_bot = offsets_per_layer[name]
 
             # draw keys and combos
             p.y += self.cfg.outer_pad_h + combo_offset_top
-            self.print_layer(p, layer_keys, combos, empty_layer=combos_only)
+            self.print_layer(p, layer_keys, combos_per_layer[name], empty_layer=combos_only)
             p.y += self.layout.height + combo_offset_bot
 
         self.out.write("</svg>\n")
