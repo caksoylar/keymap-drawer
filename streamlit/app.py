@@ -5,6 +5,7 @@ import gzip
 import base64
 import zipfile
 import tempfile
+import time
 from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit, quote_from_bytes, unquote_to_bytes
 from urllib.request import urlopen
@@ -83,11 +84,18 @@ def get_example_yamls() -> dict[str, str]:
     """Return mapping of example keymap YAML names to contents."""
     out = {}
     examples_path = Path(__file__).parent.parent / "examples"
-    for filename in sorted(examples_path.iterdir()):
-        full_path = examples_path / filename
-        if full_path.is_file():
-            with open(full_path, encoding="utf-8") as f:
-                out[filename.name] = f.read()
+    example_files = sorted(examples_path.glob("*.yaml"))
+    retry = 0
+    while not example_files and retry < 5:
+        print("Couldn't retrieve example files, retrying")
+        time.sleep(0.2)
+        example_files = sorted(examples_path.glob("*.yaml"))
+        retry += 1
+    if not example_files:
+        raise RuntimeError("Retrying examples failed, please refresh the page :(")
+    for path in example_files:
+        with open(path, encoding="utf-8") as f:
+            out[path.name] = f.read()
     return out
 
 
@@ -215,10 +223,13 @@ def main():
         "Check out the documentation and Python CLI tool in the "
         "[GitHub repo](https://github.com/caksoylar/keymap-drawer)!"
     )
-    if "config" not in st.session_state:
-        st.session_state.config = get_default_config()
 
     examples = get_example_yamls()
+    if "config" not in st.session_state:
+        st.session_state.config = get_default_config()
+    if "keymap_yaml" not in st.session_state:
+        st.session_state.keymap_yaml = examples[list(examples)[0]]
+
     query_params = st.experimental_get_query_params()
     if st.session_state.get("user_query", True):
         if "keymap_yaml" in query_params:
@@ -323,7 +334,6 @@ def main():
     with keymap_col:
         st.subheader("Keymap YAML")
         st.text_area(
-            value=examples[st.session_state.example_yaml],
             height=800,
             key="keymap_yaml",
             label="[Keymap Spec](https://github.com/caksoylar/keymap-drawer/blob/main/KEYMAP_SPEC.md)",
@@ -350,7 +360,6 @@ def main():
             label="[Config parameters](https://github.com/caksoylar/keymap-drawer/blob/main/keymap_drawer/config.py)",
             key="config",
             height=400,
-            value=get_default_config(),
         )
         st.download_button(label="Download config", data=st.session_state.config, file_name="my_config.yaml")
 
