@@ -122,55 +122,66 @@ class KeymapDrawer:
         along with whether dendrons are drawn going to each key position from the combo.
         """
         p_keys = [self.layout.keys[p] for p in combo.key_positions]
-        n_keys = len(p_keys)
 
         # find center of combo box
-        p_mid = Point(p_0.x, p_0.y)
+        p = p_0.copy()
+        p_mid = (1 / len(p_keys)) * sum((k.pos for k in p_keys), start=Point(0, 0))
         match combo.align:
             case "mid":
-                p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
-                p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
+                p += p_mid
             case "top":
-                p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
-                p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - self.cfg.inner_pad_h / 2
-                p_mid.y -= combo.offset * self.layout.min_height
+                p += Point(
+                    p_mid.x,
+                    min(k.pos.y - k.height / 2 for k in p_keys)
+                    - self.cfg.inner_pad_h / 2
+                    - combo.offset * self.layout.min_height,
+                )
             case "bottom":
-                p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
-                p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + self.cfg.inner_pad_h / 2
-                p_mid.y += combo.offset * self.layout.min_height
+                p += Point(
+                    p_mid.x,
+                    max(k.pos.y + k.height / 2 for k in p_keys)
+                    + self.cfg.inner_pad_h / 2
+                    + combo.offset * self.layout.min_height,
+                )
             case "left":
-                p_mid.x += min(k.pos.x - k.width / 2 for k in p_keys) - self.cfg.inner_pad_w / 2
-                p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
-                p_mid.x -= combo.offset * self.layout.min_width
+                p += Point(
+                    min(k.pos.x - k.width / 2 for k in p_keys)
+                    - self.cfg.inner_pad_w / 2
+                    - combo.offset * self.layout.min_width,
+                    p_mid.y,
+                )
             case "right":
-                p_mid.x += max(k.pos.x + k.width / 2 for k in p_keys) + self.cfg.inner_pad_w / 2
-                p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
-                p_mid.x += combo.offset * self.layout.min_width
+                p += Point(
+                    max(k.pos.x + k.width / 2 for k in p_keys)
+                    + self.cfg.inner_pad_w / 2
+                    + combo.offset * self.layout.min_width,
+                    p_mid.y,
+                )
 
         # draw dendrons going from box to combo keys
         if combo.dendron is not False:
             match combo.align:
                 case "top" | "bottom":
                     for k in p_keys:
-                        offset = k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < self.cfg.combo_w / 2 else k.height / 3
-                        self._draw_arc_dendron(p_mid, p_0 + k.pos, True, offset)
+                        offset = k.height / 5 if abs(p_0.x + k.pos.x - p.x) < self.cfg.combo_w / 2 else k.height / 3
+                        self._draw_arc_dendron(p, p_0 + k.pos, True, offset)
                 case "left" | "right":
                     for k in p_keys:
-                        offset = k.width / 5 if abs(p_0.y + k.pos.y - p_mid.y) < self.cfg.combo_h / 2 else k.width / 3
-                        self._draw_arc_dendron(p_mid, p_0 + k.pos, False, offset)
+                        offset = k.width / 5 if abs(p_0.y + k.pos.y - p.y) < self.cfg.combo_h / 2 else k.width / 3
+                        self._draw_arc_dendron(p, p_0 + k.pos, False, offset)
                 case "mid":
                     for k in p_keys:
-                        if combo.dendron is True or abs(p_0 + k.pos - p_mid) >= k.width - 1:
-                            self._draw_line_dendron(p_mid, p_0 + k.pos, k.width / 3)
+                        if combo.dendron is True or abs(p_0 + k.pos - p) >= k.width - 1:
+                            self._draw_line_dendron(p, p_0 + k.pos, k.width / 3)
 
         # draw combo box with text
-        self._draw_rect(p_mid, self.cfg.combo_w, self.cfg.combo_h, cls=[combo.type])
-        self._draw_text(p_mid, self._split_text(combo.key.tap), cls=[combo.type])
+        self._draw_rect(p, self.cfg.combo_w, self.cfg.combo_h, cls=[combo.type])
+        self._draw_text(p, self._split_text(combo.key.tap), cls=[combo.type])
         self._draw_text(
-            p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad), [combo.key.hold], cls=[combo.type, "hold"]
+            p + Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad), [combo.key.hold], cls=[combo.type, "hold"]
         )
         self._draw_text(
-            p_mid - Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
+            p - Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
             [combo.key.shifted],
             cls=[combo.type, "shifted"],
         )
@@ -231,8 +242,8 @@ class KeymapDrawer:
             combo_offset_top, combo_offset_bot = offsets_per_layer[name]
 
             # draw keys and combos
-            p.y += self.cfg.outer_pad_h + combo_offset_top
+            p += Point(0, self.cfg.outer_pad_h + combo_offset_top)
             self.print_layer(p, layer_keys, combos_per_layer[name], empty_layer=combos_only)
-            p.y += self.layout.height + combo_offset_bot
+            p += Point(0, self.layout.height + combo_offset_bot)
 
         self.out.write("</svg>\n")

@@ -13,21 +13,27 @@ from pydantic import BaseModel, root_validator
 from .config import DrawConfig
 
 
-@dataclass
+@dataclass(frozen=True)
 class Point:
     """Simple class representing a 2d point."""
 
     x: float
     y: float
 
-    def __add__(self, other):
+    def __add__(self, other: "Point") -> "Point":
         return Point(self.x + other.x, self.y + other.y)
 
-    def __sub__(self, other):
+    def __sub__(self, other: "Point") -> "Point":
         return Point(self.x - other.x, self.y - other.y)
 
-    def __abs__(self):
+    def __abs__(self) -> float:
         return sqrt(self.x**2 + self.y**2)
+
+    def __rmul__(self, other: int | float) -> "Point":
+        return Point(other * self.x, other * self.y)
+
+    def copy(self) -> "Point":  # pylint: disable=missing-function-docstring
+        return Point(self.x, self.y)
 
 
 @dataclass
@@ -45,7 +51,7 @@ class PhysicalKey:
 
     def __post_init__(self):
         if self.rotation_pos is None:
-            self.rotation_pos = self.pos
+            self.rotation_pos = self.pos  # shallow copy
 
 
 LayoutType = Literal["ortho", "qmk", "raw"]
@@ -162,7 +168,7 @@ class OrthoGenerator(BaseModel):
             ] * self.drop_inner
             for col in reversed(drop_cols):
                 if row < nrows - 1:
-                    row_keys[col].pos.y += key_h / 2
+                    row_keys[col].pos += Point(0, key_h / 2)
                 else:
                     row_keys.pop(col)
 
@@ -217,13 +223,11 @@ class QmkGenerator(BaseModel):
         y_min = min(k.y for k in self.layout)
         return [
             PhysicalKey(
-                pos=Point(key_size * (k.x - x_min + k.w / 2), key_size * (k.y - y_min + k.h / 2)),
+                pos=key_size * Point(k.x - x_min + k.w / 2, k.y - y_min + k.h / 2),
                 width=key_size * k.w,
                 height=key_size * k.h,
                 rotation=k.r,
-                rotation_pos=None
-                if k.rx is None or k.ry is None
-                else Point(key_size * (k.rx - x_min), key_size * (k.ry - y_min)),
+                rotation_pos=None if k.rx is None or k.ry is None else key_size * Point(k.rx - x_min, k.ry - y_min),
             )
             for k in self.layout
         ]
