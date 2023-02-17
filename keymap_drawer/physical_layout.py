@@ -30,13 +30,22 @@ class Point:
         return sqrt(self.x**2 + self.y**2)
 
 
-class PhysicalKey(BaseModel):
-    """Represents a physical key, in terms of its center coordinates, width, height and rotation."""
+@dataclass
+class PhysicalKey:
+    """
+    Represents a physical key, in terms of its center coordinates, width, height,
+    rotation angle and the coordinates around which it is rotated.
+    """
 
     pos: Point
     width: float
     height: float
     rotation: float = 0
+    rotation_pos: Point | None = None  # pos (key center) by default
+
+    def __post_init__(self):
+        if self.rotation_pos is None:
+            self.rotation_pos = self.pos
 
 
 LayoutType = Literal["ortho", "qmk", "raw"]
@@ -197,6 +206,8 @@ class QmkGenerator(BaseModel):
         w: float = 1.0
         h: float = 1.0
         r: float = 0
+        rx: float | None = None
+        ry: float | None = None
 
     layout: Sequence[QmkKey]
 
@@ -210,6 +221,9 @@ class QmkGenerator(BaseModel):
                 width=key_size * k.w,
                 height=key_size * k.h,
                 rotation=k.r,
+                rotation_pos=None
+                if k.rx is None or k.ry is None
+                else Point(key_size * (k.rx - x_min), key_size * (k.ry - y_min)),
             )
             for k in self.layout
         ]
