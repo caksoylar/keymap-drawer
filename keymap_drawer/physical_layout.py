@@ -94,7 +94,7 @@ class OrthoGenerator(BaseModel):
     row/column number represents the size of one half. Thumb keys can only be used if split.
     """
 
-    split: bool
+    split: bool = False
     rows: int
     columns: int
     thumbs: int | Literal["MIT", "2x2u"] = 0

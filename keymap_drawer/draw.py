@@ -28,25 +28,26 @@ class KeymapDrawer:
         # do not split on double spaces, but do split on single
         return [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
 
-    def _draw_rect(self, p: Point, w: float, h: float, cls: str | None = None) -> None:
-        class_str = f' class="{cls}"' if cls is not None else ""
+    def _draw_rect(self, p: Point, w: float, h: float, cls: Sequence[str]) -> None:
+        class_str = (' class="' + " ".join(c for c in cls if c) + '"') if cls else ""
         self.out.write(
             f'<rect rx="{self.cfg.key_rx}" ry="{self.cfg.key_ry}" x="{p.x - w / 2}" y="{p.y - h / 2}" '
             f'width="{w}" height="{h}"{class_str}/>\n'
         )
 
-    def _draw_text(self, p: Point, words: Sequence[str], cls: str | None = None) -> None:
+    def _draw_text(self, p: Point, words: Sequence[str], cls: Sequence[str], shift: float = 0) -> None:
         if not words or not words[0]:
             return
 
-        class_str = f' class="{cls}"' if cls is not None else ""
+        class_str = (' class="' + " ".join(c for c in cls if c) + '"') if cls else ""
         if len(words) == 1:
             self.out.write(f'<text x="{p.x}" y="{p.y}"{class_str}>{escape(words[0])}</text>\n')
             return
         self.out.write(f'<text x="{p.x}" y="{p.y}"{class_str}>\n')
-        self.out.write(f'<tspan x="{p.x}" dy="-{(len(words) - 1) * 0.6}em">{escape(words[0])}</tspan>')
+        dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift) / 2)
+        self.out.write(f'<tspan x="{p.x}" dy="-{dy_0}em">{escape(words[0])}</tspan>')
         for word in words[1:]:
-            self.out.write(f'<tspan x="{p.x}" dy="1.2em">{escape(word)}</tspan>')
+            self.out.write(f'<tspan x="{p.x}" dy="{self.cfg.line_spacing}em">{escape(word)}</tspan>')
         self.out.write("</text>\n")
 
     def _draw_arc_dendron(self, p_1: Point, p_2: Point, x_first: bool, shorten: float) -> None:
@@ -86,60 +87,67 @@ class KeymapDrawer:
         )
         if r != 0:
             self.out.write(f'<g transform="rotate({r}, {p.x}, {p.y})">\n')
-        self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, l_key.type)
+        self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, cls=[l_key.type])
 
         tap_words = self._split_text(l_key.tap)
 
         # auto-adjust vertical alignment up/down if there are two lines and either hold/shifted is present
         tap_p = Point(p.x, p.y)
+        shift = 0
         if len(tap_words) == 2:
             if l_key.shifted and not l_key.hold:  # shift down
-                tap_p.y += h / 3 - self.cfg.line_spacing / 2
+                shift = -1
             elif l_key.hold and not l_key.shifted:  # shift up
-                tap_p.y -= h / 3 - self.cfg.line_spacing / 2
-        self._draw_text(tap_p, tap_words)
+                shift = 1
+        self._draw_text(tap_p, tap_words, cls=[l_key.type, "tap"], shift=shift)
 
-        self._draw_text(p + Point(0, h / 2 - self.cfg.line_spacing / 2), [l_key.hold], cls="small")
-        self._draw_text(p - Point(0, h / 2 - self.cfg.line_spacing / 2), [l_key.shifted], cls="small")
+        self._draw_text(
+            p + Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad), [l_key.hold], cls=[l_key.type, "hold"]
+        )
+        self._draw_text(
+            p - Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
+            [l_key.shifted],
+            cls=[l_key.type, "shifted"],
+        )
         if r != 0:
             self.out.write("</g>\n")
 
-    def print_combo(self, p_0: Point, combo_spec: ComboSpec) -> None:
+    def print_combo(self, p_0: Point, combo: ComboSpec) -> None:
         """
         Given anchor coordinates p_0, print SVG code for a rectangle with text representing
         a combo specification, which contains the key positions that trigger it and what it does
         when triggered. The position of the rectangle depends on the alignment specified,
         along with whether dendrons are drawn going to each key position from the combo.
         """
-        p_keys = [self.layout.keys[p] for p in combo_spec.key_positions]
+        p_keys = [self.layout.keys[p] for p in combo.key_positions]
         n_keys = len(p_keys)
 
         # find center of combo box
         p_mid = Point(p_0.x, p_0.y)
-        match combo_spec.align:
+        match combo.align:
             case "mid":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
             case "top":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += min(k.pos.y - k.height / 2 for k in p_keys) - self.cfg.inner_pad_h / 2
-                p_mid.y -= combo_spec.offset * self.layout.min_height
+                p_mid.y -= combo.offset * self.layout.min_height
             case "bottom":
                 p_mid.x += sum(k.pos.x for k in p_keys) / n_keys
                 p_mid.y += max(k.pos.y + k.height / 2 for k in p_keys) + self.cfg.inner_pad_h / 2
-                p_mid.y += combo_spec.offset * self.layout.min_height
+                p_mid.y += combo.offset * self.layout.min_height
             case "left":
                 p_mid.x += min(k.pos.x - k.width / 2 for k in p_keys) - self.cfg.inner_pad_w / 2
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
-                p_mid.x -= combo_spec.offset * self.layout.min_width
+                p_mid.x -= combo.offset * self.layout.min_width
             case "right":
                 p_mid.x += max(k.pos.x + k.width / 2 for k in p_keys) + self.cfg.inner_pad_w / 2
                 p_mid.y += sum(k.pos.y for k in p_keys) / n_keys
-                p_mid.x += combo_spec.offset * self.layout.min_width
+                p_mid.x += combo.offset * self.layout.min_width
 
         # draw dendrons going from box to combo keys
-        if combo_spec.dendron is not False:
-            match combo_spec.align:
+        if combo.dendron is not False:
+            match combo.align:
                 case "top" | "bottom":
                     for k in p_keys:
                         offset = k.height / 5 if abs(p_0.x + k.pos.x - p_mid.x) < self.cfg.combo_w / 2 else k.height / 3
@@ -150,14 +158,19 @@ class KeymapDrawer:
                         self._draw_arc_dendron(p_mid, p_0 + k.pos, False, offset)
                 case "mid":
                     for k in p_keys:
-                        if combo_spec.dendron is True or abs(p_0 + k.pos - p_mid) >= k.width - 1:
+                        if combo.dendron is True or abs(p_0 + k.pos - p_mid) >= k.width - 1:
                             self._draw_line_dendron(p_mid, p_0 + k.pos, k.width / 3)
 
         # draw combo box with text
-        self._draw_rect(p_mid, self.cfg.combo_w, self.cfg.combo_h, cls="combo")
-        self._draw_text(p_mid, self._split_text(combo_spec.key.tap), cls="small")
+        self._draw_rect(p_mid, self.cfg.combo_w, self.cfg.combo_h, cls=[combo.type])
+        self._draw_text(p_mid, self._split_text(combo.key.tap), cls=[combo.type])
         self._draw_text(
-            p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.line_spacing / 5), [combo_spec.key.hold], cls="smaller"
+            p_mid + Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad), [combo.key.hold], cls=[combo.type, "hold"]
+        )
+        self._draw_text(
+            p_mid - Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
+            [combo.key.shifted],
+            cls=[combo.type, "shifted"],
         )
 
     def print_layer(
@@ -210,7 +223,7 @@ class KeymapDrawer:
             layer_header = name
             if self.cfg.append_colon_to_layer_header:
                 layer_header += ":"
-            self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), [layer_header], cls="label")
+            self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), [layer_header], cls=["label"])
 
             # get offsets added by combo alignments
             combo_offset_top, combo_offset_bot = offsets_per_layer[name]

@@ -20,7 +20,7 @@ class LayoutKey(BaseModel):
     tap: str = Field(alias="t", default="")
     hold: str = Field(alias="h", default="")
     shifted: str = Field(alias="s", default="")
-    type: Literal[None, "held", "ghost"] = None
+    type: str = ""  # pre-defined types: "held" | "ghost"
 
     class Config:  # pylint: disable=missing-class-docstring
         allow_population_by_field_name = True
@@ -58,6 +58,7 @@ class ComboSpec(BaseModel):
     align: Literal["mid", "top", "bottom", "left", "right"] = Field(alias="a", default="mid")
     offset: float = Field(alias="o", default=0.0)
     dendron: bool | None = Field(alias="d", default=None)
+    type: str = "combo"
 
     class Config:  # pylint: disable=missing-class-docstring
         allow_population_by_field_name = True

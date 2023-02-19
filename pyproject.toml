@@ -55,7 +55,7 @@ disable = """
 """
 
 [tool.pylint.BASIC]
-good-names = "x,y,w,h,r,f,k,p,m"
+good-names = "x,y,w,h,r,f,k,p,m,c"
 max-line-length = 120
 
 [tool.mypy]
