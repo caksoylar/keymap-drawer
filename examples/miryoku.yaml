@@ -25,7 +25,7 @@ layers:
   - [Middle Button, Left Button, Right Button, Right Button, Left Button, Middle Button]
   Nav:
   - [Boot, To Tap, To Extra, To Base, '', Again, Paste, Copy, Cut, Undo]
-  - [Meta, Alt, Control, Shift, '', {t: "Cps  Wrd", s: "Cps Lck"}, Left, Down, Up, Right]
+  - [Meta, Alt, Control, Shift, '', {t: "Cps Wrd", s: "Cps Lck"}, Left, Down, Up, Right]
   - ['', AltGr, To Num, To Nav, '', Ins, Home, Pg Dn, Pg Up, End]
   - ['', {type: held}, '', Enter, Bckspc, Delete]
   Mouse:
@@ -34,9 +34,9 @@ layers:
   - ['', AltGr, To Sym, To Mouse, '', '', '', '', '', '']
   - ['', '', {type: held}, Right Button, Left Button, Middle Button]
   Media:
-  - [Boot, To Tap, To Extra, To Base, '', {t: "RGB  Tog", s: "RGB Off"}, {t: "RGB  M+", s: "RGB M-"}, {t: "RGB  H+", s: "RGB H-"}, {t: "RGB  S+", s: "RGB S-"}, {t: "RGB  V+", s: "RGB V-"}]
-  - [Meta, Alt, Control, Shift, '', {t: "EP  Tog", s: "EP Off"}, Prev, Volume Down, Volume Up, Next]
-  - ['', AltGr, To Fun, To Media, '', {t: Out  Tog, s: Out USB}, {t: "BT  0", s: "BT Clr 0"}, {t: "BT  1", s: "BT Clr 1"}, {t: "BT  2", s: "BT Clr 2"}, {t: "BT  3", s: "BT Clr 3"}]
+  - [Boot, To Tap, To Extra, To Base, '', {t: "RGB Tog", s: "RGB Off"}, {t: "RGB M+", s: "RGB M-"}, {t: "RGB H+", s: "RGB H-"}, {t: "RGB S+", s: "RGB S-"}, {t: "RGB V+", s: "RGB V-"}]
+  - [Meta, Alt, Control, Shift, '', {t: "EP Tog", s: "EP Off"}, Prev, Volume Down, Volume Up, Next]
+  - ['', AltGr, To Fun, To Media, '', {t: Out Tog, s: Out USB}, {t: "BT  0", s: "BT Clr 0"}, {t: "BT  1", s: "BT Clr 1"}, {t: "BT  2", s: "BT Clr 2"}, {t: "BT  3", s: "BT Clr 3"}]
   - [{type: held}, '', '', Stop, Play Pause, Mute]
   Num:
   - [{t: '[', s: '{'}, {t: '7', s: '&'}, {t: '8', s: '*'}, {t: '9', s: '('}, {t: ']', s: '}'}, '', To Base, To Extra, To Tap, Boot]
