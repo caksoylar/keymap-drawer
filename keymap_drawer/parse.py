@@ -79,7 +79,7 @@ class QmkJsonParser(KeymapParser):
         if m := self._osm_re.fullmatch(key_str):
             return LayoutKey(tap=mapped(m.group(1).strip()), hold="sticky")
         if m := self._osl_re.fullmatch(key_str):
-            return LayoutKey(tap=mapped(m.group(1).strip()), hold="sticky")
+            return LayoutKey(tap=f"L{m.group(1).strip()}", hold="sticky")
         return LayoutKey(tap=mapped(key_str))
 
     def _parse(self, in_buf: BinaryIO) -> dict:
