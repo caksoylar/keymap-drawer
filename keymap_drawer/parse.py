@@ -62,7 +62,7 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=key_str)
 
         def mapped(key: str) -> str:
-            return self.cfg.qmk_keycode_map.get(key, key)
+            return self.cfg.qmk_keycode_map.get(key, key.replace("_", " "))
 
         key_str = self._prefix_re.sub("", key_str)
 
