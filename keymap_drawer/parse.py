@@ -54,6 +54,8 @@ class QmkJsonParser(KeymapParser):
     _mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
     _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
     _lt_re = re.compile(r"LT\((\S+), *(\S+)\)")
+    _osm_re = re.compile(r"OSM\(MOD_(\S+)\)")
+    _osl_re = re.compile(r"OSL\((\S+)\)")
 
     def _str_to_key(self, key_str: str) -> LayoutKey:  # pylint: disable=too-many-return-statements
         if key_str in self.cfg.raw_binding_map:
@@ -74,6 +76,10 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=mapped(m.group(2).strip()), hold=m.group(1).strip())
         if m := self._lt_re.fullmatch(key_str):
             return LayoutKey(tap=mapped(m.group(2).strip()), hold=f"L{m.group(1).strip()}")
+        if m := self._osm_re.fullmatch(key_str):
+            return LayoutKey(tap=mapped(m.group(1).strip()), hold="sticky")
+        if m := self._osl_re.fullmatch(key_str):
+            return LayoutKey(tap=f"L{m.group(1).strip()}", hold="sticky")
         return LayoutKey(tap=mapped(key_str))
 
     def _parse(self, in_buf: BinaryIO) -> dict:
