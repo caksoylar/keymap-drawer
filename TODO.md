@@ -11,12 +11,14 @@ These are things I plan to implement if there is demand for it, contributions ar
   - Custom sticky keys parsing
   - Macro parsing for string sending?
 - Map ZMK keyboard names (from keymap filename) to physical layout specs
+- Add a way to customize QMK layer names
+  - Maybe apply it for ZMK as well if parsed names aren't good enough
+- Determine held keys from momentarily activated layer positions
+  - Can support nested holds as well
 
 ## Draw
 
-- Accept arbitrary `type` values in `LayoutKey` so users can custom define SVG classes
-  - Could automatically add `class="LayerName"` for keys on layer and activating keys
-- Make `ComboSpec` also respect the `type` in its `key` field, default to `type: combo` if not defined
+- Automatically add `class="LayerName"` for keys on layer and activating keys
 - Physical layouts in KLE format
   - Maybe consider labeled KLE's like VIA/Vial expects to ensure ordering
 - Physical layouts from Ergogen specs
