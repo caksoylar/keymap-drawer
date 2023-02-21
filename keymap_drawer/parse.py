@@ -176,8 +176,8 @@ class ZmkKeymapParser(KeymapParser):
         for elt_p, elt_n in zip(parsed[:-1], parsed[1:]):
             if (
                 isinstance(elt_p, str)
-                and (node_name is None or elt_p == node_name)
                 and isinstance(elt_n, pp.ParseResults)
+                and (node_name is None or elt_p.rsplit(":", maxsplit=1)[-1] == node_name)
             ):
                 found_nodes.append((elt_p, elt_n))
         return found_nodes
