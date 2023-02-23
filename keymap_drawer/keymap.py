@@ -97,7 +97,7 @@ class KeymapData(BaseModel):
         if num_cols > 0:
             dump["layers"] = {
                 name: [layer_keys[i : i + num_cols] for i in range(0, len(layer_keys), num_cols)]
-                for name, layer_keys in dump["layers"]
+                for name, layer_keys in dump["layers"].items()
             }
         return dump
 
