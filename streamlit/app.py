@@ -34,46 +34,22 @@ def svg_to_html(svg_string: str) -> str:
     return f'<img src="data:image/svg+xml;base64,{b64}"/>'
 
 
-@st.cache_data(max_entries=128)
-def _get_qmk_keyboard(qmk_keyboard: str) -> dict:
-    try:
-        with urlopen(f"https://keyboards.qmk.fm/v1/keyboards/{qmk_keyboard}/info.json") as f:
-            return json.load(f)["keyboards"][qmk_keyboard]
-    except HTTPError as exc:
-        raise ValueError(
-            "QMK keyboard not found, please make sure you specify an existing keyboard "
-            "(hint: check from https://config.qmk.fm)"
-        ) from exc
-
-
 def draw(yaml_str: str, config: DrawConfig) -> str:
     """Given a YAML keymap string, draw the keymap in SVG format to a string."""
     yaml_data = yaml.safe_load(yaml_str)
     assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap YAML'
     assert "layout" in yaml_data, 'Physical layout needs to be specified via the "layout" field in keymap YAML'
 
-    qmk_keyboard = yaml_data["layout"].get("qmk_keyboard")
-    qmk_layout = yaml_data["layout"].get("qmk_layout")
-    ortho_layout = yaml_data["layout"].get("ortho_layout")
-
-    if qmk_keyboard:
-        qmk_info = _get_qmk_keyboard(qmk_keyboard)
-        if qmk_layout is None:
-            layout = next(iter(qmk_info["layouts"].values()))["layout"]  # take the first layout in map
-        else:
-            layout = qmk_info["layouts"][qmk_layout]["layout"]
-        layout = {"ltype": "qmk", "layout": layout}
-    elif ortho_layout:
-        layout = {"ltype": "ortho", **ortho_layout}
-    else:
-        raise ValueError('A physical layout needs to be specified in a "layout" field in the keymap YAML')
-
     if custom_config := yaml_data.get("draw_config"):
         config = config.copy(update=custom_config)
 
     with io.StringIO() as out:
         drawer = KeymapDrawer(
-            config=config, out=out, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", [])
+            config=config,
+            out=out,
+            layers=yaml_data["layers"],
+            layout=yaml_data["layout"],
+            combos=yaml_data.get("combos", []),
         )
         drawer.print_board()
         return out.getvalue()
@@ -128,18 +104,17 @@ def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols:
         return out.getvalue()
 
 
-def parse_zmk_to_yaml(zmk_keymap: str | io.BytesIO, config: ParseConfig, num_cols: int, layout: str) -> str:
+def parse_zmk_to_yaml(zmk_keymap: Path | io.BytesIO, config: ParseConfig, num_cols: int, layout: str) -> str:
     """Parse a given ZMK keymap file (file path or buffer) into keymap YAML."""
     parsed = ZmkKeymapParser(config, num_cols).parse(zmk_keymap)
+    if layout:  # assign or override layout field if provided in app
+        parsed["layout"] = json.loads(layout)  # pylint: disable=unsupported-assignment-operation
+
     with io.StringIO() as out:
-        if layout:
-            yaml.safe_dump(
-                {"layout": json.loads(layout)}, out, indent=2, width=160, sort_keys=False, default_flow_style=None
-            )
+        if "layout" not in parsed:  # pylint: disable=unsupported-membership-test
+            out.write(LAYOUT_PREAMBLE)
         yaml.safe_dump(parsed, out, indent=2, width=160, sort_keys=False, default_flow_style=None)
-        if layout:
-            return out.getvalue()
-        return LAYOUT_PREAMBLE + out.getvalue()
+        return out.getvalue()
 
 
 def _get_zmk_ref(owner: str, repo: str, head: str) -> str:
@@ -169,7 +144,7 @@ def _extract_zip_and_parse(
         keymap_file = next(path for path in Path(tmpdir).iterdir() if path.is_dir()) / keymap_path
         if not keymap_file.exists():
             raise ValueError(f"Could not find '{keymap_path}' in the repo, please check URL")
-        return parse_zmk_to_yaml(str(keymap_file), config, num_cols, layout)
+        return parse_zmk_to_yaml(keymap_file, config, num_cols, layout)
 
 
 def parse_zmk_url_to_yaml(zmk_url: str, config: ParseConfig, num_cols: int, layout: str) -> str:

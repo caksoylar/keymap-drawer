@@ -4,10 +4,9 @@ keyboard layout definition (either via QMK info files or using a parametrized
 ortho layout), print an SVG representing the keymap to standard output.
 """
 import sys
-import json
 import argparse
 from importlib.metadata import version
-from urllib.request import urlopen
+from pathlib import Path
 
 import yaml
 
@@ -22,30 +21,19 @@ def draw(args, config: DrawConfig) -> None:
         yaml_data = yaml.safe_load(f)
         assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
 
-    qmk_keyboard = args.qmk_keyboard or yaml_data.get("layout", {}).get("qmk_keyboard")
-    qmk_layout = args.qmk_layout or yaml_data.get("layout", {}).get("qmk_layout")
-    ortho_layout = args.ortho_layout or yaml_data.get("layout", {}).get("ortho_layout")
-
-    if qmk_keyboard or args.qmk_info_json:
-        if qmk_keyboard:
-            with urlopen(f"https://keyboards.qmk.fm/v1/keyboards/{qmk_keyboard}/info.json") as f:
-                qmk_info = json.load(f)["keyboards"][qmk_keyboard]
-        else:
-            with open(args.qmk_info_json, "rb") as f:
-                qmk_info = json.load(f)
-
-        if qmk_layout is None:
-            layout = next(iter(qmk_info["layouts"].values()))["layout"]  # take the first layout in map
-        else:
-            layout = qmk_info["layouts"][qmk_layout]["layout"]
-        layout = {"ltype": "qmk", "layout": layout}
-    elif ortho_layout:
-        layout = {"ltype": "ortho", **ortho_layout}
+    if args.qmk_keyboard or args.qmk_info_json or args.ortho_layout:
+        layout = {
+            "qmk_keyboard": args.qmk_keyboard,
+            "qmk_info_json": args.qmk_info_json,
+            "qmk_layout": args.qmk_layout,
+            "ortho_layout": args.ortho_layout,
+        }
     else:
-        raise ValueError(
+        assert "layout" in yaml_data, (
             "A physical layout needs to be specified either via --qmk-keyboard/--qmk-layout/--ortho-layout, "
             'or in a "layout" field in the keymap_yaml'
         )
+        layout = yaml_data["layout"]
 
     if custom_config := yaml_data.get("draw_config"):
         config = config.copy(update=custom_config)
@@ -93,7 +81,10 @@ def main() -> None:
     draw_p = subparsers.add_parser("draw", help="draw an SVG representation of the keymap")
     info_srcs = draw_p.add_mutually_exclusive_group()
     info_srcs.add_argument(
-        "-j", "--qmk-info-json", help="Path to QMK info.json for a keyboard, containing the physical layout description"
+        "-j",
+        "--qmk-info-json",
+        help="Path to QMK info.json for a keyboard, containing the physical layout description",
+        type=Path,
     )
     info_srcs.add_argument(
         "-k",
@@ -127,8 +118,8 @@ def main() -> None:
         "parse", help="parse a QMK/ZMK keymap to YAML representation to stdout, to be used with the `draw` command"
     )
     keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
-    keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse")
-    keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse")
+    keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse", type=Path)
+    keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=Path)
     parse_p.add_argument(
         "-c",
         "--columns",

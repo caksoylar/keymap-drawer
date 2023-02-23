@@ -119,7 +119,6 @@ class KeymapData(BaseModel):
         """Create layout with type given by ltype."""
         if vals["layout"] is None:  # ignore for no-layout mode
             return vals
-        assert "ltype" in vals["layout"], 'Specifying a layout type key "ltype" is mandatory under "layout"'
         vals["layout"] = layout_factory(config=vals["config"], **vals["layout"])
         return vals
 

@@ -3,14 +3,21 @@ Module containing classes pertaining to the physical layout of a keyboard,
 i.e. a sequence of keys each represented by its coordinates, dimensions
 and rotation.
 """
+import json
 from math import sqrt
 from dataclasses import dataclass
-from functools import cached_property
+from pathlib import Path
+from functools import cached_property, lru_cache
 from typing import Sequence, Literal
+from urllib.request import urlopen
+from urllib.error import HTTPError
 
 from pydantic import BaseModel, root_validator
 
 from .config import DrawConfig
+
+
+QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
 
 
 @dataclass(frozen=True)
@@ -46,15 +53,12 @@ class PhysicalKey:
     pos: Point
     width: float
     height: float
-    rotation: float = 0
+    rotation: float = 0  # CW if positive
     rotation_pos: Point | None = None  # pos (key center) by default
 
     def __post_init__(self):
         if self.rotation_pos is None:
             self.rotation_pos = self.pos  # shallow copy
-
-
-LayoutType = Literal["ortho", "qmk", "raw"]
 
 
 class PhysicalLayout(BaseModel):
@@ -89,20 +93,44 @@ class PhysicalLayout(BaseModel):
         return min(k.height for k in self.keys)
 
 
-def layout_factory(ltype: LayoutType, config: DrawConfig, **kwargs) -> PhysicalLayout:
-    """Create and return a physical layout as determined by the ltype argument."""
-    match ltype:
-        case "ortho":
-            return PhysicalLayout(keys=OrthoGenerator(**kwargs).generate(config.key_w, config.key_h, config.split_gap))
-        case "qmk":
-            return PhysicalLayout(keys=QmkGenerator(**kwargs).generate(config.key_h))
-        case "raw":
-            return PhysicalLayout(**kwargs)
-        case _:
-            raise ValueError(f'Physical layout type "{ltype}" is not supported')
+def layout_factory(
+    config: DrawConfig,
+    qmk_keyboard: str | None = None,
+    qmk_info_json: Path | None = None,
+    qmk_layout: str | None = None,
+    ortho_layout: dict | None = None,
+) -> PhysicalLayout:
+    """Create and return a physical layout, as determined by the combination of arguments passed."""
+    if len([arg for arg in (qmk_keyboard, qmk_info_json, ortho_layout) if arg is not None]) != 1:
+        raise ValueError(
+            'Please provide exactly one of "qmk_keyboard", "qmk_info_json" or "ortho_layout" specs for physical layout'
+        )
+
+    if qmk_keyboard or qmk_info_json:
+        if qmk_keyboard:
+            qmk_info = get_qmk_info(qmk_keyboard)
+        else:  # qmk_info_json
+            assert qmk_info_json is not None
+            with open(qmk_info_json, "rb") as f:
+                qmk_info = json.load(f)
+
+        if qmk_layout is None:
+            layout = next(iter(qmk_info["layouts"].values()))["layout"]  # take the first layout in map
+        else:
+            assert qmk_layout in qmk_info["layouts"], (
+                f'Could not find layout "{qmk_layout}" in QMK info.json, '
+                f'available options are: {list(qmk_info["layouts"])}'
+            )
+            layout = qmk_info["layouts"][qmk_layout]["layout"]
+
+        keys = QmkLayout(layout=layout).generate(config.key_h)
+    else:  # ortho_layout
+        assert ortho_layout is not None
+        keys = OrthoLayout(**ortho_layout).generate(config.key_w, config.key_h, config.split_gap)
+    return PhysicalLayout(keys=keys)
 
 
-class OrthoGenerator(BaseModel):
+class OrthoLayout(BaseModel):
     """
     Generator for a physical layout representing an ortholinear keyboard, as specified by
     its number of rows, columns, thumb keys and whether it is split or not. If split,
@@ -201,17 +229,17 @@ class OrthoGenerator(BaseModel):
         return keys
 
 
-class QmkGenerator(BaseModel):
+class QmkLayout(BaseModel):
     """Generator for layouts given by QMK's info.json format."""
 
     class QmkKey(BaseModel):
         """Model representing each key in QMK's layout definition."""
 
-        x: float
+        x: float  # coordinates of top-left corner
         y: float
         w: float = 1.0
         h: float = 1.0
-        r: float = 0
+        r: float = 0  # CW if positive
         rx: float | None = None
         ry: float | None = None
 
@@ -231,3 +259,16 @@ class QmkGenerator(BaseModel):
             )
             for k in self.layout
         ]
+
+
+@lru_cache(maxsize=128)
+def get_qmk_info(qmk_keyboard: str):
+    """Get a QMK info.json file from QMK keyboards metadata API."""
+    try:
+        with urlopen(QMK_METADATA_URL.format(keyboard=qmk_keyboard)) as f:
+            return json.load(f)["keyboards"][qmk_keyboard]
+    except HTTPError as exc:
+        raise ValueError(
+            f"QMK keyboard '{qmk_keyboard}' not found, please make sure you specify an existing keyboard "
+            "(hint: check from https://config.qmk.fm)"
+        ) from exc

@@ -1,8 +1,8 @@
 """Module to parse QMK/ZMK keymaps into KeymapData and then dump them to dict."""
-import sys
 import re
 import json
 from io import StringIO, TextIOWrapper
+from pathlib import Path
 from abc import ABC
 from itertools import chain
 from typing import Sequence, BinaryIO
@@ -31,15 +31,15 @@ class KeymapParser(ABC):
     def _parse(self, in_buf: BinaryIO):
         raise NotImplementedError
 
-    def parse(self, in_arg: str | BinaryIO) -> dict:
+    def parse(self, in_arg: Path | BinaryIO) -> dict:
         """Wrapper to call parser on a file handle, given a handle or a file path."""
         match in_arg:
             # TODO: Figure out why BinaryIO doesn't match open file handle `_io.BufferedReader` or
             # UploadedFile returned by streamlit's file_uploader widget
             # case BinaryIO():
             #     return self._parse(in_arg)
-            case str():
-                with open(in_arg, "rb") if in_arg != "-" else sys.stdin.buffer as f:
+            case Path():
+                with open(in_arg, "rb") as f:
                     return self._parse(f)
             case _:
                 return self._parse(in_arg)
