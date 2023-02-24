@@ -172,12 +172,12 @@ poetry install  # --with dev,lsp,streamlit optional dependencies
 `poetry shell` will activate a virtual environment with the `keymap_drawer` module in Python path and `keymap` executable available.
 Changes you make in the source code will be reflected when using the module or the command.
 
-If you prefer not to use Poetry, You can get an editable install with `pip install --editable .` inside the `keymap-drawer` folder.
+If you prefer not to use Poetry, you can get an editable install with `pip install --editable .` inside the `keymap-drawer` folder.
 
 ## Related projects
 
-- [The original `keymap`](https://github.com/callum-oakley/keymap/)
-- [Keymapviz](https://github.com/yskoht/keymapviz)
 - [@nickcoutsos's ZMK keymap editor](https://github.com/nickcoutsos/keymap-editor)
+- [The original `keymap`](https://github.com/callum-oakley/keymap/)
+- [@jbarr21's keymap parser](https://github.com/jbarr21/keymap-display)
 - [@leiserfg's ZMK parser](https://github.com/leiserfg/zmk-config/tree/master/parser)
-- [@jbarr21's ZMK parser](https://github.com/jbarr21/zmk-config/tree/main/parser)
+- [Keymapviz](https://github.com/yskoht/keymapviz)
