@@ -1,0 +1,133 @@
+# Upstream boards
+bdn9: {qmk_keyboard: keebio/bdn9/rev2}
+bdn9_rev2: {qmk_keyboard: keebio/bdn9/rev2}
+bt60: {qmk_keyboard: hs60/v2/ansi}
+bt60_v1: {qmk_keyboard: hs60/v2/ansi}
+bt60_v1_hs: {qmk_keyboard: hs60/v2/ansi}
+corne-ish_zen: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
+corneish_zen: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
+corneish_zen_v1: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
+corneish_zen_v2: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
+ferris: {qmk_keyboard: ferris/0_2/base}
+ferris_rev02: {qmk_keyboard: ferris/0_2/base}
+nice60: {qmk_keyboard: hs60/v2/ansi}
+planck_rev6: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_ortho_4x12}
+preonic_rev3: {qmk_keyboard: preonic/rev3, qmk_layout: LAYOUT_ortho_5x12}
+s40nc: {qmk_keyboard: tg4x}
+
+# Upstream shields
+a_dux: {qmk_keyboard: a_dux}
+bat43: {qmk_keyboard: dailycraft/bat43/rev2}
+bfo9000: {qmk_keyboard: keebio/bfo9000}
+boardsource3x4: {qmk_keyboard: boardsource/3x4}
+boardsource5x12: {qmk_keyboard: boardsource/5x12}
+chalice: {qmk_keyboard: chalice, qmk_layout: LAYOUT_default}
+clog: {qmk_keyboard: clog}
+contra: {qmk_keyboard: contra}
+corne: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
+cradio: {qmk_keyboard: ferris/sweep}
+crbn: {ortho_layout: {split: false, rows: 4, columns: 12}}
+eek: {qmk_keyboard: eek/silk_down}
+elephant42: {qmk_keyboard: elephant42}
+ergodash: {qmk_keyboard: omkbd/ergodash/rev1, qmk_layout: LAYOUT_4key_2u_inner}
+eternal_keypad: {qmk_keyboard: eternal_keypad}
+eternal_keypad_lefty: {qmk_keyboard: eternal_keypad}
+fourier: {qmk_keyboard: keebio/fourier}
+helix: {qmk_keyboard: helix/rev3_5rows}
+hummingbird: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2, drop_pinky: true, drop_inner: true}}
+iris: {qmk_keyboard: keebio/iris/rev2}
+jian: {qmk_keyboard: jian/rev2}
+jiran: {qmk_keyboard: jiran/rev2}
+jorne: {qmk_keyboard: jorne/rev1}
+knob_goblin: {qmk_keyboard: knobgoblin}
+kyria: {qmk_keyboard: splitkb/kyria/rev1}
+kyria_rev2: {qmk_keyboard: splitkb/kyria/rev1}
+leeloo: {qmk_keyboard: clickety_split/leeloo/rev1}
+lily58: {qmk_keyboard: lily58/rev1}
+lotus58: null
+m60: {qmk_keyboard: hs60/v2/ansi}
+microdox: {qmk_keyboard: boardsource/microdox/v2}
+murphpad: {qmk_keyboard: mechwild/murphpad}
+naked60: {qmk_keyboard: salicylic_acid3/naked60/rev1}
+nibble: {qmk_keyboard: nullbitsco/nibble}
+osprette: {qmk_keyboard: clog}
+pancake: {qmk_keyboard: spaceman/pancake/rev1/promicro, qmk_layout: LAYOUT_ortho_4x12}
+qaz: {qmk_keyboard: tominabox1/qaz}
+quefrency: {qmk_keyboard: keebio/quefrency/rev2, qmk_layout: LAYOUT_65}
+redox: {qmk_keyboard: redox/rev1/base}
+reviung41: {qmk_keyboard: reviung/reviung41}
+reviung5: {qmk_keyboard: reviung/reviung5}
+romac: {qmk_keyboard: kingly_keys/romac}
+romac_plus: {qmk_keyboard: kingly_keys/romac_plus}
+snap: {qmk_keyboard: nullbitsco/snap}
+sofle: {qmk_keyboard: sofle/rev1}
+splitkb_aurora_corne: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
+splitkb_aurora_lily58: {qmk_keyboard: lily58/rev1}
+splitkb_aurora_sweep: {qmk_keyboard: ferris/sweep}
+splitreus62: {qmk_keyboard: nacly/splitreus62}
+tg4x: {qmk_keyboard: tg4x}
+tidbit: {qmk_keyboard: nullbitsco/tidbit}
+two_percent_milk: {ortho_layout: {split: false, rows: 2, columns: 1}}
+waterfowl: {qmk_keyboard: waterfowl}
+zmk_uno: null
+zodiark: {qmk_keyboard: aleblazer/zodiark}
+
+# Custom boards and shields -- partially following https://github.com/manna-harbour/miryoku/discussions/81
+adv360: {qmk_keyboard: ergodox_ez/base, qmk_layout: LAYOUT_ergodox_pretty}
+adv360pro: {qmk_keyboard: ergodox_ez/base, qmk_layout: LAYOUT_ergodox_pretty}
+ahokore: {qmk_keyboard: obosob/arch_36}
+ahokore: {qmk_keyboard: obosob/arch_36}
+arch36: {qmk_keyboard: obosob/arch_36}
+basbousa: {qmk_keyboard: clog}
+battoota: {qmk_keyboard: berylline}
+berylline: {qmk_keyboard: berylline}
+ble_chiffre: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2}}
+breeze: {qmk_keyboard: afternoonlabs/breeze/rev1}
+bt65: {qmk_keyboard: novelkeys/nk65}
+chocofi: {qmk_keyboard: obosob/arch_36}
+chocv: {qmk_keyboard: chocv}
+clog_v2: {qmk_keyboard: clog}
+dilemma: {qmk_keyboard: bastardkb/dilemma/3x5_2/assembled}
+draculad: {qmk_keyboard: draculad}
+draculady: {qmk_keyboard: obosob/arch_36}
+ergotravel: {qmk_keyboard: ergotravel/rev1}
+gatoraid40: {ortho_layout: {split: true, rows: 3, columns: 6, thumbs: 3, drop_pinky: true}}
+hakea: {qmk_keyboard: sofle/rev1}
+hhkb: {qmk_keyboard: hhkb/ansi}
+hillside46: {qmk_keyboard: hillside/46/0_1}
+hillside48: {qmk_keyboard: hillside/48/0_1}
+hillside52: {qmk_keyboard: hillside/52/0_1}
+horizon: {qmk_keyboard: horizon}
+humla: {qmk_keyboard: obosob/arch_36}
+hypergolic: {qmk_keyboard: ferris/sweep}
+klor: {qmk_keyboard: klor, qmk_layout: LAYOUT_polydactyl}
+klotz: {qmk_keyboard: klotz}
+le_chiff_ble: {qmk_keyboard: tominabox1/le_chiffre/rev2}
+levinson: {qmk_keyboard: keebio/levinson/rev3}
+luna: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2, drop_pinky: true, drop_inner: true}}
+naked48: {qmk_keyboard: salicylic_acid3/naked48/rev1}
+one42: {qmk_keyboard: revxlp}
+osprey: {qmk_keyboard: osprey}
+osprey_a: {qmk_keyboard: osprey}
+pockettype: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_ortho_4x12}
+pteron36: {qmk_keyboard: pteron36, qmk_layout: LAYOUT_split_3x5_3}
+rae_dux: {qmk_keyboard: obosob/arch_36}
+reviung34: {qmk_keyboard: reviung/reviung34}
+reviung39: {qmk_keyboard: reviung/reviung39}
+revlp: {qmk_keyboard: reviung/reviung39}
+revxlp: {qmk_keyboard: revxlp}
+rollow: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
+rufous: {qmk_keyboard: rufous}
+slicemk_ergodox: {qmk_keyboard: ergodox_ez/base, qmk_layout: LAYOUT_ergodox_pretty}
+swweeep: {qmk_keyboard: obosob/arch_36}
+tbkmini: {qmk_keyboard: bastardkb/tbkmini/v2/splinky_3}
+technikable: {ortho_layout: {split: true, rows: 3, columns: 6, thumbs: 4}}
+tipper_tf: {qmk_keyboard: ferris/sweep}
+tornblue: {qmk_keyboard: torn}
+totem: {qmk_keyboard: totem}
+untitled: {ortho_layout: {split: true, rows: 4, columns: 6, thumbs: 5}}
+urchin: {qmk_keyboard: ferris/sweep}
+viterbi: {qmk_keyboard: keebio/viterbi/rev2}
+yasui: {qmk_keyboard: rainkeebs/yasui}
+zaphod: {qmk_keyboard: ferris/sweep}
+zaphod_lite: {qmk_keyboard: ferris/sweep}

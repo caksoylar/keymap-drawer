@@ -7,11 +7,15 @@ from abc import ABC
 from itertools import chain
 from typing import Sequence, BinaryIO
 
+import yaml
 import pyparsing as pp
 from pcpp.preprocessor import Preprocessor, OutputDirective, Action  # type: ignore
 
 from .keymap import LayoutKey, ComboSpec, KeymapData
 from .config import ParseConfig
+
+
+ZMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
 
 
 class KeymapParser(ABC):
@@ -28,10 +32,10 @@ class KeymapParser(ABC):
             return [layer_keys[i : i + self.columns] for i in range(0, len(layer_keys), self.columns)]
         return layer_keys
 
-    def _parse(self, in_buf: BinaryIO):
+    def _parse(self, in_buf: BinaryIO, file_name: str | None = None):
         raise NotImplementedError
 
-    def parse(self, in_arg: Path | BinaryIO) -> dict:
+    def parse(self, in_arg: Path | BinaryIO, file_name: str | None = None) -> dict:
         """Wrapper to call parser on a file handle, given a handle or a file path."""
         match in_arg:
             # TODO: Figure out why BinaryIO doesn't match open file handle `_io.BufferedReader` or
@@ -40,9 +44,9 @@ class KeymapParser(ABC):
             #     return self._parse(in_arg)
             case Path():
                 with open(in_arg, "rb") as f:
-                    return self._parse(f)
+                    return self._parse(f, str(in_arg))
             case _:
-                return self._parse(in_arg)
+                return self._parse(in_arg, file_name)
                 # raise ValueError(f"Unknown input argument {in_arg} with type {type(in_arg)} for parsing")
 
 
@@ -82,7 +86,7 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=f"L{m.group(1).strip()}", hold="sticky")
         return LayoutKey(tap=mapped(key_str))
 
-    def _parse(self, in_buf: BinaryIO) -> dict:
+    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> dict:
         """Parse a JSON keymap with its file handle and return a dict representation to be dumped to YAML."""
 
         raw = json.load(in_buf)
@@ -237,7 +241,7 @@ class ZmkKeymapParser(KeymapParser):
                 continue
         return combos
 
-    def _parse(self, in_buf: BinaryIO) -> dict:
+    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> dict:
         """Parse a ZMK keymap with its file handle and return a dict representation to be dumped to YAML."""
         prepped = self._get_prepped(in_buf)
         parsed = [
@@ -255,4 +259,11 @@ class ZmkKeymapParser(KeymapParser):
         combos = self._get_combos(parsed)
 
         keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
-        return keymap_data.dump(self.columns)
+
+        if not file_name:
+            return keymap_data.dump(self.columns)
+
+        keyboard_name = Path(file_name).stem
+        with open(ZMK_LAYOUTS_PATH, "rb") as f:
+            keyboard_to_layout_map = yaml.safe_load(f)
+        return {"layout": keyboard_to_layout_map.get(keyboard_name)} | keymap_data.dump(self.columns)

@@ -98,7 +98,7 @@ def parse_config(config: str) -> Config:
 
 def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols: int) -> str:
     """Parse a given QMK keymap JSON (buffer) into keymap YAML."""
-    parsed = QmkJsonParser(config, num_cols).parse(qmk_keymap_buf)
+    parsed = QmkJsonParser(config, num_cols).parse(qmk_keymap_buf, qmk_keymap_buf.name)
     with io.StringIO() as out:
         yaml.safe_dump(parsed, out, indent=2, width=160, sort_keys=False, default_flow_style=None)
         return out.getvalue()
@@ -106,7 +106,9 @@ def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols:
 
 def parse_zmk_to_yaml(zmk_keymap: Path | io.BytesIO, config: ParseConfig, num_cols: int, layout: str) -> str:
     """Parse a given ZMK keymap file (file path or buffer) into keymap YAML."""
-    parsed = ZmkKeymapParser(config, num_cols).parse(zmk_keymap)
+    parsed = ZmkKeymapParser(config, num_cols).parse(
+        zmk_keymap, zmk_keymap.name if isinstance(zmk_keymap, io.BytesIO) else None
+    )
     if layout:  # assign or override layout field if provided in app
         parsed["layout"] = json.loads(layout)  # pylint: disable=unsupported-assignment-operation
 
@@ -303,7 +305,7 @@ def main():
                         except Exception as err:
                             _handle_exception(error_placeholder, "Error while parsing ZMK keymap from URL", err)
 
-                st.caption("Please add a `layout` field with physical layout specification below after parsing")
+                st.caption("Please check and if necessary correct the `layout` field after parsing")
 
     keymap_col, draw_col = st.columns(2)
     with keymap_col:
