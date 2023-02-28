@@ -232,6 +232,9 @@ class KeymapDrawer:
 
         p = Point(self.cfg.outer_pad_w, 0.0)
         for name, layer_keys in layers.items():
+            # per-layer class group
+            self.out.write(f'<g class="layer-{name}">\n')
+
             # draw layer name
             layer_header = name
             if self.cfg.append_colon_to_layer_header:
@@ -245,5 +248,7 @@ class KeymapDrawer:
             p += Point(0, self.cfg.outer_pad_h + combo_offset_top)
             self.print_layer(p, layer_keys, combos_per_layer[name], empty_layer=combos_only)
             p += Point(0, self.layout.height + combo_offset_bot)
+
+            self.out.write("</g>\n")
 
         self.out.write("</svg>\n")
