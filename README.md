@@ -89,46 +89,21 @@ It might be beneficial to start by `draw`'ing the current representation and ite
 
 Final step is to produce the SVG representation using the **`keymap draw`** command.
 However to do that, we need to specify the physical layout of the keyboard, i.e., how many keys there are, where each key is positioned etc.
-You can provide this information to `keymap-drawer` in two ways:
 
-- **QMK `info.json` specification**: Each keyboard in the QMK repo has a `info.json` file which specifies physical key locations.
-  Using the keyboard name in the QMK repo, we can fetch this information from the [keyboard metadata API](https://docs.qmk.fm/#/configurator_architecture?id=keyboard-metadata):
+If you produced your keymap YAML through `keymap parse`, it will have tried to guess the proper layout in the `layout` field of your keymap.
+If you like you can tweak the field value according to the [spec](KEYMAP_SPEC.md#layout), then finally call the draw command:
 
-  ```sh
-  keymap draw -k ferris/sweep sweep_keymap.yaml >sweep_keymap.svg
-  ```
+```sh
+keymap draw sweep_keymap.yaml >sweep_keymap.ortho.svg
+```
 
-  You can also specify a layout macro to use alongside the keyboard name if you don't want to use the default one:
-
-  ```sh
-  keymap draw -k crkbd/rev1 -l LAYOUT_split_3x5_3 corne_5col_keymap.yaml >corne_5col_keymap.svg
-  ```
-
-  `-j` flag also allows you to pass a local `info.json` file instead of the keyboard name.
-  You can use this option with custom created physical layout definitions, for instance via [this very handy script by @crides](https://gist.github.com/crides/6d12d1033368e24873b0142941311e5d)
-  that can auto-generate a `keymap-drawer`-compatible `info.json` definition directly from KiCad PCB files, or via [KLE-to-QMK converter](https://qmk.fm/converter/)
-  (which doesn't support key rotation unlike the former).
-
-  > **Note**
-  >
-  > If you parsed a QMK keymap, keyboard and layout information will be populated in the keymap YAML already, so you don't need to specify it in the command line.
-
-  **Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for keyboard and layout names, and preview the physical layout.
-
-- **Parametrized ortholinear layouts**: You can also specify parameters to automatically generate a split or non-split ortholinear layout, for example:
-
-  ```sh
-  keymap draw -o '{split: true, rows: 3, columns: 5, thumbs: 2}' sweep_keymap.yaml >sweep_keymap.ortho.svg
-  ```
-
-  See [the keymap specification](KEYMAP_SPEC.md#layout) for parameter definitions.
+And you are done! You can render the SVG on your browser or use a tool like [CairoSVG](https://cairosvg.org/) or [Inkscape](https://inkscape.org/) to export to a different format.
 
 > **Note**
 >
-> If you prefer, you can specify physical layouts in the [keymap YAML file](KEYMAP_SPEC.md#layout) rather than the command line.
-> This is also necessary for the web interface.
-
-Once you produced the SVG representation, you can render it on your browser or use a tool like [CairoSVG](https://cairosvg.org/) or [Inkscape](https://inkscape.org/) to export to a different format.
+> If you like you can override the layout specification on the command line.
+> For instance you can provide a QMK keyboard name with `-q`/`--qmk-keyboard` and layout with `-l`/`--qmk-layout`,
+> or an ortho layout with `-o`/`--ortho-layout` (using YAML syntax for the value). See `keymap draw --help` for details.
 
 ## Customization
 
