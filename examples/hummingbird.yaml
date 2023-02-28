@@ -10,9 +10,9 @@ layout:
     drop_inner: true
 layers:
   Def:
-  - [W, F, M, P, G, K, U, O, Y, QUOT]
+  - [W, F, M, P, G, K, U, O, Y, SQT]
   - [R, S, N, T, B, J, A, E, I, H]
-  -  [C, L, D,     X, ',', .]
+  -    [C, L, D,       X, ',', .]
   - {t: Nav, h: sticky}
   - SPACE
   - {t: LSHFT, h: sticky}
