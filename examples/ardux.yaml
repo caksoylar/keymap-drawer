@@ -1,7 +1,6 @@
 # parsed and then tweaked from https://github.com/arduxio/zmk-ardux/blob/main/config/boards/shields/artboard/artboard_left.keymap
 layout:
   ortho_layout:
-    split: false
     rows: 2
     columns: 4
 draw_config:

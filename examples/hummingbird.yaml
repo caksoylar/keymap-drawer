@@ -1,5 +1,6 @@
 # bootstrapped from https://github.com/jcmkk3/zmk-config/blob/main/config/hummingbird.keymap
 layout:
+  # qmk_keyboard: rufous
   ortho_layout:
     split: true
     rows: 3

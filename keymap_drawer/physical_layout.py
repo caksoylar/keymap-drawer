@@ -17,6 +17,7 @@ from pydantic import BaseModel, root_validator
 from .config import DrawConfig
 
 
+QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
 
 
@@ -239,7 +240,7 @@ class QmkLayout(BaseModel):
         y: float
         w: float = 1.0
         h: float = 1.0
-        r: float = 0  # CW if positive
+        r: float = 0  # assume CW rotation around key center, after translation to x, y
         rx: float | None = None
         ry: float | None = None
 
@@ -262,11 +263,19 @@ class QmkLayout(BaseModel):
 
 
 @lru_cache(maxsize=128)
-def get_qmk_info(qmk_keyboard: str):
-    """Get a QMK info.json file from QMK keyboards metadata API."""
+def get_qmk_info(qmk_keyboard: str, save_local_copy: bool = False):
+    """Get a QMK info.json file from either self-maintained folder of layouts or from QMK keyboards metadata API."""
+    local_path = QMK_LAYOUTS_PATH / f"{qmk_keyboard.replace('/', '@')}.json"
+    if local_path.is_file():
+        with open(local_path, "rb") as f:
+            return json.load(f)
     try:
         with urlopen(QMK_METADATA_URL.format(keyboard=qmk_keyboard)) as f:
-            return json.load(f)["keyboards"][qmk_keyboard]
+            info = json.load(f)["keyboards"][qmk_keyboard]
+            if save_local_copy:
+                with open(local_path, "w", encoding="utf-8") as f_out:
+                    json.dump({"layouts": info["layouts"]}, f_out)
+        return info
     except HTTPError as exc:
         raise ValueError(
             f"QMK keyboard '{qmk_keyboard}' not found, please make sure you specify an existing keyboard "

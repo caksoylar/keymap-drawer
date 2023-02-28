@@ -99,7 +99,7 @@ hillside48: {qmk_keyboard: hillside/48/0_1}
 hillside52: {qmk_keyboard: hillside/52/0_1}
 horizon: {qmk_keyboard: horizon}
 humla: {qmk_keyboard: obosob/arch_36}
-hypergolic: {qmk_keyboard: ferris/sweep}
+hypergolic: {qmk_keyboard: paroxysm}
 klor: {qmk_keyboard: klor, qmk_layout: LAYOUT_polydactyl}
 klotz: {qmk_keyboard: klotz}
 le_chiff_ble: {qmk_keyboard: tominabox1/le_chiffre/rev2}

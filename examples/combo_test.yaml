@@ -2,7 +2,6 @@ layout:
   ortho_layout:
     rows: 3
     columns: 3
-    split: false
 layers:
   default:
     - [1A, 1B, 1C]

@@ -1,5 +1,5 @@
 layout:
-  qmk_keyboard: crkbd/rev1
+  qmk_keyboard: corne_rotated
   qmk_layout: LAYOUT_split_3x5_3
 layers:
   DEF:
