@@ -1,6 +1,6 @@
 # parsed from the default QMK keymap
 layout:
-  qmk_keyboard: hhkb/ansi
+  qmk_keyboard: hhkb/ansi/32u4
   qmk_layout: LAYOUT
 layers:
   L0:
