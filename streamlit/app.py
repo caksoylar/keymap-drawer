@@ -75,7 +75,7 @@ def get_example_yamls() -> dict[str, str]:
     return out
 
 
-@st.cache_resource
+@st.cache_data
 def get_default_config() -> str:
     """Get and dump default config."""
 
@@ -202,8 +202,8 @@ def main():
     )
 
     examples = get_example_yamls()
-    if "config" not in st.session_state:
-        st.session_state.config = get_default_config()
+    if not st.session_state.get("kd_config"):
+        st.session_state.kd_config = get_default_config()
     if "keymap_yaml" not in st.session_state:
         st.session_state.keymap_yaml = examples[list(examples)[0]]
 
@@ -246,7 +246,7 @@ def main():
                     else:
                         try:
                             st.session_state.keymap_yaml = parse_qmk_to_yaml(
-                                qmk_file, parse_config(st.session_state.config).parse_config, num_cols
+                                qmk_file, parse_config(st.session_state.kd_config).parse_config, num_cols
                             )
                         except Exception as err:
                             _handle_exception(error_placeholder, "Error while parsing QMK keymap", err)
@@ -267,7 +267,7 @@ def main():
                         try:
                             st.session_state.keymap_yaml = parse_zmk_to_yaml(
                                 zmk_file,
-                                parse_config(st.session_state.config).parse_config,
+                                parse_config(st.session_state.kd_config).parse_config,
                                 num_cols,
                                 query_params.get("layout", [""])[0],
                             )
@@ -291,7 +291,7 @@ def main():
                         try:
                             st.session_state.keymap_yaml = parse_zmk_url_to_yaml(
                                 st.session_state.zmk_url,
-                                parse_config(st.session_state.config).parse_config,
+                                parse_config(st.session_state.kd_config).parse_config,
                                 num_cols,
                                 query_params.get("layout", [""])[0],
                             )
@@ -323,7 +323,7 @@ def main():
 
     with draw_col:
         try:
-            svg = draw(st.session_state.keymap_yaml, parse_config(st.session_state.config).draw_config)
+            svg = draw(st.session_state.keymap_yaml, parse_config(st.session_state.kd_config).draw_config)
             st.subheader("Keymap SVG")
             st.write(svg_to_html(svg), unsafe_allow_html=True)
             st.download_button(label="Download SVG", data=svg, file_name="my_keymap.svg")
@@ -335,10 +335,10 @@ def main():
     with st.expander("Configuration"):
         st.text_area(
             label="[Config parameters](https://github.com/caksoylar/keymap-drawer/blob/main/keymap_drawer/config.py)",
-            key="config",
+            key="kd_config",
             height=400,
         )
-        st.download_button(label="Download config", data=st.session_state.config, file_name="my_config.yaml")
+        st.download_button(label="Download config", data=st.session_state.kd_config, file_name="my_config.yaml")
 
     st.session_state.user_query = False
 
