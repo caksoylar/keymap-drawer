@@ -31,7 +31,8 @@ This field provides information about the physical layout of the keyboard, i.e.,
 
    QMK spec also lets you specify multiple "layouts" per keyboard corresponding to different layout macros to support physical variations.
 
-   You can also create your own physical layout definitions in QMK format to use with `keymap-drawer`. A few options to generate it are:
+   You can also create your own physical layout definitions in QMK format to use with `keymap-drawer`, which accepts JSONs with the official schema that
+   has layouts listed under the `layout` key, or one that directly consists of a list of key specs as a shortcut. A few options to generate it are:
 
    - Using the interactive [Keymap Layout Helper](https://nickcoutsos.github.io/keymap-layout-tools/) by @nickcoutsos[^1]
    - Using a [KLE-to-QMK converter](https://qmk.fm/converter/) (which doesn't support key rotation unlike the other two options)

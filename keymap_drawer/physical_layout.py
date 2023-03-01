@@ -115,7 +115,10 @@ def layout_factory(
             with open(qmk_info_json, "rb") as f:
                 qmk_info = json.load(f)
 
-        if qmk_layout is None:
+        if isinstance(qmk_info, list):
+            assert qmk_layout is None, "Cannot use qmk_layout with a list-format QMK spec"
+            layout = qmk_info  # shortcut for list-only representation
+        elif qmk_layout is None:
             layout = next(iter(qmk_info["layouts"].values()))["layout"]  # take the first layout in map
         else:
             assert qmk_layout in qmk_info["layouts"], (
