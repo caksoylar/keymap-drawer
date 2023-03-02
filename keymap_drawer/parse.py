@@ -67,24 +67,28 @@ class QmkJsonParser(KeymapParser):
         if self.cfg.skip_binding_parsing:
             return LayoutKey(tap=key_str)
 
-        def mapped(key: str) -> str:
-            return self.cfg.qmk_keycode_map.get(key, key.replace("_", " "))
+        def mapped(key: str) -> LayoutKey:
+            return LayoutKey.from_key_spec(self.cfg.qmk_keycode_map.get(key, key.replace("_", " ")))
 
         key_str = self._prefix_re.sub("", key_str)
 
         if m := self._mo_re.fullmatch(key_str):
             return LayoutKey(tap=f"L{m.group(1).strip()}")
         if m := self._mts_re.fullmatch(key_str):
-            return LayoutKey(tap=mapped(m.group(2).strip()), hold=m.group(1))
+            tap_key = mapped(m.group(2).strip())
+            return LayoutKey(tap=tap_key.tap, hold=m.group(1), shifted=tap_key.shifted)
         if m := self._mtl_re.fullmatch(key_str):
-            return LayoutKey(tap=mapped(m.group(2).strip()), hold=m.group(1).strip())
+            tap_key = mapped(m.group(2).strip())
+            return LayoutKey(tap=tap_key.tap, hold=m.group(1).strip(), shifted=tap_key.shifted)
         if m := self._lt_re.fullmatch(key_str):
-            return LayoutKey(tap=mapped(m.group(2).strip()), hold=f"L{m.group(1).strip()}")
+            tap_key = mapped(m.group(2).strip())
+            return LayoutKey(tap=tap_key.tap, hold=f"L{m.group(1).strip()}", shifted=tap_key.shifted)
         if m := self._osm_re.fullmatch(key_str):
-            return LayoutKey(tap=mapped(m.group(1).strip()), hold="sticky")
+            tap_key = mapped(m.group(1).strip())
+            return LayoutKey(tap=tap_key.tap, hold="sticky", shifted=tap_key.shifted)
         if m := self._osl_re.fullmatch(key_str):
             return LayoutKey(tap=f"L{m.group(1).strip()}", hold="sticky")
-        return LayoutKey(tap=mapped(key_str))
+        return mapped(key_str)
 
     def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> dict:
         """Parse a JSON keymap with its file handle and return a dict representation to be dumped to YAML."""
@@ -127,10 +131,12 @@ class ZmkKeymapParser(KeymapParser):
         if self.cfg.skip_binding_parsing:
             return LayoutKey(tap=binding)
 
-        def mapped(key: str) -> str:
-            if key in self.cfg.zmk_keycode_map:
-                return self.cfg.zmk_keycode_map[key]
-            return self._numbers_re.sub(r"\3", key).removeprefix("C_").removeprefix("K_").replace("_", " ")
+        def mapped(key: str) -> LayoutKey:
+            return LayoutKey.from_key_spec(
+                self.cfg.zmk_keycode_map.get(
+                    key, self._numbers_re.sub(r"\3", key).removeprefix("C_").removeprefix("K_").replace("_", " ")
+                )
+            )
 
         match binding.split():
             case ["&none"] | ["&trans"]:
@@ -138,9 +144,10 @@ class ZmkKeymapParser(KeymapParser):
             case [ref]:
                 return LayoutKey(tap=ref)
             case ["&kp", par]:
-                return LayoutKey(tap=mapped(par))
+                return mapped(par)
             case ["&sk", par]:
-                return LayoutKey(tap=mapped(par), hold="sticky")
+                l_key = mapped(par)
+                return LayoutKey(tap=l_key.tap, hold="sticky", shifted=l_key.shifted)
             case [("&out" | "&bt" | "&ext_power" | "&rgb_ug"), *pars]:
                 return LayoutKey(tap=" ".join(pars).replace("_", " ").replace(" SEL ", " "))
             case [("&mo" | "&to" | "&tog"), par]:
@@ -149,10 +156,11 @@ class ZmkKeymapParser(KeymapParser):
                 return LayoutKey(tap=self.layer_names[int(par)], hold="sticky")
             case [ref, hold_par, tap_par] if ref in self.hold_tap_labels:
                 try:
-                    hold_par = self.layer_names[int(hold_par)]
+                    hold = self.layer_names[int(hold_par)]
                 except (ValueError, IndexError):  # not a layer-tap, so maybe a keycode?
-                    hold_par = mapped(hold_par)
-                return LayoutKey(tap=mapped(tap_par), hold=hold_par)
+                    hold = mapped(hold_par).tap
+                tap_key = mapped(tap_par)
+                return LayoutKey(tap=tap_key.tap, hold=hold, shifted=tap_key.shifted)
         return LayoutKey(tap=binding)
 
     def _get_prepped(self, in_buf: BinaryIO) -> str:

@@ -4,6 +4,8 @@ These are things I plan to implement if there is demand for it, contributions ar
 
 ## Parse
 
+- Add shifted values to default `qmk/zmk_keycode_map` and add a `ParseConfig` field
+  to omit them if preferred
 - Improved ZMK parsing
   - Use `compatible` property values instead of node names
   - Find arbitrarily nested nodes

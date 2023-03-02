@@ -150,7 +150,7 @@ class ParseConfig(BaseSettings):
     raw_binding_map: dict[str, str | dict] = {}
 
     # convert QMK keycodes to their display forms, omitting "KC_" prefix on the keys
-    qmk_keycode_map: dict[str, str] = {
+    qmk_keycode_map: dict[str, str | dict] = {
         # QMK keycodes
         "XXXXXXX": "",
         "TRANSPARENT": "",
@@ -224,7 +224,7 @@ class ParseConfig(BaseSettings):
     }
 
     # convert ZMK keycodes to their display forms, applied to parameters of behaviors like "&kp"
-    zmk_keycode_map: dict[str, str] = {
+    zmk_keycode_map: dict[str, str | dict] = {
         "EXCLAMATION": "!",
         "EXCL": "!",
         "AT_SIGN": "@",
