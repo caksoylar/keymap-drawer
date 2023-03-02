@@ -125,18 +125,23 @@ class ZmkKeymapParser(KeymapParser):
         super().__init__(config, columns)
         self.hold_tap_labels = {"&mt", "&lt"}
 
-    def _str_to_key(self, binding: str) -> LayoutKey:  # pylint: disable=too-many-return-statements
+    def _str_to_key(  # pylint: disable=too-many-return-statements
+        self, binding: str, no_shifted: bool = False
+    ) -> LayoutKey:
         if binding in self.cfg.raw_binding_map:
             return LayoutKey.from_key_spec(self.cfg.raw_binding_map[binding])
         if self.cfg.skip_binding_parsing:
             return LayoutKey(tap=binding)
 
         def mapped(key: str) -> LayoutKey:
-            return LayoutKey.from_key_spec(
+            mapped = LayoutKey.from_key_spec(
                 self.cfg.zmk_keycode_map.get(
                     key, self._numbers_re.sub(r"\3", key).removeprefix("C_").removeprefix("K_").replace("_", " ")
                 )
             )
+            if no_shifted:
+                mapped.shifted = ""
+            return mapped
 
         match binding.split():
             case ["&none"] | ["&trans"]:
@@ -239,7 +244,7 @@ class ZmkKeymapParser(KeymapParser):
                 node_str = " ".join(item for item in node.as_list() if isinstance(item, str))
                 binding = self._bindings_re.search(node_str).group(1)  # type: ignore
                 combo = {
-                    "k": self._str_to_key(binding),
+                    "k": self._str_to_key(binding, no_shifted=True),
                     "p": [int(pos) for pos in self._keypos_re.search(node_str).group(1).split()],  # type: ignore
                 }
                 if m := self._layers_re.search(node_str):
