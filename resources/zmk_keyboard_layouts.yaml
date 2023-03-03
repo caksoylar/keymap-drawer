@@ -84,7 +84,7 @@ berylline: {qmk_keyboard: berylline}
 ble_chiffre: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2}}
 breeze: {qmk_keyboard: afternoonlabs/breeze/rev1}
 bt65: {qmk_keyboard: novelkeys/nk65}
-chocofi: {qmk_keyboard: obosob/arch_36}
+chocofi: {qmk_keyboard: chocofi}
 chocv: {qmk_keyboard: chocv}
 clog_v2: {qmk_keyboard: clog}
 dilemma: {qmk_keyboard: bastardkb/dilemma/3x5_2/assembled}
