@@ -140,7 +140,8 @@ class KeymapData(BaseModel):
         if vals["layout"] is None:  # ignore for no-layout mode
             return vals
         for name, layer in vals["layers"].items():
-            assert len(layer) == len(
-                vals["layout"]
-            ), f"Number of keys do not match layout specification in layer {name}"
+            assert len(layer) == len(vals["layout"]), (
+                f'Number of keys on layer "{name}" ({len(layer)}) does not match physical layout '
+                f'specification ({len(vals["layout"])})'
+            )
         return vals
