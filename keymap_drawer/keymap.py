@@ -3,6 +3,8 @@ Module with classes that define the keymap representation, with multiple layers
 containing key and combo specifications, paired with the physical keyboard layout.
 """
 from itertools import chain
+from functools import partial
+from collections import defaultdict
 from typing import Literal, Sequence, Mapping, Iterable
 
 from pydantic import BaseModel, Field, validator, root_validator
@@ -39,11 +41,11 @@ class LayoutKey(BaseModel):
                 return cls()
         raise ValueError(f'Invalid key specification "{key_spec}", provide a dict, string or null')
 
-    def dict(self, *args, **kwargs):
+    def dict(self, *args, no_tapstr: bool = False, **kwargs):
         dict_repr = super().dict(*args, **kwargs)
-        if set(dict_repr.keys()).issubset({"t", "tap"}):
-            return dict_repr.get("t") or dict_repr.get("tap", "")
-        return dict_repr
+        if no_tapstr or not set(dict_repr.keys()).issubset({"t", "tap"}):
+            return dict_repr
+        return dict_repr.get("t") or dict_repr.get("tap", "")
 
 
 class ComboSpec(BaseModel):
@@ -110,6 +112,53 @@ class KeymapData(BaseModel):
                 for name, layer_keys in dump["layers"].items()
             }
         return dump
+
+    def rebase(self, base: "KeymapData") -> None:
+        """
+        Rebase a keymap on a "base" one: This mostly preserves the fields with the fields from
+        the keymap, however for layers and combos it inherits fields from base that are not
+        specified in the new keymap. For example this can be used to take an old keymap and update
+        with a new parse output, while keeping manual additions like held keys and combo positioning.
+
+        For layers, it uses a base key on each position when the layer with the same name exists in base.
+        For combos, it uses `key_positions` and `layers` properties to associate old and new ones.
+        """
+        new_layers = {}
+        for name, layer in self.layers.items():
+            if base_layer := base.layers.get(name):
+                assert len(base_layer) == len(
+                    layer
+                ), f'Cannot update from base keymap because layer lengths for "{name}" do not match'
+                layer = [
+                    base_key.copy(update=key.dict(exclude_unset=True, exclude_defaults=True, no_tapstr=True))
+                    for base_key, key in zip(base_layer, layer)
+                ]
+            new_layers[name] = layer
+        self.layers = new_layers
+
+        base_combos_map = defaultdict(list)  # for faster lookup by key_positions
+        for combo in base.combos:
+            base_combos_map[tuple(sorted(combo.key_positions))].append(combo)
+
+        def combo_matcher(combo: ComboSpec, ref_layers: set[str]) -> int:
+            return len(ref_layers & set(combo.layers))
+
+        new_combos = []
+        for combo in self.combos:
+            layers = set(combo.layers)
+
+            # find all matching combos in base by key_positions, then use the one with the most layer overlap
+            if base_matches := base_combos_map.get(tuple(sorted(combo.key_positions))):
+                best_match = max(base_matches, key=partial(combo_matcher, ref_layers=layers))
+
+                # need to handle key separately because update doesn't support nested models
+                # https://github.com/pydantic/pydantic/issues/4177
+                key = combo.key.copy(deep=True)
+                combo = best_match.copy(update=combo.dict(exclude={"key"}, exclude_unset=True, exclude_defaults=True))
+                combo.key = key
+
+            new_combos.append(combo)
+        self.combos = new_combos
 
     @validator("layers", pre=True)
     def parse_layers(cls, val) -> Mapping[str, Sequence[LayoutKey]]:

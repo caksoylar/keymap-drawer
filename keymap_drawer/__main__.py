@@ -11,6 +11,7 @@ from pathlib import Path
 import yaml
 
 from .config import Config, DrawConfig, ParseConfig
+from .keymap import KeymapData
 from .draw import KeymapDrawer
 from .parse import QmkJsonParser, ZmkKeymapParser
 
@@ -46,10 +47,17 @@ def draw(args, config: DrawConfig) -> None:
 
 def parse(args, config: ParseConfig) -> None:
     """Call the appropriate parser for given args and dump YAML keymap representation to stdout."""
-    if args.qmk_keymap_json:
-        parsed = QmkJsonParser(config, args.columns).parse(args.qmk_keymap_json)
+    if args.base_keymap:
+        with open(args.base_keymap, "rb") as f:
+            yaml_data = yaml.safe_load(f)
+        base = KeymapData(layers=yaml_data["layers"], combos=yaml_data.get("combos", []), layout=None, config=None)
     else:
-        parsed = ZmkKeymapParser(config, args.columns).parse(args.zmk_keymap)
+        base = None
+
+    if args.qmk_keymap_json:
+        parsed = QmkJsonParser(config, args.columns, base_keymap=base).parse(args.qmk_keymap_json)
+    else:
+        parsed = ZmkKeymapParser(config, args.columns, base_keymap=base).parse(args.zmk_keymap)
 
     yaml.safe_dump(parsed, sys.stdout, indent=2, width=160, sort_keys=False, default_flow_style=None)
 
@@ -120,6 +128,9 @@ def main() -> None:
     keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
     keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse", type=Path)
     keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=Path)
+    parse_p.add_argument(
+        "-b", "--base-keymap", help="A base keymap YAML to inherit certain properties from", type=Path
+    )
     parse_p.add_argument(
         "-c",
         "--columns",
