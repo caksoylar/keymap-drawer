@@ -21,18 +21,13 @@ ZMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "zmk_keyboard_la
 class KeymapParser(ABC):
     """Abstract base class for parsing firmware keymap representations."""
 
-    def __init__(self, config: ParseConfig, columns: int | None):
+    def __init__(self, config: ParseConfig, columns: int | None, base_keymap: KeymapData | None = None):
         self.cfg = config
         self.columns = columns if columns is not None else 0
         self.layer_names: list[str] | None = None
+        self.base_keymap = base_keymap
 
-    def rearrange_layer(self, layer_keys: Sequence[LayoutKey]) -> Sequence[LayoutKey | Sequence[LayoutKey]]:
-        """Convert a list of keys to list of list of keys to roughly correspond to rows."""
-        if self.columns:
-            return [layer_keys[i : i + self.columns] for i in range(0, len(layer_keys), self.columns)]
-        return layer_keys
-
-    def _parse(self, in_buf: BinaryIO, file_name: str | None = None):
+    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> tuple[dict, KeymapData]:
         raise NotImplementedError
 
     def parse(self, in_arg: Path | BinaryIO, file_name: str | None = None) -> dict:
@@ -44,10 +39,19 @@ class KeymapParser(ABC):
             #     return self._parse(in_arg)
             case Path():
                 with open(in_arg, "rb") as f:
-                    return self._parse(f, str(in_arg))
+                    layout, keymap_data = self._parse(f, str(in_arg))
             case _:
-                return self._parse(in_arg, file_name)
                 # raise ValueError(f"Unknown input argument {in_arg} with type {type(in_arg)} for parsing")
+                layout, keymap_data =  self._parse(in_arg, file_name)
+
+        if self.base_keymap is not None:
+            keymap_data.rebase(self.base_keymap)
+
+        keymap_dump = keymap_data.dump(self.columns)
+
+        if layout:
+            return {"layout": layout} | keymap_dump
+        return keymap_dump
 
 
 class QmkJsonParser(KeymapParser):
@@ -90,8 +94,8 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=f"L{m.group(1).strip()}", hold="sticky")
         return mapped(key_str)
 
-    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> dict:
-        """Parse a JSON keymap with its file handle and return a dict representation to be dumped to YAML."""
+    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> tuple[dict, KeymapData]:
+        """Parse a JSON keymap with its file handle and return the layout spec and KeymapData to be dumped to YAML."""
 
         raw = json.load(in_buf)
 
@@ -107,7 +111,7 @@ class QmkJsonParser(KeymapParser):
             config=None,
         )
 
-        return {"layout": layout} | keymap_data.dump(self.columns)
+        return layout, keymap_data
 
 
 class ZmkKeymapParser(KeymapParser):
@@ -121,8 +125,8 @@ class ZmkKeymapParser(KeymapParser):
     _nodelabel_re = re.compile(r"([\w-]+) *: *([\w-]+) *{")
     _numbers_re = re.compile(r"N(UM(BER)?_)?(\d)")
 
-    def __init__(self, config: ParseConfig, columns: int | None):
-        super().__init__(config, columns)
+    def __init__(self, config: ParseConfig, columns: int | None, base_keymap: KeymapData | None = None):
+        super().__init__(config, columns, base_keymap)
         self.hold_tap_labels = {"&mt", "&lt"}
 
     def _str_to_key(  # pylint: disable=too-many-return-statements
@@ -257,8 +261,8 @@ class ZmkKeymapParser(KeymapParser):
                 continue
         return combos
 
-    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> dict:
-        """Parse a ZMK keymap with its file handle and return a dict representation to be dumped to YAML."""
+    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> tuple[dict, KeymapData]:
+        """Parse a ZMK keymap with its file handle and return the layout spec and KeymapData to be dumped to YAML."""
         prepped = self._get_prepped(in_buf)
         parsed = [
             node
@@ -277,9 +281,9 @@ class ZmkKeymapParser(KeymapParser):
         keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
 
         if not file_name:
-            return keymap_data.dump(self.columns)
+            return {}, keymap_data
 
         keyboard_name = Path(file_name).stem
         with open(ZMK_LAYOUTS_PATH, "rb") as f:
             keyboard_to_layout_map = yaml.safe_load(f)
-        return {"layout": keyboard_to_layout_map.get(keyboard_name)} | keymap_data.dump(self.columns)
+        return keyboard_to_layout_map.get(keyboard_name), keymap_data
