@@ -50,8 +50,12 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 
     svg_style: str = dedent(
         """\
+        /* inherit to force styles through use tags*/
+        svg path {
+            fill: inherit;
+        }
         /* font and background color specifications */
-        svg {
+        svg.keymap {
             font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
             font-size: 14px;
             font-kerning: normal;
@@ -60,7 +64,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         }
 
         /* default key styling */
-        rect {
+        rect.key {
             fill: #f6f8fa;
             stroke: #c9cccf;
             stroke-width: 1;
@@ -116,13 +120,33 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         }
 
         /* styling for combo dendrons */
-        path {
+        path.combo {
             stroke-width: 1;
             stroke: gray;
             fill: none;
         }
+
+        /* Start Tabler Icons Cleanup */
+        /* cannot use height/width with glyphs */
+        .icon-tabler > path {
+            fill: inherit;
+            stroke: inherit;
+        }
+        /* hide tabler's default box */
+        .icon-tabler > path[stroke="none"][fill="none"] {
+            visibility: collapse;
+        }
+        /* End Tabler Icons Cleanup */
         """
     )
+
+    # height in pixels for glyphs in different key fields
+    glyph_tap_size: int = 14
+    glyph_hold_size: int = 12
+    glyph_shifted_size: int = 10
+
+    # mapping of glyph names to be used in key fields to their SVG definitions
+    glyphs: dict[str, str] = {}
 
 
 class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
