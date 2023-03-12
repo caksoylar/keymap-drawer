@@ -86,9 +86,7 @@ class KeymapDrawer:
             p_key.rotation,
         )
         if r != 0:
-            assert p_key.rotation_pos is not None
-            r_pos = p_0 + p_key.rotation_pos
-            self.out.write(f'<g transform="rotate({r}, {r_pos.x}, {r_pos.y})">\n')
+            self.out.write(f'<g transform="rotate({r}, {p.x}, {p.y})">\n')
         self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, cls=[l_key.type])
 
         tap_words = self._split_text(l_key.tap)

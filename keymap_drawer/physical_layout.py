@@ -4,7 +4,7 @@ i.e. a sequence of keys each represented by its coordinates, dimensions
 and rotation.
 """
 import json
-from math import sqrt
+from math import sqrt, sin, cos, pi
 from dataclasses import dataclass
 from pathlib import Path
 from functools import cached_property, lru_cache
@@ -47,8 +47,10 @@ class Point:
 @dataclass
 class PhysicalKey:
     """
-    Represents a physical key, in terms of its center coordinates, width, height,
-    rotation angle and the coordinates around which it is rotated.
+    Represents a physical key, in terms of its center coordinates, width, height and
+    rotation angle. Accepts a rotation_pos field to specify the origin to rotate around
+    and uses it to re-adjust center position during construction; afterwards rotation
+    center is equal to key center.
     """
 
     pos: Point
@@ -56,10 +58,35 @@ class PhysicalKey:
     height: float
     rotation: float = 0  # CW if positive
     rotation_pos: Point | None = None  # pos (key center) by default
+    bounding_width: float = 0.0
+    bounding_height: float = 0.0
 
     def __post_init__(self):
-        if self.rotation_pos is None:
-            self.rotation_pos = self.pos  # shallow copy
+        if self.rotation:
+            # recalculate key center after rotation
+            if self.rotation_pos is not None:
+                self.pos = self._rotate_point(self.rotation_pos, self.pos, self.rotation)
+
+            # calculate bounding box dimensions
+            rotated_corners = [
+                self._rotate_point(Point(0, 0), p, self.rotation)
+                for p in (Point(0, 0), Point(0, self.height), Point(self.width, 0), Point(self.width, self.height))
+            ]
+            self.bounding_width = max(p.x for p in rotated_corners) - min(p.x for p in rotated_corners)
+            self.bounding_height = max(p.y for p in rotated_corners) - min(p.y for p in rotated_corners)
+        else:
+            self.bounding_width = self.width
+            self.bounding_height = self.height
+
+    @staticmethod
+    def _rotate_point(origin: Point, point: Point, angle: float) -> Point:
+        angle *= pi / 180
+        delta = point - origin
+        rotated = Point(
+            delta.x * cos(angle) - delta.y * sin(angle),
+            -delta.x * sin(angle) + delta.y * cos(angle),
+        )
+        return origin + rotated
 
 
 class PhysicalLayout(BaseModel):
@@ -76,12 +103,12 @@ class PhysicalLayout(BaseModel):
     @cached_property
     def width(self) -> float:
         """Return overall width of layout."""
-        return max(k.pos.x + k.width / 2 for k in self.keys)
+        return max(k.pos.x + k.bounding_width / 2 for k in self.keys)
 
     @cached_property
     def height(self) -> float:
         """Return overall height of layout."""
-        return max(k.pos.y + k.height / 2 for k in self.keys)
+        return max(k.pos.y + k.bounding_height / 2 for k in self.keys)
 
     @cached_property
     def min_width(self) -> float:
