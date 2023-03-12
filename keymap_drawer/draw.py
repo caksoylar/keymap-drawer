@@ -6,6 +6,7 @@ representation of the keymap using these two.
 from math import copysign
 from html import escape
 from typing import Sequence, TextIO
+import re
 
 from .keymap import KeymapData, ComboSpec, LayoutKey
 from .physical_layout import Point, PhysicalKey
@@ -22,6 +23,10 @@ class KeymapDrawer:
         assert self.keymap.config is not None, "A DrawConfig must be provided for drawing"
         self.layout = self.keymap.layout
         self.out = out
+        self.glyph_name = re.compile(r"\$\$(?P<glyph>.*)\$\$")
+        self.view_box_dimensions = re.compile(
+            r'<svg.*viewbox="(?P<x>[0-9]+)\s+(?P<y>[0-9]+)\s+(?P<w>[0-9]+)\s+(?P<h>[0-9]+)".*>', flags=re.IGNORECASE
+        )
 
     @staticmethod
     def _split_text(text: str) -> list[str]:
@@ -35,20 +40,73 @@ class KeymapDrawer:
             f'width="{w}" height="{h}"{class_str}/>\n'
         )
 
-    def _draw_text(self, p: Point, words: Sequence[str], cls: Sequence[str], shift: float = 0) -> None:
+    def _draw_text(
+        self, p: Point, words: Sequence[str], cls: Sequence[str], shift: float = 0, legend_type: str = ""
+    ) -> None:
         if not words or not words[0]:
             return
 
+        if glyph := self._is_glyph(words):
+            if self._draw_glyph(p, glyph, cls, legend_type):
+                return
+
         class_str = (' class="' + " ".join(c for c in cls if c) + '"') if cls else ""
+
         if len(words) == 1:
             self.out.write(f'<text x="{p.x}" y="{p.y}"{class_str}>{escape(words[0])}</text>\n')
             return
+
         self.out.write(f'<text x="{p.x}" y="{p.y}"{class_str}>\n')
         dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift) / 2)
         self.out.write(f'<tspan x="{p.x}" dy="-{dy_0}em">{escape(words[0])}</tspan>')
         for word in words[1:]:
             self.out.write(f'<tspan x="{p.x}" dy="{self.cfg.line_spacing}em">{escape(word)}</tspan>')
         self.out.write("</text>\n")
+
+    def _is_glyph(self, words: Sequence[str]) -> str | None:
+        if len(words) == 1 and (match := self.glyph_name.search(words[0])):
+            return match.group("glyph")
+        return None
+
+    def _draw_glyph(self, p: Point, name: str, cls: Sequence[str], legend_type: str) -> bool:
+        if not self.cfg.glyphs:
+            return False
+
+        if not (glyph := self.cfg.glyphs.get(name)):
+            return False
+
+        if not (view_box := self.view_box_dimensions.match(glyph)):
+            return False
+
+        bound = self.cfg.glyph_tap_size
+        shift = 0.5
+        if legend_type == "shift":
+            bound = self.cfg.glyph_shifted_size
+            shift = 0
+        elif legend_type == "hold":
+            shift = 1
+            bound = self.cfg.glyph_hold_size
+
+        x, y, w, h = tuple([int(v) for v in view_box.groups()])
+
+        # calculate the true dimenions of the image
+        t_w = w - x
+        t_h = h - y
+
+        # confine y to boundary and keep aspect ratio
+        n_h = bound
+        n_w = t_w * (bound / t_h)
+
+        # determine y offset based on position
+        d_y = n_h * shift
+
+        cls = [*cls, "glyph", name]
+        class_str = f'class="{" ".join(c for c in cls if c)}"'
+        self.out.write(
+            f'<use href="#{name}" x="{p.x - (n_w/2)}" y="{p.y - d_y}" height="{n_h}" width="{n_w}" {class_str}/>\n'
+        )
+
+        return True
 
     def _draw_arc_dendron(self, p_1: Point, p_2: Point, x_first: bool, shorten: float) -> None:
         start = f"M{p_1.x},{p_1.y}"
@@ -87,7 +145,7 @@ class KeymapDrawer:
         )
         if r != 0:
             self.out.write(f'<g transform="rotate({r}, {p.x}, {p.y})">\n')
-        self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, cls=[l_key.type])
+        self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, cls=[l_key.type, "key"])
 
         tap_words = self._split_text(l_key.tap)
 
@@ -99,15 +157,19 @@ class KeymapDrawer:
                 shift = -1
             elif l_key.hold and not l_key.shifted:  # shift up
                 shift = 1
-        self._draw_text(tap_p, tap_words, cls=[l_key.type, "tap"], shift=shift)
+        self._draw_text(tap_p, tap_words, cls=[l_key.type, "tap"], shift=shift, legend_type="tap")
 
         self._draw_text(
-            p + Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad), [l_key.hold], cls=[l_key.type, "hold"]
+            p + Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
+            [l_key.hold],
+            cls=[l_key.type, "hold"],
+            legend_type="hold",
         )
         self._draw_text(
             p - Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
             [l_key.shifted],
             cls=[l_key.type, "shifted"],
+            legend_type="shift",
         )
         if r != 0:
             self.out.write("</g>\n")
@@ -196,7 +258,11 @@ class KeymapDrawer:
             self.print_combo(p_0, combo_spec)
 
     def print_board(
-        self, draw_layers: Sequence[str] | None = None, keys_only: bool = False, combos_only: bool = False
+        self,
+        draw_layers: Sequence[str] | None = None,
+        keys_only: bool = False,
+        combos_only: bool = False,
+        glyphs: dict[str, str] = {},
     ) -> None:
         """Print SVG code representing the keymap."""
         layers = self.keymap.layers
@@ -223,9 +289,17 @@ class KeymapDrawer:
             + sum(top_offset + bot_offset for top_offset, bot_offset in offsets_per_layer.values())
         )
         self.out.write(
-            f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" '
+            f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" class="keymap" '
             'xmlns="http://www.w3.org/2000/svg">\n'
         )
+
+        self.out.write("<defs>/*start glyphs*/\n")
+        for name, block in glyphs.items():
+            self.out.write(f'<svg id="{name}">\n')
+            self.out.write(block)
+            self.out.write("\n</svg>\n")
+        self.out.write("</defs>/*end glyphs*/\n")
+
         self.out.write(f"<style>{self.cfg.svg_style}</style>\n")
 
         p = Point(self.cfg.outer_pad_w, 0.0)

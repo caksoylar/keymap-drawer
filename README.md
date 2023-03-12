@@ -14,6 +14,7 @@ Available as a [command-line tool](#command-line-tool-installation) or a [web ap
 - Bootstrap the YAML representation by automatically parsing QMK or ZMK keymap files
 - Arbitrary physical keyboard layouts (with rotated keys!) supported, along with parametrized ortho layouts
 - Both parsing and drawing are customizable with a config file, see ["Customization" section](#customization)
+- Custom glyph support, render custom svg icons and not just unicode
 
 See examples in [the live web demo](https://caksoylar.github.io/keymap-drawer) for example inputs and outputs.
 
@@ -136,6 +137,30 @@ KEYMAP_raw_binding_map='{"&bootloader": "BOOT"}' keymap parse -z zmk-config/conf
 ```
 
 Drawing parameters that are specified in the `draw_config` field can also be overridden in [the keymap YAML](KEYMAP_SPEC.md#draw_config).
+
+
+## Custom Glyphs
+Custom glyphs can be defined in the `drawing_config` block of the keymap config. After a glyph is defined it can be subsititued in place of text by surrounding the name with `$$` (i.e `$$vol_up$$`). The provided svg must only specify a viewBox, no positional or dimentional properties should be included as they are calculated for you. The height of the svg is bound by the config properties `glyph_{tap,hold,shifted}_size` and width will maintain aspect ratio. (see example). To allow for custom stuing glyphs are assigned css classes `glyph` and  `<glyph name>`.
+Example:
+```yaml
+draw_config:
+  # Specify the size to bound the vertical dimension of your glyph
+  glyph_tap_size: 12
+  glyph_hold_size: 10
+  glyph_shifted_size: 8
+  glyphs:
+    vol_up: |-
+      <svg viewBox="2 3 34 33">
+        <path style="stroke: black; fill: black;" d="M23.41,25.25a1,1,0,0,1-.54-1.85,6.21,6.21,0,0,0-.19-10.65,1,1,0,1,1,1-1.73,8.21,8.21,0,0,1,.24,14.06A1,1,0,0,1,23.41,25.25Z"/>
+        <path style="stroke: black; fill: black;" d="M25.62,31.18a1,1,0,0,1-.45-1.89A12.44,12.44,0,0,0,25,6.89a1,1,0,1,1,.87-1.8,14.44,14.44,0,0,1,.24,26A1,1,0,0,1,25.62,31.18Z"/>
+        <path style="stroke: black; fill: black;" d="M18.33,4,9.07,12h-6a1,1,0,0,0-1,1v9.92a1,1,0,0,0,1,1H8.88l9.46,8.24A1,1,0,0,0,20,31.43V4.72A1,1,0,0,0,18.33,4Z"/>
+      </svg>
+...
+layers:
+  Media:
+...
+    - ["","$$vol_up$$","","",""]
+```
 
 ## Development
 

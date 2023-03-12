@@ -53,8 +53,12 @@ class DrawConfig(BaseSettings):
 
     svg_style: str = dedent(
         """\
+        /* inherit to force styles through use tags*/
+        svg path {
+            fill: inherit;
+        }
         /* font and background color specifications */
-        svg {
+        svg.keymap {
             font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
             font-size: 14px;
             font-kerning: normal;
@@ -63,7 +67,7 @@ class DrawConfig(BaseSettings):
         }
 
         /* default key styling */
-        rect {
+        rect.key {
             fill: #f6f8fa;
             stroke: #c9cccf;
             stroke-width: 1;
@@ -126,6 +130,12 @@ class DrawConfig(BaseSettings):
         }
         """
     )
+
+    glyph_tap_size: int = 12
+    glyph_hold_size: int = 10
+    glyph_shifted_size: int = 8
+
+    glyphs: dict[str, str] = {}
 
 
 class ParseConfig(BaseSettings):
