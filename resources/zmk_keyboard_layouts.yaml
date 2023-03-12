@@ -91,6 +91,7 @@ dilemma: {qmk_keyboard: bastardkb/dilemma/3x5_2/assembled}
 draculad: {qmk_keyboard: draculad}
 draculady: {qmk_keyboard: obosob/arch_36}
 ergotravel: {qmk_keyboard: ergotravel/rev1}
+ffkb: {qmk_keyboard: fingerpunch/ffkb}
 gatoraid40: {ortho_layout: {split: true, rows: 3, columns: 6, thumbs: 3, drop_pinky: true}}
 hakea: {qmk_keyboard: sofle/rev1}
 hhkb: {qmk_keyboard: hhkb/ansi/32u4}
@@ -104,6 +105,7 @@ klor: {qmk_keyboard: klor, qmk_layout: LAYOUT_polydactyl}
 klotz: {qmk_keyboard: klotz}
 le_chiff_ble: {qmk_keyboard: tominabox1/le_chiffre/rev2}
 levinson: {qmk_keyboard: keebio/levinson/rev3}
+luakeeb: {qmk_keyboard: fingerpunch/luakeeb}
 luna: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2, drop_pinky: true, drop_inner: true}}
 naked48: {qmk_keyboard: salicylic_acid3/naked48/rev1}
 one42: {qmk_keyboard: revxlp}
