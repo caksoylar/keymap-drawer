@@ -239,7 +239,7 @@ class ZmkKeymapParser(KeymapParser):
         combo_nodes = chain.from_iterable(self._find_nodes_with_name(node) for _, node in combo_parents)
 
         combos = []
-        for _, node in combo_nodes:
+        for name, node in combo_nodes:
             try:
                 node_str = " ".join(item for item in node.as_list() if isinstance(item, str))
                 binding = self._bindings_re.search(node_str).group(1)  # type: ignore
@@ -249,7 +249,10 @@ class ZmkKeymapParser(KeymapParser):
                 }
                 if m := self._layers_re.search(node_str):
                     combo["l"] = [self.layer_names[int(layer)] for layer in m.group(1).split()]
-                combos.append(ComboSpec(**combo))
+
+                # see if combo had additional properties specified in the config, if so merge them in
+                cfg_combo = ComboSpec.normalize_fields(self.cfg.zmk_combos.get(name, {}))
+                combos.append(ComboSpec(**(combo | cfg_combo)))
             except (AttributeError, ValueError):
                 continue
         return combos
