@@ -63,6 +63,16 @@ class ComboSpec(BaseModel):
     class Config:  # pylint: disable=missing-class-docstring
         allow_population_by_field_name = True
 
+    @classmethod
+    def normalize_fields(cls, spec_dict: dict) -> dict:
+        """Normalize spec_dict so that each field uses its alias and key is parsed to LayoutKey."""
+        for name, field in cls.__fields__.items():
+            if name in spec_dict:
+                spec_dict[field.alias] = spec_dict.pop(name)
+        if key_spec := spec_dict.get("k"):
+            spec_dict["k"] = LayoutKey.from_key_spec(key_spec)
+        return spec_dict
+
     @validator("key", pre=True)
     def get_key(cls, val) -> LayoutKey:
         """Parse each key from its key spec."""

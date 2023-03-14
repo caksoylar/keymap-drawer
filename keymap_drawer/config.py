@@ -291,6 +291,10 @@ class ParseConfig(BaseSettings):
         "TILDE2": "~",
     }
 
+    # additional combo fields for a given combo node name in the keymap,
+    # e.g. {"combo_esc": {"align": "top", "offset": 0.5}}
+    zmk_combos: dict[str, dict] = {}
+
 
 class Config(BaseSettings):
     """All configuration settings used for this module."""
