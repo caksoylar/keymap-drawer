@@ -85,6 +85,11 @@ Please refer to [the keymap schema specification](KEYMAP_SPEC.md) while making c
 
 It might be beneficial to start by `draw`'ing the current representation and iterate over these changes, especially for tweaking combo positioning.
 
+> **Note**
+>
+> If you need to re-parse a firmware file after it was changed, you can provide the previous parse output that you tweaked to the
+> parse command via `keymap parse -b old_keymap.yaml ... >new_keymap.yaml` and the tool will try to preserve your manual tweaks.
+
 ### Producing the SVG
 
 Final step is to produce the SVG representation using the **`keymap draw`** command.
