@@ -40,21 +40,20 @@ class KeymapDrawer:
             f'width="{w}" height="{h}"{class_str}/>\n'
         )
 
-    def _draw_text(
-        self, p: Point, words: Sequence[str], cls: Sequence[str], shift: float = 0, legend_type: str = ""
-    ) -> None:
+    def _draw_text(self, p: Point, words: Sequence[str], cls: Sequence[str]) -> None:
         if not words or not words[0]:
             return
-
-        if glyph := self._is_glyph(words):
-            if self._draw_glyph(p, glyph, cls, legend_type):
-                return
 
         class_str = (' class="' + " ".join(c for c in cls if c) + '"') if cls else ""
 
         if len(words) == 1:
             self.out.write(f'<text x="{p.x}" y="{p.y}"{class_str}>{escape(words[0])}</text>\n')
+
+    def _draw_textblock(self, p: Point, words: Sequence[str], cls: Sequence[str], shift: float = 0) -> None:
+        if not words or not words[0]:
             return
+
+        class_str = (' class="' + " ".join(c for c in cls if c) + '"') if cls else ""
 
         self.out.write(f'<text x="{p.x}" y="{p.y}"{class_str}>\n')
         dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift) / 2)
@@ -68,7 +67,7 @@ class KeymapDrawer:
             return match.group("glyph")
         return None
 
-    def _draw_glyph(self, p: Point, name: str, cls: Sequence[str], legend_type: str) -> bool:
+    def _draw_glyph(self, p: Point, name: str, height: float, classes: Sequence[str], align: str = "middle") -> bool:
         if not self.cfg.glyphs:
             return False
 
@@ -78,15 +77,7 @@ class KeymapDrawer:
         if not (view_box := self.view_box_dimensions.match(glyph)):
             return False
 
-        bound = self.cfg.glyph_tap_size
-        shift = 0.5
-        if legend_type == "shift":
-            bound = self.cfg.glyph_shifted_size
-            shift = 0
-        elif legend_type == "hold":
-            shift = 1
-            bound = self.cfg.glyph_hold_size
-
+        shift = {"middle": 0.5, "top": 0, "bottom": 1}[align]
         x, y, w, h = tuple([int(v) for v in view_box.groups()])
 
         # calculate the true dimenions of the image
@@ -94,18 +85,17 @@ class KeymapDrawer:
         t_h = h - y
 
         # confine y to boundary and keep aspect ratio
-        n_h = bound
-        n_w = t_w * (bound / t_h)
+        n_h = height
+        n_w = t_w * (height / t_h)
 
         # determine y offset based on position
         d_y = n_h * shift
 
-        cls = [*cls, "glyph", name]
+        cls = [*classes, "glyph", name]
         class_str = f'class="{" ".join(c for c in cls if c)}"'
         self.out.write(
             f'<use href="#{name}" x="{p.x - (n_w/2)}" y="{p.y - d_y}" height="{n_h}" width="{n_w}" {class_str}/>\n'
         )
-
         return True
 
     def _draw_arc_dendron(self, p_1: Point, p_2: Point, x_first: bool, shorten: float) -> None:
@@ -150,29 +140,52 @@ class KeymapDrawer:
         tap_words = self._split_text(l_key.tap)
 
         # auto-adjust vertical alignment up/down if there are two lines and either hold/shifted is present
-        tap_p = Point(p.x, p.y)
         shift = 0
         if len(tap_words) == 2:
             if l_key.shifted and not l_key.hold:  # shift down
                 shift = -1
             elif l_key.hold and not l_key.shifted:  # shift up
                 shift = 1
-        self._draw_text(tap_p, tap_words, cls=[l_key.type, "tap"], shift=shift, legend_type="tap")
 
-        self._draw_text(
-            p + Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
-            [l_key.hold],
-            cls=[l_key.type, "hold"],
-            legend_type="hold",
-        )
-        self._draw_text(
-            p - Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
-            [l_key.shifted],
-            cls=[l_key.type, "shifted"],
-            legend_type="shift",
-        )
+        tap_p = Point(p.x, p.y)
+        self._draw_legend(tap_p, tap_words, key_type=l_key.type, legend_type="tap", shift=shift)
+
+        hold_p = p + Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad)
+        self._draw_legend(hold_p, [l_key.hold], key_type=l_key.type, legend_type="hold", shift=shift)
+
+        shift_p = p - Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad)
+        self._draw_legend(shift_p, [l_key.shifted], key_type=l_key.type, legend_type="shifted", shift=shift)
+
         if r != 0:
             self.out.write("</g>\n")
+
+    def _draw_legend(self, p: Point, words: Sequence[str], key_type: str, legend_type: str, shift: float = 0):
+        if not words or not words[0]:
+            return
+
+        classes = [key_type, legend_type]
+
+        if not words or not words[0]:
+            return
+
+        if glyph := self._is_glyph(words):
+            height = {
+                "tap": self.cfg.glyph_tap_size,
+                "shifted": self.cfg.glyph_shifted_size,
+                "hold": self.cfg.glyph_hold_size,
+            }[legend_type]
+
+            # todo - this is hack ... fix once SVG2 support allows css to style height
+            align = {"tap": "middle", "shifted": "top", "hold": "bottom"}[legend_type]
+
+            if self._draw_glyph(p, glyph, height, classes, align):
+                return
+
+        if len(words) == 1:
+            self._draw_text(p, words, classes)
+            return
+
+        self._draw_textblock(p, words, classes, shift)
 
     def print_combo(self, p_0: Point, combo: ComboSpec) -> None:
         """
@@ -236,14 +249,18 @@ class KeymapDrawer:
 
         # draw combo box with text
         self._draw_rect(p, self.cfg.combo_w, self.cfg.combo_h, cls=[combo.type])
-        self._draw_text(p, self._split_text(combo.key.tap), cls=[combo.type])
-        self._draw_text(
-            p + Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad), [combo.key.hold], cls=[combo.type, "hold"]
-        )
-        self._draw_text(
-            p - Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
+
+        self._draw_legend(p, words=self._split_text(combo.key.tap), key_type=combo.type, legend_type="tap")
+
+        p_hold = p + Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad)
+        self._draw_legend(p_hold, [combo.key.hold], key_type=combo.type, legend_type="hold")
+
+        p_shifted = p - Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad)
+        self._draw_legend(
+            p_shifted,
             [combo.key.shifted],
-            cls=[combo.type, "shifted"],
+            key_type=combo.type,
+            legend_type="shifted",
         )
 
     def print_layer(
