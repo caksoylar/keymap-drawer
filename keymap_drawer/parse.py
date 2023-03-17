@@ -42,7 +42,7 @@ class KeymapParser(ABC):
                     layout, keymap_data = self._parse(f, str(in_arg))
             case _:
                 # raise ValueError(f"Unknown input argument {in_arg} with type {type(in_arg)} for parsing")
-                layout, keymap_data =  self._parse(in_arg, file_name)
+                layout, keymap_data = self._parse(in_arg, file_name)
 
         if self.base_keymap is not None:
             keymap_data.rebase(self.base_keymap)

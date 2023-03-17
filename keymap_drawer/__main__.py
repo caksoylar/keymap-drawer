@@ -128,9 +128,7 @@ def main() -> None:
     keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
     keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse", type=Path)
     keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=Path)
-    parse_p.add_argument(
-        "-b", "--base-keymap", help="A base keymap YAML to inherit certain properties from", type=Path
-    )
+    parse_p.add_argument("-b", "--base-keymap", help="A base keymap YAML to inherit certain properties from", type=Path)
     parse_p.add_argument(
         "-c",
         "--columns",
