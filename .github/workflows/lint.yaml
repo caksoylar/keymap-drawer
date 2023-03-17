@@ -1,0 +1,47 @@
+name: Run lint checks
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ inputs.python-version }}-${{ hashFiles('poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install --with dev --no-interaction
+
+      - name: Black
+        run: poetry run black --check keymap_drawer
+
+      - name: Pylint
+        run: poetry run pylint --disable=fixme keymap_drawer
+        if: success() || failure()
+
+      - name: Mypy
+        run: poetry run mypy keymap_drawer
+        if: success() || failure()
+
+      - name: Deptry
+        run: poetry run deptry keymap_drawer
+        if: success() || failure()
