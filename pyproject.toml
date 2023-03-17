@@ -26,6 +26,7 @@ pylint = "^2.15.2"
 black = "^22.8.0"
 pylint-pydantic = "^0.1.4"
 types-pyyaml = "^6.0.12.2"
+deptry = "^0.8.0"
 
 [tool.poetry.group.lsp]
 optional = true
