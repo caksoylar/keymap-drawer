@@ -309,8 +309,9 @@ class KeymapDrawer:
 
         self.out.write("<defs>/*start glyphs*/\n")
         for name, block in glyphs.items():
+            scrubbed=re.sub(r' (?:width|height)=\"([^"]*)\"', "", block)
             self.out.write(f'<svg id="{name}">\n')
-            self.out.write(block)
+            self.out.write(scrubbed)
             self.out.write("\n</svg>\n")
         self.out.write("</defs>/*end glyphs*/\n")
 
