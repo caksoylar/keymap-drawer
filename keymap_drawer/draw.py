@@ -23,10 +23,6 @@ class KeymapDrawer:
         assert self.keymap.config is not None, "A DrawConfig must be provided for drawing"
         self.layout = self.keymap.layout
         self.out = out
-        self.glyph_name = re.compile(r"\$\$(?P<glyph>.*)\$\$")
-        self.view_box_dimensions = re.compile(
-            r'<svg.*viewbox="(?P<x>[0-9]+)\s+(?P<y>[0-9]+)\s+(?P<w>[0-9]+)\s+(?P<h>[0-9]+)".*>', flags=re.IGNORECASE
-        )
 
     @staticmethod
     def _split_text(text: str) -> list[str]:
@@ -63,7 +59,7 @@ class KeymapDrawer:
         self.out.write("</text>\n")
 
     def _is_glyph(self, words: Sequence[str]) -> str | None:
-        if len(words) == 1 and (match := self.glyph_name.search(words[0])):
+        if len(words) == 1 and (match := re.search(re.compile(r"\$\$(?P<glyph>.*)\$\$"), words[0])):
             return match.group("glyph")
         return None
 
@@ -74,7 +70,8 @@ class KeymapDrawer:
         if not (glyph := self.cfg.glyphs.get(name)):
             return False
 
-        if not (view_box := self.view_box_dimensions.match(glyph)):
+        pattern = r'<svg.*viewbox="(?P<x>[0-9]+)\s+(?P<y>[0-9]+)\s+(?P<w>[0-9]+)\s+(?P<h>[0-9]+)".*>'
+        if not (view_box := re.match(pattern, glyph, flags=re.IGNORECASE)):
             return False
 
         shift = {"middle": 0.5, "top": 0, "bottom": 1}[align]
