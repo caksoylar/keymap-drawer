@@ -53,6 +53,18 @@ class DrawConfig(BaseSettings):
 
     svg_style: str = dedent(
         """\
+        /* Start Tabler Icons Cleanup */
+        /* cannot use height/width with glyphs */
+        .icon-tabler > path {
+            fill: inherit;
+            stroke: inherit;
+        }
+        /* hide tabler's default box */
+        .icon-tabler > path[stroke="none"][fill="none"] {
+            visibility: collapse;
+        }
+        /* End Tabler Icons Cleanup */
+
         /* inherit to force styles through use tags*/
         svg path {
             fill: inherit;
