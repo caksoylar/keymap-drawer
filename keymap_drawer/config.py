@@ -146,6 +146,7 @@ class DrawConfig(BaseSettings):
     glyph_tap_size: int = 12
     glyph_hold_size: int = 10
     glyph_shifted_size: int = 8
+    glyph_cache_dir: str = ".glyph-cache"
 
     glyphs: dict[str, str] = {}
 

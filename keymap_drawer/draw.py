@@ -3,10 +3,13 @@ Module that contains the KeymapDrawer class which takes a physical layout,
 keymap with layers and optionally combo definitions, then can draw an SVG
 representation of the keymap using these two.
 """
+import os
+import sys
 from math import copysign
 from html import escape
 from typing import Sequence, TextIO
 import re
+import httpx
 
 from .keymap import KeymapData, ComboSpec, LayoutKey
 from .physical_layout import Point, PhysicalKey
@@ -271,12 +274,69 @@ class KeymapDrawer:
         for combo_spec in combos:
             self.print_combo(p_0, combo_spec)
 
+    def _generate_cache_path(self, name: str) -> str:
+        abs_cache_dir = os.path.abspath(self.cfg.glyph_cache_dir)
+        return f"{abs_cache_dir}/{name}"
+
+    def _is_url(self, path: str) -> bool:
+        url_pattern = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
+        matches = re.findall(url_pattern, path, flags=re.IGNORECASE)
+        return any(matches)
+
+    def _cache_exists(self, path: str) -> bool:
+        return os.path.exists(path) and os.path.isfile(path)
+
+    def _fetch_glyph(self, glyph_url: str, out_path: str) -> str | None:
+        try:
+            with open(out_path, "wb") as out:
+                r = httpx.get(glyph_url)
+
+                out.write(r.content.strip())
+            return None
+        except Exception as err:
+            return str(err)
+
+    def _cache_glyphs(self):
+        abs_cache_dir = os.path.abspath(self.cfg.glyph_cache_dir)
+        if not os.path.exists(abs_cache_dir):
+            os.makedirs(abs_cache_dir)
+
+        for name, glyph in self.cfg.glyphs.items():
+            cache_file = glyph
+
+            if not self._is_url(glyph):
+                continue
+
+            cache_file = self._generate_cache_path(name)
+            if self._cache_exists(cache_file):
+                continue
+
+            print(f"Caching glyph {name} => {cache_file}...", file=sys.stderr, end="")
+            err = self._fetch_glyph(glyph_url=glyph, out_path=cache_file)
+            if err:
+                print(f"Failed. error={err}", file=sys.stderr)
+            print(" Done.\n", file=sys.stderr)
+
+    def _load_glyph(self, name: str, glyph: str) -> str | None:
+        if self._is_url(glyph):
+            path = self._generate_cache_path(name)
+        elif os.path.isfile(glyph):
+            path = glyph
+        else:
+            return None
+
+        file = os.path.abspath(path)
+
+        try:
+            with open(file, "r") as cf:
+                return cf.read()
+        except Exception as e:
+            print(f"Failed to load cached glyph. name={file}", file=sys.stderr)
+
+        return None
+
     def print_board(
-        self,
-        draw_layers: Sequence[str] | None = None,
-        keys_only: bool = False,
-        combos_only: bool = False,
-        glyphs: dict[str, str] = {},
+        self, draw_layers: Sequence[str] | None = None, keys_only: bool = False, combos_only: bool = False
     ) -> None:
         """Print SVG code representing the keymap."""
         layers = self.keymap.layers
@@ -307,9 +367,12 @@ class KeymapDrawer:
             'xmlns="http://www.w3.org/2000/svg">\n'
         )
 
+        self._cache_glyphs()
         self.out.write("<defs>/*start glyphs*/\n")
-        for name, block in glyphs.items():
-            scrubbed=re.sub(r' (?:width|height)=\"([^"]*)\"', "", block)
+        for name, glyph in self.cfg.glyphs.items():
+            glyph_data = self._load_glyph(name, glyph) or glyph
+
+            scrubbed = re.sub(r' (?:width|height)=\"([^"]*)\"', "", glyph_data)
             self.out.write(f'<svg id="{name}">\n')
             self.out.write(scrubbed)
             self.out.write("\n</svg>\n")

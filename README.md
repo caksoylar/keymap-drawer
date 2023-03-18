@@ -140,7 +140,7 @@ Drawing parameters that are specified in the `draw_config` field can also be ove
 
 
 ## Custom Glyphs
-Custom glyphs can be defined in the `drawing_config` block of the keymap config. After a glyph is defined it can be subsititued in place of text by surrounding the name with `$$` (i.e `$$vol_up$$`). The provided svg must only specify a viewBox, no positional or dimentional properties should be included as they are calculated for you. The height of the svg is bound by the config properties `glyph_{tap,hold,shifted}_size` and width will maintain aspect ratio. (see example). To allow for custom stuing glyphs are assigned css classes `glyph` and  `<glyph name>`.
+Custom glyphs can be defined with a url to an svg, a filepath to an svg, or raw svg (See example below) and should added to the `drawing_config` block of the keymap config. After a glyph is defined it can be subsititued in place of text by surrounding the name with `$$` (i.e `$$vol_up$$`). The provided svg must only specify a viewBox, no positional or dimentional properties should be included as they are calculated for you. The height of the svg is bound by the config properties `glyph_{tap,hold,shifted}_size` and width will maintain aspect ratio. (see example). To allow for custom stuing glyphs are assigned css classes `glyph` and  `<glyph name>`.
 Example:
 ```yaml
 draw_config:
@@ -149,6 +149,8 @@ draw_config:
   glyph_hold_size: 10
   glyph_shifted_size: 8
   glyphs:
+    vol-down: my_glyphs/vol-down.svg
+    vol-mute: https://tabler-icons.io/static/tabler-icons/icons/volume-3.svg
     vol_up: |-
       <svg viewBox="2 3 34 33">
         <path style="stroke: black; fill: black;" d="M23.41,25.25a1,1,0,0,1-.54-1.85,6.21,6.21,0,0,0-.19-10.65,1,1,0,1,1,1-1.73,8.21,8.21,0,0,1,.24,14.06A1,1,0,0,1,23.41,25.25Z"/>

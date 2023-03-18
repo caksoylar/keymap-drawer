@@ -42,9 +42,7 @@ def draw(args, config: DrawConfig) -> None:
     drawer = KeymapDrawer(
         config=config, out=sys.stdout, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", [])
     )
-    drawer.print_board(
-        draw_layers=args.select_layers, keys_only=args.keys_only, combos_only=args.combos_only, glyphs=config.glyphs
-    )
+    drawer.print_board(draw_layers=args.select_layers, keys_only=args.keys_only, combos_only=args.combos_only)
 
 
 def parse(args, config: ParseConfig) -> None:
