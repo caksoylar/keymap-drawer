@@ -26,6 +26,33 @@ class KeymapParser(ABC):
         self.columns = columns if columns is not None else 0
         self.layer_names: list[str] | None = None
         self.base_keymap = base_keymap
+        self.layer_activated_from: dict[int, set[int]] = {}
+
+    def update_layer_activated_from(self, from_layer: int | None, to_layer: int, key_positions: Sequence[int]) -> None:
+        """
+        Update the data structure that keeps track of what keys were held (i.e. momentary layer keys)
+        in order to activate a given layer. Also considers what keys were already being held in order
+        to activate the `from_layer` that the `to_layer` is being activated from.
+
+        In order to properly keep track of multiple layer activation sequences, this method needs
+        to be called in the order of increasing `to_layer` indices. It also ignores activating lower
+        layer indices from higher layers and only considers the first discovered keys.
+        """
+        # ignore reverse order activations and if we already have a way to get to this layer
+        if (from_layer is not None and from_layer >= to_layer) or to_layer in self.layer_activated_from:
+            return
+        self.layer_activated_from[to_layer] = set(key_positions)  # came here through these key(s)
+        # also consider how the layer we are coming from got activated
+        if from_layer is not None:
+            self.layer_activated_from[to_layer] |= self.layer_activated_from.get(from_layer, set())
+
+    def add_held_keys(self, layers: dict[str, list[LayoutKey]]) -> dict[str, list[LayoutKey]]:
+        """Add "held" specifiers to keys that we previously determined were held to activate a given layer."""
+        assert self.layer_names is not None
+        for layer_index, activating_keys in self.layer_activated_from.items():
+            for key in activating_keys:
+                layers[self.layer_names[layer_index]][key].type = "held"
+        return layers
 
     def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> tuple[dict, KeymapData]:
         raise NotImplementedError
@@ -58,14 +85,16 @@ class QmkJsonParser(KeymapParser):
     """Parser for json-format QMK keymaps, like Configurator exports or `qmk c2json` outputs."""
 
     _prefix_re = re.compile(r"\bKC_")
-    _mo_re = re.compile(r"MO\((\S+)\)")
+    _mo_re = re.compile(r"MO\((\d+)\)")
     _mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
     _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
-    _lt_re = re.compile(r"LT\((\S+), *(\S+)\)")
+    _lt_re = re.compile(r"LT\((\d+), *(\S+)\)")
     _osm_re = re.compile(r"OSM\(MOD_(\S+)\)")
-    _osl_re = re.compile(r"OSL\((\S+)\)")
+    _osl_re = re.compile(r"OSL\((\d+)\)")
 
-    def _str_to_key(self, key_str: str) -> LayoutKey:  # pylint: disable=too-many-return-statements
+    def _str_to_key(  # pylint: disable=too-many-return-statements
+        self, key_str: str, current_layer: int, key_positions: Sequence[int]
+    ) -> LayoutKey:
         if key_str in self.cfg.raw_binding_map:
             return LayoutKey.from_key_spec(self.cfg.raw_binding_map[key_str])
         if self.cfg.skip_binding_parsing:
@@ -77,7 +106,9 @@ class QmkJsonParser(KeymapParser):
         key_str = self._prefix_re.sub("", key_str)
 
         if m := self._mo_re.fullmatch(key_str):
-            return LayoutKey(tap=f"L{m.group(1).strip()}")
+            to_layer = int(m.group(1).strip())
+            self.update_layer_activated_from(current_layer, to_layer, key_positions)
+            return LayoutKey(tap=f"L{to_layer}")
         if m := self._mts_re.fullmatch(key_str):
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=m.group(1), shifted=tap_key.shifted)
@@ -85,13 +116,17 @@ class QmkJsonParser(KeymapParser):
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=m.group(1).strip(), shifted=tap_key.shifted)
         if m := self._lt_re.fullmatch(key_str):
+            to_layer = int(m.group(1).strip())
+            self.update_layer_activated_from(current_layer, to_layer, key_positions)
             tap_key = mapped(m.group(2).strip())
-            return LayoutKey(tap=tap_key.tap, hold=f"L{m.group(1).strip()}", shifted=tap_key.shifted)
+            return LayoutKey(tap=tap_key.tap, hold=f"L{to_layer}", shifted=tap_key.shifted)
         if m := self._osm_re.fullmatch(key_str):
             tap_key = mapped(m.group(1).strip())
             return LayoutKey(tap=tap_key.tap, hold="sticky", shifted=tap_key.shifted)
         if m := self._osl_re.fullmatch(key_str):
-            return LayoutKey(tap=f"L{m.group(1).strip()}", hold="sticky")
+            to_layer = int(m.group(1).strip())
+            self.update_layer_activated_from(current_layer, to_layer, key_positions)
+            return LayoutKey(tap=f"L{to_layer}", hold="sticky")
         return mapped(key_str)
 
     def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> tuple[dict, KeymapData]:
@@ -105,11 +140,15 @@ class QmkJsonParser(KeymapParser):
         if "layout" in raw:
             layout["qmk_layout"] = raw["layout"]
 
-        keymap_data = KeymapData(
-            layers={f"L{ind}": [self._str_to_key(key) for key in layer] for ind, layer in enumerate(raw["layers"])},
-            layout=None,
-            config=None,
-        )
+        layers = {}
+        self.layer_names = []
+        for ind, layer in enumerate(raw["layers"]):
+            layer_name = f"L{ind}"
+            self.layer_names.append(layer_name)
+            layers[layer_name] = [self._str_to_key(key, ind, [i]) for i, key in enumerate(layer)]
+
+        layers = self.add_held_keys(layers)
+        keymap_data = KeymapData(layers=layers, layout=None, config=None)
 
         return layout, keymap_data
 
@@ -130,7 +169,7 @@ class ZmkKeymapParser(KeymapParser):
         self.hold_tap_labels = {"&mt", "&lt"}
 
     def _str_to_key(  # pylint: disable=too-many-return-statements
-        self, binding: str, no_shifted: bool = False
+        self, binding: str, current_layer: int | None, key_positions: Sequence[int], no_shifted: bool = False
     ) -> LayoutKey:
         if binding in self.cfg.raw_binding_map:
             return LayoutKey.from_key_spec(self.cfg.raw_binding_map[binding])
@@ -159,13 +198,14 @@ class ZmkKeymapParser(KeymapParser):
                 return LayoutKey(tap=l_key.tap, hold="sticky", shifted=l_key.shifted)
             case [("&out" | "&bt" | "&ext_power" | "&rgb_ug"), *pars]:
                 return LayoutKey(tap=" ".join(pars).replace("_", " ").replace(" SEL ", " "))
-            case [("&mo" | "&to" | "&tog"), par]:
-                return LayoutKey(tap=self.layer_names[int(par)])
-            case ["&sl", par]:
-                return LayoutKey(tap=self.layer_names[int(par)], hold="sticky")
+            case [("&mo" | "&to" | "&tog" | "&sl") as behavior, par]:
+                if behavior in ("&mo", "&sl"):
+                    self.update_layer_activated_from(current_layer, int(par), key_positions)
+                return LayoutKey(tap=self.layer_names[int(par)], hold="sticky" if behavior == "&sl" else "")
             case [ref, hold_par, tap_par] if ref in self.hold_tap_labels:
                 try:
                     hold = self.layer_names[int(hold_par)]
+                    self.update_layer_activated_from(current_layer, int(hold_par), key_positions)
                 except (ValueError, IndexError):  # not a layer-tap, so maybe a keycode?
                     hold = mapped(hold_par).tap
                 tap_key = mapped(tap_par)
@@ -226,13 +266,15 @@ class ZmkKeymapParser(KeymapParser):
             for node_name, node_str in layer_nodes.items()
         ]
         layers = {}
-        for layer_name, node_str in zip(self.layer_names, layer_nodes.values()):
+        for layer_ind, node_str in enumerate(layer_nodes.values()):
+            layer_name = self.layer_names[layer_ind]
             try:
-                layers[layer_name] = [
-                    self._str_to_key("&" + stripped)
+                key_strs = [
+                    f"&{stripped}"
                     for binding in self._bindings_re.search(node_str).group(1).split("&")  # type: ignore
                     if (stripped := binding.strip().removeprefix("&"))
                 ]
+                layers[layer_name] = [self._str_to_key(binding, layer_ind, [i]) for i, binding in enumerate(key_strs)]
             except AttributeError:
                 continue
         return layers
@@ -247,9 +289,10 @@ class ZmkKeymapParser(KeymapParser):
             try:
                 node_str = " ".join(item for item in node.as_list() if isinstance(item, str))
                 binding = self._bindings_re.search(node_str).group(1)  # type: ignore
+                key_pos = [int(pos) for pos in self._keypos_re.search(node_str).group(1).split()]  # type: ignore
                 combo = {
-                    "k": self._str_to_key(binding, no_shifted=True),
-                    "p": [int(pos) for pos in self._keypos_re.search(node_str).group(1).split()],  # type: ignore
+                    "k": self._str_to_key(binding, None, key_pos, no_shifted=True),  # ignore current layer for combos
+                    "p": key_pos,
                 }
                 if m := self._layers_re.search(node_str):
                     combo["l"] = [self.layer_names[int(layer)] for layer in m.group(1).split()]
@@ -277,6 +320,7 @@ class ZmkKeymapParser(KeymapParser):
         self._update_hold_tap_labels(parsed)
         layers = self._get_layers(parsed)
         combos = self._get_combos(parsed)
+        layers = self.add_held_keys(layers)
 
         keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
 
