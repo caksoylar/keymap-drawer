@@ -130,11 +130,11 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=tap_key.tap, hold=self.layer_names[to_layer], shifted=tap_key.shifted)
         if m := self._osm_re.fullmatch(key_str):
             tap_key = mapped(m.group(1).strip())
-            return LayoutKey(tap=tap_key.tap, hold="sticky", shifted=tap_key.shifted)
+            return LayoutKey(tap=tap_key.tap, hold=self.cfg.sticky_label, shifted=tap_key.shifted)
         if m := self._osl_re.fullmatch(key_str):
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from(current_layer, to_layer, key_positions)
-            return LayoutKey(tap=self.layer_names[to_layer], hold="sticky")
+            return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.sticky_label)
         return mapped(key_str)
 
     def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> tuple[dict, KeymapData]:
@@ -219,13 +219,15 @@ class ZmkKeymapParser(KeymapParser):
                 return mapped(par)
             case ["&sk", par]:
                 l_key = mapped(par)
-                return LayoutKey(tap=l_key.tap, hold="sticky", shifted=l_key.shifted)
+                return LayoutKey(tap=l_key.tap, hold=self.cfg.sticky_label, shifted=l_key.shifted)
             case [("&out" | "&bt" | "&ext_power" | "&rgb_ug"), *pars]:
                 return LayoutKey(tap=" ".join(pars).replace("_", " ").replace(" SEL ", " "))
             case [("&mo" | "&to" | "&tog" | "&sl") as behavior, par]:
                 if behavior in ("&mo", "&sl"):
                     self.update_layer_activated_from(current_layer, int(par), key_positions)
-                return LayoutKey(tap=self.layer_names[int(par)], hold="sticky" if behavior == "&sl" else "")
+                return LayoutKey(
+                    tap=self.layer_names[int(par)], hold=self.cfg.sticky_label if behavior == "&sl" else ""
+                )
             case [ref, hold_par, tap_par] if ref in self.hold_tap_labels:
                 try:
                     hold = self.layer_names[int(hold_par)]

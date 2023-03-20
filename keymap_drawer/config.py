@@ -138,6 +138,9 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # e.g. {"QK_BOOT": "BOOT", "&bootloader": "BOOT"}
     raw_binding_map: dict[str, str | dict] = {}
 
+    # display text to place in hold field for sticky/one-shot keys
+    sticky_label: str = "sticky"
+
     # convert QMK keycodes to their display forms, omitting "KC_" prefix on the keys
     qmk_keycode_map: dict[str, str | dict] = {
         # QMK keycodes
