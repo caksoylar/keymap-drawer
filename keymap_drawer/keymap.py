@@ -13,7 +13,7 @@ from .physical_layout import layout_factory, PhysicalLayout
 from .config import DrawConfig
 
 
-class LayoutKey(BaseModel):
+class LayoutKey(BaseModel, allow_population_by_field_name=True):
     """
     Represents a binding in the keymap, which has a tap property by default and
     can optionally have hold or shifted properties, or be "held" or be a "ghost" key.
@@ -23,9 +23,6 @@ class LayoutKey(BaseModel):
     hold: str = Field(alias="h", default="")
     shifted: str = Field(alias="s", default="")
     type: str = ""  # pre-defined types: "held" | "ghost"
-
-    class Config:  # pylint: disable=missing-class-docstring
-        allow_population_by_field_name = True
 
     @classmethod
     def from_key_spec(cls, key_spec: dict | str | int | None) -> "LayoutKey":
@@ -48,7 +45,7 @@ class LayoutKey(BaseModel):
         return dict_repr.get("t") or dict_repr.get("tap", "")
 
 
-class ComboSpec(BaseModel):
+class ComboSpec(BaseModel, allow_population_by_field_name=True):
     """
     Represents a combo in the keymap, with the trigger positions, activated binding (key)
     and layers that it is present on.
@@ -61,9 +58,6 @@ class ComboSpec(BaseModel):
     offset: float = Field(alias="o", default=0.0)
     dendron: bool | None = Field(alias="d", default=None)
     type: str = "combo"
-
-    class Config:  # pylint: disable=missing-class-docstring
-        allow_population_by_field_name = True
 
     @classmethod
     def normalize_fields(cls, spec_dict: dict) -> dict:

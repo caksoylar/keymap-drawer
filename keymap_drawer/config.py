@@ -7,12 +7,8 @@ from textwrap import dedent
 from pydantic import BaseSettings
 
 
-class DrawConfig(BaseSettings):
+class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     """Configuration related to SVG drawing, including key sizes, padding amounts, combo drawing settings etc."""
-
-    class Config:  # pylint: disable=missing-class-docstring
-        env_prefix = "KEYMAP_"
-        extra = "ignore"
 
     # key dimensions, non-ortho layouts use key_h for width as well
     key_w: float = 60
@@ -129,12 +125,8 @@ class DrawConfig(BaseSettings):
     )
 
 
-class ParseConfig(BaseSettings):
+class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     """Configuration settings related to parsing QMK/ZMK keymaps."""
-
-    class Config:  # pylint: disable=missing-class-docstring
-        env_prefix = "KEYMAP_"
-        extra = "ignore"
 
     # run C preprocessor on ZMK keymaps
     preprocess: bool = True
@@ -293,11 +285,8 @@ class ParseConfig(BaseSettings):
     zmk_combos: dict[str, dict] = {}
 
 
-class Config(BaseSettings):
+class Config(BaseSettings, env_prefix="KEYMAP_"):
     """All configuration settings used for this module."""
-
-    class Config:  # pylint: disable=missing-class-docstring
-        env_prefix = "KEYMAP_"
 
     draw_config: DrawConfig = DrawConfig()
     parse_config: ParseConfig = ParseConfig()

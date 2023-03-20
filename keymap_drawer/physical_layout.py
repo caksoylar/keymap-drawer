@@ -89,13 +89,10 @@ class PhysicalKey:
         return origin + rotated
 
 
-class PhysicalLayout(BaseModel):
+class PhysicalLayout(BaseModel, keep_untouched=(cached_property,)):
     """Represents the physical layout of keys on the keyboard, as a sequence of keys."""
 
     keys: Sequence[PhysicalKey]
-
-    class Config:  # pylint: disable=missing-class-docstring
-        keep_untouched = (cached_property,)
 
     def __len__(self) -> int:
         return len(self.keys)
