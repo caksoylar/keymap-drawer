@@ -12,6 +12,7 @@ class DrawConfig(BaseSettings):
 
     class Config:  # pylint: disable=missing-class-docstring
         env_prefix = "KEYMAP_"
+        extra = "ignore"
 
     # key dimensions, non-ortho layouts use key_h for width as well
     key_w: float = 60
@@ -133,14 +134,10 @@ class ParseConfig(BaseSettings):
 
     class Config:  # pylint: disable=missing-class-docstring
         env_prefix = "KEYMAP_"
+        extra = "ignore"
 
     # run C preprocessor on ZMK keymaps
     preprocess: bool = True
-
-    # instead of a root "combos" node in output with "layers" property on each combo,
-    # assign combos to a "combos" node under each layer and remove the "layers" property
-    # useful if you e.g. have single layer combos on different layers
-    assign_combos_to_layers: bool = False
 
     # do not do any keycode/binding parsing (except as specified by "raw_binding_map")
     skip_binding_parsing: bool = False
