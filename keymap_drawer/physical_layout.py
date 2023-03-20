@@ -84,7 +84,7 @@ class PhysicalKey:
         delta = point - origin
         rotated = Point(
             delta.x * cos(angle) - delta.y * sin(angle),
-            -delta.x * sin(angle) + delta.y * cos(angle),
+            delta.x * sin(angle) + delta.y * cos(angle),
         )
         return origin + rotated
 
