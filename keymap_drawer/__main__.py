@@ -55,9 +55,13 @@ def parse(args, config: ParseConfig) -> None:
         base = None
 
     if args.qmk_keymap_json:
-        parsed = QmkJsonParser(config, args.columns, base_keymap=base).parse(args.qmk_keymap_json)
+        parsed = QmkJsonParser(config, args.columns, base_keymap=base, layer_names=args.layer_names).parse(
+            args.qmk_keymap_json
+        )
     else:
-        parsed = ZmkKeymapParser(config, args.columns, base_keymap=base).parse(args.zmk_keymap)
+        parsed = ZmkKeymapParser(config, args.columns, base_keymap=base, layer_names=args.layer_names).parse(
+            args.zmk_keymap
+        )
 
     yaml.safe_dump(parsed, sys.stdout, indent=2, width=160, sort_keys=False, default_flow_style=None)
 
@@ -129,6 +133,12 @@ def main() -> None:
     keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse", type=Path)
     keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=Path)
     parse_p.add_argument("-b", "--base-keymap", help="A base keymap YAML to inherit certain properties from", type=Path)
+    parse_p.add_argument(
+        "-l",
+        "--layer-names",
+        help="List of layer names to override parsed names; its length should match the number of layers",
+        nargs="+",
+    )
     parse_p.add_argument(
         "-c",
         "--columns",

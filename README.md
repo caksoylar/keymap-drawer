@@ -56,6 +56,7 @@ See [the development section](#development) for instructions to install from sou
   ```
 
   Due to current limitations of the `keymap.json` format, combos and `#define`'d layer names will not be present in the parsing output.
+  However you can manually specify layer names using the layer names parameter, e.g. `keymap parse --layer-names Base Sym Nav ...`.
 
 - **ZMK**: `.keymap` files are used for parsing. These will be preprocessed similar to the ZMK build system, so `#define`'s and `#include`s will be expanded.
 
