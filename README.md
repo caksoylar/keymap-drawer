@@ -1,5 +1,7 @@
 # `keymap-drawer`
 
+[![PyPI version](https://badge.fury.io/py/keymap-drawer.svg)](https://badge.fury.io/py/keymap-drawer)
+
 Parse QMK & ZMK keymaps and draw them in vector graphics (SVG) format, with support for visualizing hold-taps and combos that are commonly used with smaller keyboards.
 
 Available as a [command-line tool](#command-line-tool-installation) or a [web application](https://caksoylar.github.io/keymap-drawer).
