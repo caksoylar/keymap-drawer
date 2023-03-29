@@ -4,9 +4,9 @@ keyboard layout definition (either via QMK info files or using a parametrized
 ortho layout), print an SVG representing the keymap to standard output.
 """
 import sys
-import argparse
-from importlib.metadata import version
+from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
+from importlib.metadata import version
 
 import yaml
 
@@ -16,11 +16,10 @@ from .draw import KeymapDrawer
 from .parse import QmkJsonParser, ZmkKeymapParser
 
 
-def draw(args, config: DrawConfig) -> None:
+def draw(args: Namespace, config: DrawConfig) -> None:
     """Draw the keymap in SVG format to stdout."""
-    with sys.stdin.buffer if args.keymap_yaml == "-" else open(args.keymap_yaml, "rb") as f:
-        yaml_data = yaml.safe_load(f)
-        assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
+    yaml_data = yaml.safe_load(args.keymap_yaml)
+    assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
 
     if args.qmk_keyboard or args.qmk_info_json or args.ortho_layout:
         layout = {
@@ -45,11 +44,10 @@ def draw(args, config: DrawConfig) -> None:
     drawer.print_board(draw_layers=args.select_layers, keys_only=args.keys_only, combos_only=args.combos_only)
 
 
-def parse(args, config: ParseConfig) -> None:
+def parse(args: Namespace, config: ParseConfig) -> None:
     """Call the appropriate parser for given args and dump YAML keymap representation to stdout."""
     if args.base_keymap:
-        with open(args.base_keymap, "rb") as f:
-            yaml_data = yaml.safe_load(f)
+        yaml_data = yaml.safe_load(args.base_keymap)
         base = KeymapData(layers=yaml_data["layers"], combos=yaml_data.get("combos", []), layout=None, config=None)
     else:
         base = None
@@ -80,13 +78,14 @@ def dump_config(config: Config) -> None:
 
 def main() -> None:
     """Parse the configuration and print SVG using KeymapDrawer."""
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = ArgumentParser(description=__doc__)
     parser.add_argument("-v", "--version", action="version", version=version("keymap-drawer"))
     parser.add_argument(
         "-c",
         "--config",
         help="A YAML file containing settings for parsing and drawing, "
         "default can be dumped using `dump-config` command and to be modified",
+        type=FileType("rt"),
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -124,15 +123,18 @@ def main() -> None:
         "keymap_yaml",
         help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
         "see README for schema",
+        type=FileType("rt"),
     )
 
     parse_p = subparsers.add_parser(
         "parse", help="parse a QMK/ZMK keymap to YAML representation to stdout, to be used with the `draw` command"
     )
     keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
-    keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse", type=Path)
-    keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=Path)
-    parse_p.add_argument("-b", "--base-keymap", help="A base keymap YAML to inherit certain properties from", type=Path)
+    keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse", type=FileType("rt"))
+    keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=FileType("rt"))
+    parse_p.add_argument(
+        "-b", "--base-keymap", help="A base keymap YAML to inherit certain properties from", type=FileType("rt")
+    )
     parse_p.add_argument(
         "-l",
         "--layer-names",
@@ -152,11 +154,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    if args.config:
-        with sys.stdin.buffer if args.config == "-" else open(args.config, "rb") as f:
-            config = Config.parse_obj(yaml.safe_load(f))
-    else:
-        config = Config()
+    config = Config.parse_obj(yaml.safe_load(args.config)) if args.config else Config()
 
     match args.command:
         case "draw":

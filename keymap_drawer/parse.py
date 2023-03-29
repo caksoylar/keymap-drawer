@@ -5,7 +5,7 @@ from io import StringIO, TextIOWrapper
 from pathlib import Path
 from abc import ABC
 from itertools import chain
-from typing import Sequence, BinaryIO
+from typing import Sequence
 
 import yaml
 import pyparsing as pp
@@ -60,22 +60,12 @@ class KeymapParser(ABC):
                 layers[self.layer_names[layer_index]][key].type = "held"
         return layers
 
-    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> tuple[dict, KeymapData]:
+    def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
         raise NotImplementedError
 
-    def parse(self, in_arg: Path | BinaryIO, file_name: str | None = None) -> dict:
-        """Wrapper to call parser on a file handle, given a handle or a file path."""
-        match in_arg:
-            # TODO: Figure out why BinaryIO doesn't match open file handle `_io.BufferedReader` or
-            # UploadedFile returned by streamlit's file_uploader widget
-            # case BinaryIO():
-            #     return self._parse(in_arg)
-            case Path():
-                with open(in_arg, "rb") as f:
-                    layout, keymap_data = self._parse(f, str(in_arg))
-            case _:
-                # raise ValueError(f"Unknown input argument {in_arg} with type {type(in_arg)} for parsing")
-                layout, keymap_data = self._parse(in_arg, file_name)
+    def parse(self, in_buf: TextIOWrapper) -> dict:
+        """Wrapper to call parser on a file handle and do post-processing after firmware-specific parsing."""
+        layout, keymap_data = self._parse(in_buf.read(), in_buf.name)
 
         if self.base_keymap is not None:
             keymap_data.rebase(self.base_keymap)
@@ -137,10 +127,13 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.sticky_label)
         return mapped(key_str)
 
-    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> tuple[dict, KeymapData]:
-        """Parse a JSON keymap with its file handle and return the layout spec and KeymapData to be dumped to YAML."""
+    def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
+        """
+        Parse a JSON keymap with its file content and path (unused), then return the layout spec and KeymapData
+        to be dumped to YAML.
+        """
 
-        raw = json.load(in_buf)
+        raw = json.loads(in_str)
 
         layout = {}
         if "keyboard" in raw:
@@ -238,8 +231,7 @@ class ZmkKeymapParser(KeymapParser):
                 return LayoutKey(tap=tap_key.tap, hold=hold, shifted=tap_key.shifted)
         return LayoutKey(tap=binding)
 
-    def _get_prepped(self, in_buf: BinaryIO) -> str:
-        wrapper = TextIOWrapper(in_buf, encoding="utf-8")
+    def _get_prepped(self, in_str: str, file_name: str | None = None) -> str:
         if self.cfg.preprocess:
 
             def include_handler(*args):
@@ -248,12 +240,12 @@ class ZmkKeymapParser(KeymapParser):
             preprocessor = Preprocessor()
             preprocessor.line_directive = None
             preprocessor.on_include_not_found = include_handler
-            preprocessor.parse(wrapper)
+            preprocessor.parse(in_str, source=file_name)
             with StringIO() as f_out:
                 preprocessor.write(f_out)
                 prepped = f_out.getvalue()
         else:
-            prepped = wrapper.read()
+            prepped = in_str
         return re.sub(r"^\s*#.*?$", "", prepped)
 
     def _find_nodes_with_name(
@@ -336,9 +328,11 @@ class ZmkKeymapParser(KeymapParser):
                 continue
         return combos
 
-    def _parse(self, in_buf: BinaryIO, file_name: str | None = None) -> tuple[dict, KeymapData]:
-        """Parse a ZMK keymap with its file handle and return the layout spec and KeymapData to be dumped to YAML."""
-        prepped = self._get_prepped(in_buf)
+    def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
+        """
+        Parse a ZMK keymap with its content and path and return the layout spec and KeymapData to be dumped to YAML.
+        """
+        prepped = self._get_prepped(in_str, file_name)
         parsed = [
             node
             for node in (

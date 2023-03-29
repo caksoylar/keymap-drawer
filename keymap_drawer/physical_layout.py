@@ -61,7 +61,7 @@ class PhysicalKey:
     bounding_width: float = 0.0
     bounding_height: float = 0.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.rotation:
             # recalculate key center after rotation
             if self.rotation_pos is not None:
