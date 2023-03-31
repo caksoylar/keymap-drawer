@@ -58,7 +58,7 @@ See [the development section](#development) for instructions to install from sou
   ```
 
   Due to current limitations of the `keymap.json` format, combos and `#define`'d layer names will not be present in the parsing output.
-  However you can manually specify layer names using the layer names parameter, e.g. `keymap parse --layer-names Base Sym Nav ...`.
+  However you can manually specify layer names using the layer names parameter, e.g. `keymap parse -l Base -l Sym -l Nav ...`.
 
 - **ZMK**: `.keymap` files are used for parsing. These will be preprocessed similar to the ZMK build system, so `#define`'s and `#include`s will be expanded.
 
@@ -163,7 +163,7 @@ jobs:
       keymap_patterns: "config/*.keymap"        # path to the keymaps to parse
       config_path: "keymap_drawer.config.yaml"  # config file, ignored if not exists
       output_folder: "svg"                      # path to save produced SVGs
-      parse_args: ""  # map of extra args to pass to `keymap parse`, e.g. "corne:'-l Def Lwr Rse' cradio:''"
+      parse_args: ""  # map of extra args to pass to `keymap parse`, e.g. "corne:'-l Def -l Lwr -l Rse' cradio:''"
       draw_args: ""   # map of extra args to pass to `keymap draw`, e.g. "corne:'-k corne_rotated' cradio:'-k paroxysm'"
 ```
 

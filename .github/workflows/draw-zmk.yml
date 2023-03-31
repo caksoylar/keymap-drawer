@@ -20,7 +20,7 @@ on:
         required: false
         type: string
       parse_args:
-        description: "Map of keyboard names to extra `keymap parse` args, e.g. `corne:'--layer-names Def Lwr Rse Fun'`"
+        description: "Map of keyboard names to extra `keymap parse` args, e.g. `corne:'-l Def -l Lwr -l Rse -l Fun'`"
         default: ""
         required: false
         type: string

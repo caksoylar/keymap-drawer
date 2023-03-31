@@ -19,6 +19,7 @@ pydantic = "^1.10.2"
 pcpp = "^1.30"
 pyparsing = "^3.0.9"
 pyyaml = "^6.0"
+typer = "^0.7.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.0.0"
@@ -41,7 +42,7 @@ optional = true
 streamlit = "^1.17.0"
 
 [tool.poetry.scripts]
-keymap = 'keymap_drawer.__main__:main'
+keymap = 'keymap_drawer.__main__:cli'
 
 [build-system]
 requires = ["poetry-core"]
