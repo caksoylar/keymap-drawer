@@ -93,6 +93,7 @@ draculady: {qmk_keyboard: obosob/arch_36}
 ergotravel: {qmk_keyboard: ergotravel/rev1}
 ffkb: {qmk_keyboard: fingerpunch/ffkb}
 gatoraid40: {ortho_layout: {split: true, rows: 3, columns: 6, thumbs: 3, drop_pinky: true}}
+glove80: {qmk_keyboard: glove80}
 hakea: {qmk_keyboard: sofle/rev1}
 hhkb: {qmk_keyboard: hhkb/ansi/32u4}
 hillside46: {qmk_keyboard: hillside/46/0_1}
