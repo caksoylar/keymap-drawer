@@ -2,10 +2,10 @@
 
 This page documents the YAML-format keymap representation that is output by `keymap parse` and used by `keymap draw`.
 
-At the root, three key values are expected, which are detailed in respective sections. A typical keymap will have the following structure:
+At the root, four fields can be specified which are detailed in respective sections. A typical keymap will have the following structure:
 
 ```yaml
-layout:      # physical layout specs, optional
+layout:      # physical layout specs, optional if used in CLI
   ...
 layers:      # ordered mapping of layer name to contents
   layer_1:   # list of (lists of) key specs
@@ -53,11 +53,17 @@ Following physical layout parameters can be specified either in the command line
   Specifies the keyboard name to use with QMK `info.json` format layout definition, retrieved from following sources in order of preference:
   - `<keyboard>.json` (with `/`'s in `<keyboard>` replaced by `@`) under [`resources/qmk_layouts`](/resources/qmk_layouts/), if it exists
   - [QMK keyboard metadata API](https://docs.qmk.fm/#/configurator_architecture?id=keyboard-metadata) that [QMK Configurator](https://config.qmk.fm) also uses
+
+  _Example:_ `layout: {qmk_keyboard: crkbd/rev1}`
 - **`qmk_info_json`** (equivalent to `-j`/`--qmk-info-json` on the command line):
   Specifies the path to a local QMK format `info.json` file to use
+
+  _Example:_ `layout: {qmk_info_json: my_special_layout.json}`
 - **`qmk_layout`** (equivalent to `-l`/`--qmk-layout` on the command line):
   Specifies the layout macro to be used for the QMK keyboard, defaults to first one specified if not used --
   should be used alongside one of the above two options
+
+  _Example:_ `layout: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x5_3}`
 - **`ortho_layout`** (equivalent to `-o`/`--ortho-layout` on the command line):
   Specifies a mapping of parameters to values to generate an ortholinear physical layout, with schema:
 
@@ -71,6 +77,8 @@ Following physical layout parameters can be specified either in the command line
   | `drop_inner` | `bool`                   | `False`       | whether the inner index (innermost) columns have one fewer key, N/A for non-splits                       |
 
 [^2]: Corresponding to bottom row arrangements of a single `2u` key, or two neighboring `2u` keys, respectively.
+
+  _Example:_ `layout: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 3}}`
 
 **Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for `qmk_keyboard` and `qmk_layout` values, and preview the physical layout.
 
@@ -101,12 +109,12 @@ The two layers in the following example are functionally identical:
 
 ```yaml
 layers:
-  flat_layer: ["7", "8", "9", "4", "5", "6", "1", "2", "3", { t: "0", h: Fn }]
+  flat_layer: ["7", "8", "9", "4", "5", "6", "1", "2", "3", {t: "0", h: Fn}]
   nested_layer:
     - ["7", "8", "9"]
     - ["4", "5", "6"]
     - ["1", "2", "3"]
-    - { t: "0", h: Fn }
+    - {t: "0", h: Fn}
 ```
 
 ## `combos`
@@ -127,8 +135,23 @@ This is an optional field that contains a list of combo specs, each of which is 
 [^6]: Just like for keys in a layer under the `layers` field, `key` field can be specified with a string value as a shortcut, or a mapping (where the `type` field will be ignored).
 [^7]: The default value of empty list corresponds to all layers in the keymap, similar to the `layers` property in ZMK.
 
+_Example:_
+```yaml
+combos:
+  - {p: [0, 1], k: Tab, l: [Qwerty]}
+  - {p: [1, 2], k: Esc, l: [Qwerty]}
+```
+
 ## `draw_config`
 
 This optional field lets you override [config parameters](README.md#customization) for SVG drawing.
 This way you can specify drawing configuration for a specific layout and store in the keymap specification.
 It is a mapping from field names in [`DrawConfig` class](keymap_drawer/config.py) to values.
+
+_Example:_
+```yaml
+draw_config:
+  key_h: 60
+  combo_h: 22
+  combo_w: 24
+```
