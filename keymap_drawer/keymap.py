@@ -57,6 +57,7 @@ class ComboSpec(BaseModel, allow_population_by_field_name=True):
     align: Literal["mid", "top", "bottom", "left", "right"] = Field(alias="a", default="mid")
     offset: float = Field(alias="o", default=0.0)
     dendron: bool | None = Field(alias="d", default=None)
+    slide: float | None = Field(alias="s", default=None)
     type: str = "combo"
 
     @classmethod
@@ -73,6 +74,19 @@ class ComboSpec(BaseModel, allow_population_by_field_name=True):
     def get_key(cls, val) -> LayoutKey:
         """Parse each key from its key spec."""
         return val if isinstance(val, LayoutKey) else LayoutKey.from_key_spec(val)
+
+    @validator("key_positions")
+    def validate_positions(cls, val) -> Sequence[str]:
+        """Make sure each combo has at least two positions."""
+        assert len(val) >= 2, f"Need at least two key positions for combo but got {val}"
+        return val
+
+    @validator("slide")
+    def validate_slide(cls, val) -> float:
+        """Ensure slide is between -1 and 1."""
+        if val is not None:
+            assert -1.0 <= val <= 1.0, f"Slide value needs to be in [-1, 1] but got {val}"
+        return val
 
 
 class KeymapData(BaseModel):

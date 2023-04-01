@@ -124,6 +124,11 @@ class KeymapDrawer:
         # find center of combo box
         p = p_0.copy()
         p_mid = (1 / len(p_keys)) * sum((k.pos for k in p_keys), start=Point(0, 0))
+        if combo.slide is not None:  # find two keys furthest from the midpoint, interpolate between their positions
+            sorted_keys = sorted(p_keys, key=lambda k: abs(k.pos - p_mid), reverse=True)
+            start, end = sorted_keys[0:2]
+            p_mid = (1 - combo.slide) / 2 * start.pos + (1 + combo.slide) / 2 * end.pos
+
         match combo.align:
             case "mid":
                 p += p_mid
