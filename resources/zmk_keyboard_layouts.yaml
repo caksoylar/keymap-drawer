@@ -87,6 +87,7 @@ bt65: {qmk_keyboard: novelkeys/nk65}
 chocofi: {qmk_keyboard: chocofi}
 chocv: {qmk_keyboard: chocv}
 clog_v2: {qmk_keyboard: clog}
+dao: {qmk_keyboard: jorne/rev1}
 dilemma: {qmk_keyboard: bastardkb/dilemma/3x5_2/assembled}
 draculad: {qmk_keyboard: draculad}
 draculady: {qmk_keyboard: obosob/arch_36}
