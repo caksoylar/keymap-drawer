@@ -96,17 +96,22 @@ class KeymapDrawer:
         return True
 
     def _draw_arc_dendron(self, p_1: Point, p_2: Point, x_first: bool, shorten: float) -> None:
+        diff = p_2 - p_1
+        if (x_first and abs(diff.x) < self.cfg.arc_radius) or (not x_first and abs(diff.y) < self.cfg.arc_radius):
+            self._draw_line_dendron(p_1, p_2, shorten)
+            return
+
         start = f"M{p_1.x},{p_1.y}"
-        arc_x = copysign(self.cfg.arc_radius, p_2.x - p_1.x)
-        arc_y = copysign(self.cfg.arc_radius, p_2.y - p_1.y)
-        clockwise = (p_2.x > p_1.x) ^ (p_2.y > p_1.y)
+        arc_x = copysign(self.cfg.arc_radius, diff.x)
+        arc_y = copysign(self.cfg.arc_radius, diff.y)
+        clockwise = (diff.x > 0) ^ (diff.y > 0)
         if x_first:
-            line_1 = f"h{self.cfg.arc_scale * (p_2.x - p_1.x) - arc_x}"
-            line_2 = f"v{p_2.y - p_1.y - arc_y - copysign(shorten, p_2.y - p_1.y)}"
+            line_1 = f"h{self.cfg.arc_scale * diff.x - arc_x}"
+            line_2 = f"v{diff.y - arc_y - copysign(shorten, diff.y)}"
             clockwise = not clockwise
         else:
-            line_1 = f"v{self.cfg.arc_scale * (p_2.y - p_1.y) - arc_y}"
-            line_2 = f"h{p_2.x - p_1.x - arc_x - copysign(shorten, p_2.x - p_1.x)}"
+            line_1 = f"v{self.cfg.arc_scale * diff.y - arc_y}"
+            line_2 = f"h{diff.x - arc_x - copysign(shorten, diff.x)}"
         arc = f"a{self.cfg.arc_radius},{self.cfg.arc_radius} 0 0 {int(clockwise)} {arc_x},{arc_y}"
         self.out.write(f'<path d="{start} {line_1} {arc} {line_2}" class="combo"/>\n')
 
