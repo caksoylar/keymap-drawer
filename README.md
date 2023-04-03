@@ -140,6 +140,33 @@ KEYMAP_raw_binding_map='{"&bootloader": "BOOT"}' keymap parse -z zmk-config/conf
 
 Drawing parameters that are specified in the `draw_config` field can also be overridden in [the keymap YAML](KEYMAP_SPEC.md#draw_config).
 
+## Setting up an automated drawing workflow
+
+If you use a [ZMK config repo](https://zmk.dev/docs/user-setup), you can set up an automated workflow to parse your keymaps, then draw and commit SVG outputs to your repo.
+To do that you can add a new workflow to your repo at `.github/workflows/draw-keymaps.yml` that refers to the reusable `keymap-drawer` [workflow](.github/workflows/draw-zmk.yml):
+
+```yaml
+# Example for using the keymap-drawer ZMK user config workflow
+name: Draw ZMK keymaps
+on:
+  workflow_dispatch:  # can be triggered manually
+  push:               # automatically run on changes to following paths
+    paths:
+      - 'config/*.keymap'
+      - 'config/*.dtsi'
+      # - 'config/boards/*/*/*.keymap'
+
+jobs:
+  draw:
+    uses: caksoylar/keymap-drawer/.github/workflows/draw-zmk.yml@main
+    with:
+      keymap_patterns: "config/*.keymap"        # path to the keymaps to parse
+      config_path: "keymap_drawer.config.yaml"  # config file, ignored if not exists
+      output_folder: "svg"                      # path to save produced SVGs
+      parse_args: ""  # map of extra args to pass to `keymap parse`, e.g. "corne:'-l Def Lwr Rse' sweep:''"
+      draw_args: ""   # map of extra args to pass to `keymap draw`, e.g. "corne:'-k corne_rotated' sweep:'-k paroxysm'"
+```
+
 ## Development
 
 This project requires Python 3.10+ and uses [Poetry](https://python-poetry.org/) for packaging.

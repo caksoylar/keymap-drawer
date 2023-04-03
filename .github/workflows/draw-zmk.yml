@@ -1,0 +1,80 @@
+# Reusable workflow for drawing and committing an automated keymap diagram
+# for ZMK config repos using https://github.com/caksoylar/keymap-drawer
+name: Draw ZMK keymaps
+on:
+  workflow_call:
+    inputs:
+      keymap_patterns:
+        description: "Path specification for keymaps to be parsed"
+        default: "config/*.keymap"
+        required: false
+        type: string
+      config_path:
+        description: "Path to the keymap-drawer configuration file, ignored if non-existent"
+        default: "keymap_drawer.config.yaml"
+        required: false
+        type: string
+      output_folder:
+        description: "Output folder for SVGs"
+        default: "svg"
+        required: false
+        type: string
+      parse_args:
+        description: "Map of keyboard names to extra `keymap parse` args, e.g. `corne:'--layer-names Def Lwr Rse Fun'`"
+        default: ""
+        required: false
+        type: string
+      draw_args:
+        description: "Map of keyboard names to extra `keymap draw` args, e.g. `corne:'-k corne_rotated -l LAYOUT_split_3x5_3'`"
+        default: ""
+        required: false
+        type: string
+
+jobs:
+  draw:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3      
+    - name: Install keymap-drawer
+      run: python3 -m pip install keymap-drawer
+    - name: Draw keymaps
+      run: |
+        get_args() {
+            local keyboard=$2
+            eval set -- "$1"
+            for arg; do
+                local key=${arg%%:*}
+                local val=${arg#*:}
+                if [ "$key" = "$keyboard" ]; then
+                    echo "$val"
+                    break
+                fi
+            done
+        }
+
+        mkdir -p "${{ inputs.output_folder }}"
+
+        config_path="${{ inputs.config_path }}"
+        [ -e "$config_path" ] && config_arg="-c '""$config_path""'" || config_arg=""
+        for keymap_file in ${{ inputs.keymap_patterns }}; do
+            keyboard=$(basename -s .keymap "$keymap_file")
+            echo "INFO: drawing for $keyboard"
+
+            parse_args=$(get_args "${{ inputs.parse_args }}" "$keyboard")
+            echo "INFO:   got extra parse args: $parse_args"
+            draw_args=$(get_args "${{ inputs.draw_args }}" "$keyboard")
+            echo "INFO:   got extra draw args: $draw_args"
+
+            keymap $config_arg parse -z "$keymap_file" $parse_args >"$keyboard.yaml" \
+            && keymap $config_arg draw "$keyboard.yaml" $draw_args >"${{ inputs.output_folder }}/$keyboard.svg" \
+            || echo "ERROR: parsing or drawing failed for $keyboard!"
+        done
+    - name: Commit updated images
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: "[Skip CI] keymap-drawer render"
+        file_pattern: "${{ inputs.output_folder }}/*.svg"
