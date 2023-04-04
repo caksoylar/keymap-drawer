@@ -59,7 +59,7 @@ jobs:
         mkdir -p "${{ inputs.output_folder }}"
 
         config_path="${{ inputs.config_path }}"
-        [ -e "$config_path" ] && config_arg="-c '""$config_path""'" || config_arg=""
+        [ -e "$config_path" ] && config_arg=(-c "$config_path") || config_arg=()
         for keymap_file in ${{ inputs.keymap_patterns }}; do
             keyboard=$(basename -s .keymap "$keymap_file")
             echo "INFO: drawing for $keyboard"
@@ -69,8 +69,8 @@ jobs:
             draw_args=$(get_args "${{ inputs.draw_args }}" "$keyboard")
             echo "INFO:   got extra draw args: $draw_args"
 
-            keymap $config_arg parse -z "$keymap_file" $parse_args >"$keyboard.yaml" \
-            && keymap $config_arg draw "$keyboard.yaml" $draw_args >"${{ inputs.output_folder }}/$keyboard.svg" \
+            keymap "${config_arg[@]}" parse -z "$keymap_file" $parse_args >"$keyboard.yaml" \
+            && keymap "${config_arg[@]}" draw "$keyboard.yaml" $draw_args >"${{ inputs.output_folder }}/$keyboard.svg" \
             || echo "ERROR: parsing or drawing failed for $keyboard!"
         done
     - name: Commit updated images
