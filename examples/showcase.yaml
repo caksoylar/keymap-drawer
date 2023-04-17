@@ -1,0 +1,49 @@
+layout:
+  qmk_keyboard: corne_rotated
+  qmk_layout: LAYOUT_split_3x5_3
+layers:
+  Base:
+    - [Q, W, F, P, B, J, L, U, Y, "'"]
+    - [{h: Ctrl, t: A}, {h: Gui, t: R}, {h: Alt, t: S}, {h: Shift, t: T}, G, M, {h: Shift, t: N}, {h: Alt, t: E}, {h: Gui, t: I}, {h: Ctrl, t: O}]
+    - [Z, X, C, D, V, K, H, {t: ',', s: '<'}, {t: ., s: '>'}, {t: /, s: '?'}]
+    - {h: Gui,   t: Tab, type: ghost}
+    - {h: Ctrl,  t: Esc}
+    - {h: NAV,   t: $$bspc$$}
+    - {h: SYM,   t: $$space$$}
+    - {h: Shift, t: $$enter$$}
+    - {h: Alt,   t: $$del$$, type: ghost}
+combos:
+  - {p: [0, 10, 20], k: RST, a: left}
+  - {p: [4, 5], k: BOOT, a: top}
+  - {p: [13, 16], k: Caps Wrd, a: top}
+  - {p: [27, 29], k: 😬, a: bottom}
+  - {p: [12, 13], k: '('}
+  - {p: [16, 17], k: ')'}
+  - {p: [11, 12], k: '['}
+  - {p: [17, 18], k: ']'}
+  - {p: [14, 24], k: MB1}
+draw_config:
+  glyph_tap_size: 18
+  glyphs:  # adapted from icons at https://tabler-icons.io/
+    bspc: |
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none">
+       <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+       <path d="M20 6a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-11l-5 -5a1.5 1.5 0 0 1 0 -2l5 -5z"></path>
+       <path d="M12 10l4 4m0 -4l-4 4"></path>
+      </svg>
+    space: |
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+        <path d="M4 10v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1 -1v-3"></path>
+      </svg>
+    enter:
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none">
+         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+         <path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1"></path>
+      </svg>
+    del: |
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" transform="rotate(180, 9, 9)">
+       <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+       <path d="M20 6a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-11l-5 -5a1.5 1.5 0 0 1 0 -2l5 -5z"></path>
+       <path d="M12 10l4 4m0 -4l-4 4"></path>
+      </svg>
