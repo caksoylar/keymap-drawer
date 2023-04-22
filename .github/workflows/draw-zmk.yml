@@ -29,6 +29,11 @@ on:
         default: ""
         required: false
         type: string
+      commit_message:
+        description: "Commit message for updated images"
+        default: "[Skip CI] keymap-drawer render"
+        required: false
+        type: string
 
 jobs:
   draw:
@@ -76,5 +81,5 @@ jobs:
     - name: Commit updated images
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: "[Skip CI] keymap-drawer render"
+        commit_message: "${{ inputs.commit_message }}"
         file_pattern: "${{ inputs.output_folder }}/*.svg"
