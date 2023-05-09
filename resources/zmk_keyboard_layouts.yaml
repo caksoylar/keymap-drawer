@@ -73,8 +73,8 @@ zmk_uno: null
 zodiark: {qmk_keyboard: aleblazer/zodiark}
 
 # Custom boards and shields -- partially following https://github.com/manna-harbour/miryoku/discussions/81
-adv360: {qmk_keyboard: ergodox_ez/base, qmk_layout: LAYOUT_ergodox_pretty}
-adv360pro: {qmk_keyboard: ergodox_ez/base, qmk_layout: LAYOUT_ergodox_pretty}
+adv360: {qmk_keyboard: adv360}
+adv360pro: {qmk_keyboard: adv360}
 ahokore: {qmk_keyboard: obosob/arch_36}
 ahokore: {qmk_keyboard: obosob/arch_36}
 arch36: {qmk_keyboard: obosob/arch_36}
