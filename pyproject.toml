@@ -15,30 +15,33 @@ repository = "https://github.com/caksoylar/keymap-drawer"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pydantic = "^1.10.2"
+pydantic = "^1.10.7"
 pcpp = "^1.30"
 pyparsing = "^3.0.9"
 pyyaml = "^6.0"
 
+[tool.poetry.group.dev]
+optional = true
+
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.0.0"
-pylint = "^2.15.2"
-black = "^22.8.0"
-pylint-pydantic = "^0.1.4"
-types-pyyaml = "^6.0.12.2"
-deptry = "^0.8.0"
+mypy = "^1.2.0"
+pylint = "^2.17.4"
+black = "^23.3.0"
+pylint-pydantic = "^0.1.8"
+types-pyyaml = "^6.0.12.9"
+deptry = "^0.10.1"
 
 [tool.poetry.group.lsp]
 optional = true
 
 [tool.poetry.group.lsp.dependencies]
-python-lsp-server = "^1.6.0"
+python-lsp-server = "^1.7.2"
 
 [tool.poetry.group.streamlit]
 optional = true
 
 [tool.poetry.group.streamlit.dependencies]
-streamlit = "^1.17.0"
+streamlit = "^1.22.0"
 
 [tool.poetry.scripts]
 keymap = 'keymap_drawer.__main__:main'
