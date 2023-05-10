@@ -57,7 +57,7 @@ class KeymapParser(ABC):
         assert self.layer_names is not None
         for layer_index, activating_keys in self.layer_activated_from.items():
             for key in activating_keys:
-                layers[self.layer_names[layer_index]][key].type = "held"
+                layers[self.layer_names[layer_index]][key] = LayoutKey(type="held")
         return layers
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
