@@ -119,6 +119,11 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
             font-size: 8px;
         }
 
+        /* lighter symbol for transparent keys */
+        text.trans {
+            fill: #7b7e81;
+        }
+
         /* styling for combo dendrons */
         path.combo {
             stroke-width: 1;
@@ -165,13 +170,12 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # display text to place in hold field for sticky/one-shot keys
     sticky_label: str = "sticky"
 
+    trans_legend: str | dict = {"t": "▽", "type": "trans"}
+
     # convert QMK keycodes to their display forms, omitting "KC_" prefix on the keys
     qmk_keycode_map: dict[str, str | dict] = {
         # QMK keycodes
         "XXXXXXX": "",
-        "TRANSPARENT": "",
-        "TRNS": "",
-        "_______": "",
         "NO": "",
         "MINUS": "-",
         "MINS": "-",

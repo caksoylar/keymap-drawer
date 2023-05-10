@@ -76,9 +76,9 @@ Following physical layout parameters can be specified either in the command line
   | `drop_pinky` | `bool`                   | `False`       | whether the pinky (outermost) columns have one fewer key, N/A for non-splits                             |
   | `drop_inner` | `bool`                   | `False`       | whether the inner index (innermost) columns have one fewer key, N/A for non-splits                       |
 
-[^2]: Corresponding to bottom row arrangements of a single `2u` key, or two neighboring `2u` keys, respectively.
-
   _Example:_ `layout: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 3}}`
+
+[^2]: Corresponding to bottom row arrangements of a single `2u` key, or two neighboring `2u` keys, respectively.
 
 **Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for `qmk_keyboard` and `qmk_layout` values, and preview the physical layout.
 
@@ -91,12 +91,12 @@ Following physical layout parameters can be specified either in the command line
 This field is an ordered mapping of layer names to a list of `LayoutKey` specs that represent the keys on that layer.
 A `LayoutKey` can be defined with either a string value or with a mapping with the following fields:
 
-| field name (alias) | type  | default value | description                                                                                                                                                                                                                        |
-| ------------------ | ----- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tap` (`t`)        | `str` | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks[^3]                                                                                                                               |
-| `hold` (`h`)       | `str` | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                                                                                                           |
-| `shifted` (`s`)    | `str` | `""`          | the "shifted" action of a key, drawn on the top of the key                                                                                                                                                                         |
-| `type`             | `str` | `""`          | the styling of the key that corresponds to the [SVG class](keymap_drawer/config.py#L62)[^4]. predefined types are `held` (a red shading to denote held down keys) and `ghost` (a gray shading to denote optional keys in a layout) |
+| field name (alias) | type  | default value | description                                                                                                                                                                                                                                                                  |
+| ------------------ | ----- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tap` (`t`)        | `str` | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks[^3]                                                                                                                                                                         |
+| `hold` (`h`)       | `str` | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                                                                                                                                                     |
+| `shifted` (`s`)    | `str` | `""`          | the "shifted" action of a key, drawn on the top of the key                                                                                                                                                                                                                   |
+| `type`             | `str` | `""`          | the styling of the key that corresponds to the [SVG class](keymap_drawer/config.py#L51)[^4]. predefined types are `held` (a red shading to denote held down keys), `ghost` (a gray shading to denote optional keys in a layout), `trans` (lighter text for transparent keys) |
 
 [^3]: You can prevent line breaks by using double spaces `"  "` to denote a single non-breaking space.
 [^4]: Text styling can be overridden in the SVG config using the `"tap"`, `"hold"` and `"shifted"` classes if desired.
@@ -130,7 +130,7 @@ This is an optional field that contains a list of combo specs, each of which is 
 | `offset` (`o`)        | `float`                                           | `0.0`         | additional offset to `top`/`bottom`/`left`/`right` positioning, specified in units of key width/height: useful for combos that would otherwise overlap                            |
 | `dendron` (`d`)       | `null \| bool`                                    | `null`        | whether to draw dendrons going from combo to triggering key coordinates, default is to draw for non-`mid` alignments and draw for `mid` if key coordinates are far from the combo |
 | `slide` (`s`)         | `null \| float (-1 <= val <= 1)`                  | `null`        | slide the combo box along an axis between keys -- can be used for moving `top`/`bottom` combo boxes left/right, `left`/`right` boxes up/down, or `mid` combos between two keys    |
-| `type`                | `str`                                             | `"combo"`     | the styling of the key that corresponds to the [SVG class](keymap_drawer/config.py#L62), see `LayoutKey` definition above                                                         |
+| `type`                | `str`                                             | `"combo"`     | the styling of the key that corresponds to the [SVG class](keymap_drawer/config.py#L51), see `LayoutKey` definition above                                                         |
 
 [^5]: Key indices start from `0` on the first key position and increase by columns and then rows, corresponding to their ordering in the `layers` field. This matches the `key-positions` property in ZMK combo definitions.
 [^6]: Just like for keys in a layer under the `layers` field, `key` field can be specified with a string value as a shortcut, or a mapping (where the `type` field will be ignored).

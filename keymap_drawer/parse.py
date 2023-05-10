@@ -81,6 +81,7 @@ class QmkJsonParser(KeymapParser):
     """Parser for json-format QMK keymaps, like Configurator exports or `qmk c2json` outputs."""
 
     _prefix_re = re.compile(r"\bKC_")
+    _trans_re = re.compile(r"TRANSPARENT|TRNS|_______")
     _mo_re = re.compile(r"MO\((\d+)\)")
     _mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
     _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
@@ -103,25 +104,27 @@ class QmkJsonParser(KeymapParser):
 
         key_str = self._prefix_re.sub("", key_str)
 
-        if m := self._mo_re.fullmatch(key_str):
+        if m := self._trans_re.fullmatch(key_str):  # transparent
+            return LayoutKey.from_key_spec(self.cfg.trans_legend)
+        if m := self._mo_re.fullmatch(key_str):  # momentary layer
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from(current_layer, to_layer, key_positions)
             return LayoutKey(tap=self.layer_names[to_layer])
-        if m := self._mts_re.fullmatch(key_str):
+        if m := self._mts_re.fullmatch(key_str):  # short mod-tap syntax
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=m.group(1), shifted=tap_key.shifted)
-        if m := self._mtl_re.fullmatch(key_str):
+        if m := self._mtl_re.fullmatch(key_str):  # long mod-tap syntax
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=m.group(1).strip(), shifted=tap_key.shifted)
-        if m := self._lt_re.fullmatch(key_str):
+        if m := self._lt_re.fullmatch(key_str):  # layer-tap
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from(current_layer, to_layer, key_positions)
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=self.layer_names[to_layer], shifted=tap_key.shifted)
-        if m := self._osm_re.fullmatch(key_str):
+        if m := self._osm_re.fullmatch(key_str):  # one-shot mod
             tap_key = mapped(m.group(1).strip())
             return LayoutKey(tap=tap_key.tap, hold=self.cfg.sticky_label, shifted=tap_key.shifted)
-        if m := self._osl_re.fullmatch(key_str):
+        if m := self._osl_re.fullmatch(key_str):  # one-shot layer
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from(current_layer, to_layer, key_positions)
             return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.sticky_label)
@@ -204,8 +207,10 @@ class ZmkKeymapParser(KeymapParser):
             return mapped
 
         match binding.split():
-            case ["&none"] | ["&trans"]:
+            case ["&none"]:
                 return LayoutKey()
+            case ["&trans"]:
+                return LayoutKey.from_key_spec(self.cfg.trans_legend)
             case [ref]:
                 return LayoutKey(tap=ref)
             case ["&kp", par]:
