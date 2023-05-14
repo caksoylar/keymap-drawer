@@ -3,7 +3,6 @@ Module that contains the KeymapDrawer class which takes a physical layout,
 keymap with layers and optionally combo definitions, then can draw an SVG
 representation of the keymap using these two.
 """
-import re
 from math import copysign
 from html import escape
 from typing import Sequence, TextIO, Literal
@@ -11,6 +10,7 @@ from typing import Sequence, TextIO, Literal
 from .keymap import KeymapData, ComboSpec, LayoutKey
 from .physical_layout import Point, PhysicalKey
 from .config import DrawConfig
+from .glyph import GlyphHandler
 
 
 LegendType = Literal["tap", "hold", "shifted"]
@@ -19,19 +19,13 @@ LegendType = Literal["tap", "hold", "shifted"]
 class KeymapDrawer:
     """Class that draws a keyboard representation in SVG."""
 
-    _glyph_name_re = re.compile(r"\$\$(?P<glyph>.*)\$\$")
-    _view_box_dimensions_re = re.compile(
-        r'<svg.*viewbox="(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)".*>',
-        flags=re.IGNORECASE | re.ASCII,
-    )
-    _scrub_dims_re = re.compile(r' (width|height)=".*?"')
-
     def __init__(self, config: DrawConfig, out: TextIO, **kwargs) -> None:
         self.cfg = config
         self.keymap = KeymapData(config=config, **kwargs)
         assert self.keymap.layout is not None, "A PhysicalLayout must be provided for drawing"
         assert self.keymap.config is not None, "A DrawConfig must be provided for drawing"
         self.layout = self.keymap.layout
+        self.glyph_handler = GlyphHandler(self.cfg, self.keymap)
         self.out = out
 
     @staticmethod
@@ -62,38 +56,14 @@ class KeymapDrawer:
             self.out.write(f'<tspan x="{p.x}" dy="{self.cfg.line_spacing}em">{escape(word)}</tspan>')
         self.out.write("</text>\n")
 
-    def _is_glyph(self, words: Sequence[str]) -> str | None:
-        if len(words) == 1 and (m := self._glyph_name_re.search(words[0])):
-            return m.group("glyph")
-        return None
-
-    def _draw_glyph(self, p: Point, name: str, legend_type: LegendType, classes: Sequence[str]) -> bool:
-        if not (glyph := self.cfg.glyphs.get(name)) or not (view_box := self._view_box_dimensions_re.match(glyph)):
-            return False
-
-        # set height and y-offset from center
-        match legend_type:
-            case "tap":
-                height = self.cfg.glyph_tap_size
-                d_y = 0.5 * height
-            case "hold":
-                height = self.cfg.glyph_hold_size
-                d_y = height
-            case "shifted":
-                height = self.cfg.glyph_shifted_size
-                d_y = 0
-
-        x, y, w, h = (float(v) for v in view_box.groups())
-
-        # calculate width to preserve aspect ratio
-        width = (w - x) * (height / (h - y))
+    def _draw_glyph(self, p: Point, name: str, legend_type: LegendType, classes: Sequence[str]) -> None:
+        width, height, d_y = self.glyph_handler.get_glyph_dimensions(name, legend_type)
 
         classes = [*classes, "glyph", name]
         self.out.write(
             f'<use href="#{name}" x="{p.x - (width / 2)}" y="{p.y - d_y}" '
             f'height="{height}" width="{width}"{self._to_class_str(classes)}/>\n'
         )
-        return True
 
     def _draw_arc_dendron(self, p_1: Point, p_2: Point, x_first: bool, shorten: float) -> None:
         diff = p_2 - p_1
@@ -174,10 +144,11 @@ class KeymapDrawer:
 
         classes = [key_type, legend_type]
 
-        if (glyph := self._is_glyph(words)) and self._draw_glyph(p, glyph, legend_type, classes):
-            return
-
         if len(words) == 1:
+            if glyph := self.glyph_handler.legend_is_glyph(words[0]):
+                self._draw_glyph(p, glyph, legend_type, classes)
+                return
+
             self._draw_text(p, words[0], classes)
             return
 
@@ -308,12 +279,7 @@ class KeymapDrawer:
             'xmlns="http://www.w3.org/2000/svg">\n'
         )
 
-        self.out.write("<defs>/* start glyphs */\n")
-        for name, block in self.cfg.glyphs.items():
-            self.out.write(f'<svg id="{name}">\n')
-            self.out.write(self._scrub_dims_re.sub("", block))
-            self.out.write("\n</svg>\n")
-        self.out.write("</defs>/* end glyphs */\n")
+        self.out.write(self.glyph_handler.get_glyph_defs())
 
         self.out.write(f"<style>{self.cfg.svg_style}</style>\n")
 
