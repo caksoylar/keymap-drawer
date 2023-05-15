@@ -153,6 +153,15 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # mapping of glyph names to be used in key fields to their SVG definitions
     glyphs: dict[str, str] = {}
 
+    # mapping of sources to (possibly templated) URLs for fetching SVG glyphs
+    # e.g. `$$material:settings$$` will use the value for `material` and replace `{}` with `settings`
+    glyph_urls: dict[str, str] = {
+        "tabler": "https://tabler-icons.io/static/tabler-icons/icons/{}.svg",
+        "mdi": "https://raw.githubusercontent.com/Templarian/MaterialDesign-SVG/master/svg/{}.svg",
+        "mdil": "https://raw.githubusercontent.com/Pictogrammers/MaterialDesignLight/master/svg/{}.svg",
+        "material": "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/{}/default/48px.svg",
+    }
+
 
 class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     """Configuration settings related to parsing QMK/ZMK keymaps."""

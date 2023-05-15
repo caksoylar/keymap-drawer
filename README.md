@@ -169,7 +169,13 @@ layers:
 ...
 ```
 
-A good source for svg glyphs is [Tabler icons](https://tabler-icons.io/).
+You can also use the `$$source:id$$` notation for [certain sources](keymap_drawer/config.py#L158) to automatically fetch
+the SVGs without having to define them manually in the `glyphs` field, e.g. [`$$tabler:volume$$`](https://tabler-icons.io/i/volume).
+The following `source` values are currently supported:
+- `tabler`: [Tabler Icons](https://tabler-icons.io/) (icon name as `id`)
+- `mdi`: [Pictogrammers Material Design Icons](https://pictogrammers.com/library/mdi/) (icon name as `id`)
+- `mdil`: [Pictogrammers Material Design Icons Light](https://pictogrammers.com/library/mdil/) (icon name as `id`)
+- `material`: [Google Material Symbols](https://fonts.google.com/icons) (use value in "Android" tab as `id`)
 
 ## Setting up an automated drawing workflow
 

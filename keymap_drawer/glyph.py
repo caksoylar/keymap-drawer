@@ -3,6 +3,9 @@ Module containing class and methods to help with fetching
 and drawing SVG glyphs.
 """
 import re
+from functools import lru_cache
+from urllib.request import urlopen
+from urllib.error import HTTPError
 
 from .keymap import KeymapData, LayoutKey
 from .config import DrawConfig
@@ -36,12 +39,24 @@ class GlyphHandler:
 
         svgs = {}
         for name in names:
-            if not (svg := self.cfg.glyphs.get(name)):
-                raise ValueError(f'Glyph "{name}" not defined in draw_config.glyphs')
+            if not (svg := self.cfg.glyphs.get(name)) and not (svg := self._fetch_glyph(name)):
+                raise ValueError(
+                    f'Glyph "{name}" not defined in draw_config.glyphs or fetchable using draw_config.glyph_urls'
+                )
             if not self._view_box_dimensions_re.match(svg):
                 raise ValueError(f'Glyph definition for "{name}" does not have the required "viewbox" property')
             svgs[name] = svg
         return svgs
+
+    def _fetch_glyph(self, name: str) -> str | None:
+        if ":" in name:  # templated source:ID format
+            source, glyph_id = name.split(":", maxsplit=1)
+            if templated_url := self.cfg.glyph_urls.get(source):
+                return _fetch_svg_url(templated_url.format(glyph_id))
+            return None
+        if url := self.cfg.glyph_urls.get(name):  # source only
+            return _fetch_svg_url(url)
+        return None
 
     @classmethod
     def _legend_to_name(cls, legend: str) -> str | None:
@@ -93,3 +108,12 @@ class GlyphHandler:
         width = (w - x) * (height / (h - y))
 
         return width, height, d_y
+
+
+@lru_cache(maxsize=128)
+def _fetch_svg_url(url: str) -> str:
+    try:
+        with urlopen(url) as f:
+            return f.read().decode("utf-8")
+    except HTTPError as exc:
+        raise ValueError(f'Could not fetch SVG from URL "{url}"') from exc
