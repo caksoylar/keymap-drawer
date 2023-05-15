@@ -6,9 +6,15 @@ import re
 from functools import lru_cache
 from urllib.request import urlopen
 from urllib.error import HTTPError
+from concurrent.futures import ThreadPoolExecutor
+from typing import Iterable
 
 from .keymap import KeymapData, LayoutKey
 from .config import DrawConfig
+
+
+FETCH_WORKERS = 8
+FETCH_TIMEOUT = 10
 
 
 class GlyphHandler:
@@ -37,26 +43,36 @@ class GlyphHandler:
         for combo in keymap.combos:
             names |= find_key_glyph_names(combo.key)
 
-        svgs = {}
-        for name in names:
-            if not (svg := self.cfg.glyphs.get(name)) and not (svg := self._fetch_glyph(name)):
-                raise ValueError(
-                    f'Glyph "{name}" not defined in draw_config.glyphs or fetchable using draw_config.glyph_urls'
-                )
+        # get the ones defined in draw_config.glyphs
+        svgs = {name: glyph for name in names if (glyph := self.cfg.glyphs.get(name))}
+        rest = names - set(svgs)
+
+        # try to fetch the rest using draw_config.glyph_urls
+        if rest:
+            svgs |= self._fetch_glyphs(rest)
+        if rest := rest - set(svgs):
+            raise ValueError(
+                f'Glyphs "{rest}" are not defined in draw_config.glyphs or fetchable using draw_config.glyph_urls'
+            )
+
+        for name, svg in svgs.items():
             if not self._view_box_dimensions_re.match(svg):
                 raise ValueError(f'Glyph definition for "{name}" does not have the required "viewbox" property')
-            svgs[name] = svg
         return svgs
 
-    def _fetch_glyph(self, name: str) -> str | None:
-        if ":" in name:  # templated source:ID format
-            source, glyph_id = name.split(":", maxsplit=1)
-            if templated_url := self.cfg.glyph_urls.get(source):
-                return _fetch_svg_url(templated_url.format(glyph_id))
-            return None
-        if url := self.cfg.glyph_urls.get(name):  # source only
-            return _fetch_svg_url(url)
-        return None
+    def _fetch_glyphs(self, names: Iterable[str]) -> dict[str, str]:
+        names = list(names)
+        urls = []
+        for name in names:
+            if ":" in name:  # templated source:ID format
+                source, glyph_id = name.split(":", maxsplit=1)
+                if templated_url := self.cfg.glyph_urls.get(source):
+                    urls.append(templated_url.format(glyph_id))
+            if url := self.cfg.glyph_urls.get(name):  # source only
+                urls.append(url)
+
+        with ThreadPoolExecutor(max_workers=FETCH_WORKERS) as p:
+            return dict(zip(names, p.map(_fetch_svg_url, urls, timeout=FETCH_TIMEOUT)))
 
     @classmethod
     def _legend_to_name(cls, legend: str) -> str | None:
