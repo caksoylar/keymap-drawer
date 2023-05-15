@@ -177,6 +177,8 @@ The following `source` values are currently supported:
 - `mdil`: [Pictogrammers Material Design Icons Light](https://pictogrammers.com/library/mdil/) (icon name as `id`)
 - `material`: [Google Material Symbols](https://fonts.google.com/icons) (use value in "Android" tab as `id`)
 
+Fetched SVGs will be [cached by default](keymap_drawer/config.py#L166) to speed up future runs.
+
 ## Setting up an automated drawing workflow
 
 If you use a [ZMK config repo](https://zmk.dev/docs/user-setup), you can set up an automated workflow to parse your keymaps, then draw and commit SVG outputs to your repo.

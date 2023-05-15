@@ -162,6 +162,9 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         "material": "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/{}/default/48px.svg",
     }
 
+    # use a local filesystem cache on an OS-specific location for downloaded QMK keyboard jsons and SVG glyphs
+    use_local_cache: bool = True
+
 
 class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     """Configuration settings related to parsing QMK/ZMK keymaps."""

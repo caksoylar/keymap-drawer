@@ -3,11 +3,14 @@ Module containing class and methods to help with fetching
 and drawing SVG glyphs.
 """
 import re
-from functools import lru_cache
+from pathlib import Path
+from functools import lru_cache, partial
 from urllib.request import urlopen
 from urllib.error import HTTPError
 from concurrent.futures import ThreadPoolExecutor
 from typing import Iterable
+
+from platformdirs import user_cache_dir
 
 from .keymap import KeymapData, LayoutKey
 from .config import DrawConfig
@@ -15,6 +18,7 @@ from .config import DrawConfig
 
 FETCH_WORKERS = 8
 FETCH_TIMEOUT = 10
+CACHE_GLYPHS_PATH = Path(user_cache_dir("keymap-drawer", False)) / "glyphs"
 
 
 class GlyphHandler:
@@ -72,7 +76,8 @@ class GlyphHandler:
                 urls.append(url)
 
         with ThreadPoolExecutor(max_workers=FETCH_WORKERS) as p:
-            return dict(zip(names, p.map(_fetch_svg_url, urls, timeout=FETCH_TIMEOUT)))
+            fetch_fn = partial(_fetch_svg_url, use_local_cache=self.cfg.use_local_cache)
+            return dict(zip(names, p.map(fetch_fn, names, urls, timeout=FETCH_TIMEOUT)))
 
     @classmethod
     def _legend_to_name(cls, legend: str) -> str | None:
@@ -127,9 +132,20 @@ class GlyphHandler:
 
 
 @lru_cache(maxsize=128)
-def _fetch_svg_url(url: str) -> str:
+def _fetch_svg_url(name: str, url: str, use_local_cache: bool = False) -> str:
+    """Get an SVG glyph definition from url, using the local cache for reading and writing if enabled."""
+    cache_path = CACHE_GLYPHS_PATH / f"{name}.svg"
+    if use_local_cache and cache_path.is_file():
+        with open(cache_path, "r", encoding="utf-8") as f:
+            return f.read()
+
     try:
         with urlopen(url) as f:
-            return f.read().decode("utf-8")
+            content = f.read().decode("utf-8")
+        if use_local_cache:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(cache_path, "w", encoding="utf-8") as f_out:
+                f_out.write(content)
+        return content
     except HTTPError as exc:
         raise ValueError(f'Could not fetch SVG from URL "{url}"') from exc

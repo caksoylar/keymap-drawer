@@ -13,12 +13,14 @@ from urllib.request import urlopen
 from urllib.error import HTTPError
 
 from pydantic import BaseModel, root_validator
+from platformdirs import user_cache_dir
 
 from .config import DrawConfig
 
 
 QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
+CACHE_LAYOUTS_PATH = Path(user_cache_dir("keymap-drawer", False)) / "qmk_layouts"
 
 
 @dataclass(frozen=True)
@@ -133,7 +135,7 @@ def layout_factory(
 
     if qmk_keyboard or qmk_info_json:
         if qmk_keyboard:
-            qmk_info = get_qmk_info(qmk_keyboard)
+            qmk_info = _get_qmk_info(qmk_keyboard, config.use_local_cache)
         else:  # qmk_info_json
             assert qmk_info_json is not None
             with open(qmk_info_json, "rb") as f:
@@ -290,18 +292,29 @@ class QmkLayout(BaseModel):
 
 
 @lru_cache(maxsize=128)
-def get_qmk_info(qmk_keyboard: str, save_local_copy: bool = False):
-    """Get a QMK info.json file from either self-maintained folder of layouts or from QMK keyboards metadata API."""
+def _get_qmk_info(qmk_keyboard: str, use_local_cache: bool = False):
+    """
+    Get a QMK info.json file from either self-maintained folder of layouts,
+    local file cache if enabled, or from QMK keyboards metadata API.
+    """
     local_path = QMK_LAYOUTS_PATH / f"{qmk_keyboard.replace('/', '@')}.json"
+    cache_path = CACHE_LAYOUTS_PATH / f"{qmk_keyboard.replace('/', '@')}.json"
+
     if local_path.is_file():
         with open(local_path, "rb") as f:
             return json.load(f)
+
+    if use_local_cache and cache_path.is_file():
+        with open(cache_path, "rb") as f:
+            return json.load(f)
+
     try:
         with urlopen(QMK_METADATA_URL.format(keyboard=qmk_keyboard)) as f:
             info = json.load(f)["keyboards"][qmk_keyboard]
-            if save_local_copy:
-                with open(local_path, "w", encoding="utf-8") as f_out:
-                    json.dump({"layouts": info["layouts"]}, f_out)
+        if use_local_cache:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(cache_path, "w", encoding="utf-8") as f_out:
+                json.dump({"layouts": info["layouts"]}, f_out)
         return info
     except HTTPError as exc:
         raise ValueError(
