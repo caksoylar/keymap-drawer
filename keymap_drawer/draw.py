@@ -61,7 +61,7 @@ class KeymapDrawer:
 
         classes = [*classes, "glyph", name]
         self.out.write(
-            f'<use href="#{name}" x="{p.x - (width / 2)}" y="{p.y - d_y}" '
+            f'<use href="#{name}" xlink:href="#{name}" x="{p.x - (width / 2)}" y="{p.y - d_y}" '
             f'height="{height}" width="{width}"{self._to_class_str(classes)}/>\n'
         )
 
@@ -276,7 +276,7 @@ class KeymapDrawer:
         )
         self.out.write(
             f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" class="keymap" '
-            'xmlns="http://www.w3.org/2000/svg">\n'
+            'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n'
         )
 
         self.out.write(self.glyph_handler.get_glyph_defs())
