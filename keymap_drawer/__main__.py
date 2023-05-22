@@ -61,7 +61,7 @@ def parse(args: Namespace, config: ParseConfig) -> None:
             args.zmk_keymap
         )
 
-    yaml.safe_dump(parsed, sys.stdout, indent=2, width=160, sort_keys=False, default_flow_style=None)
+    yaml.safe_dump(parsed, sys.stdout, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
 
 
 def dump_config(config: Config) -> None:
@@ -73,7 +73,7 @@ def dump_config(config: Config) -> None:
         return dumper.represent_scalar("tag:yaml.org,2002:str", in_str)
 
     yaml.representer.SafeRepresenter.add_representer(str, cfg_str_representer)
-    yaml.safe_dump(config.dict(), sys.stdout, indent=2, default_flow_style=False)
+    yaml.safe_dump(config.dict(), sys.stdout, sort_keys=False, allow_unicode=True)
 
 
 def main() -> None:

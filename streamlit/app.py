@@ -85,9 +85,7 @@ def get_default_config() -> str:
         return dumper.represent_scalar("tag:yaml.org,2002:str", in_str)
 
     yaml.representer.SafeRepresenter.add_representer(str, cfg_str_representer)
-    with io.StringIO() as out:
-        yaml.safe_dump(Config().dict(), out, indent=2, default_flow_style=False)
-        return out.getvalue()
+    return yaml.safe_dump(Config().dict(), sort_keys=False, allow_unicode=True)
 
 
 @st.cache_data(max_entries=16)
@@ -99,9 +97,7 @@ def parse_config(config: str) -> Config:
 def parse_qmk_to_yaml(qmk_keymap_buf: io.BytesIO, config: ParseConfig, num_cols: int) -> str:
     """Parse a given QMK keymap JSON (buffer) into keymap YAML."""
     parsed = QmkJsonParser(config, num_cols).parse(io.TextIOWrapper(qmk_keymap_buf, encoding="utf-8"))
-    with io.StringIO() as out:
-        yaml.safe_dump(parsed, out, indent=2, width=160, sort_keys=False, default_flow_style=None)
-        return out.getvalue()
+    return yaml.safe_dump(parsed, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
 
 
 def parse_zmk_to_yaml(zmk_keymap: Path | io.BytesIO, config: ParseConfig, num_cols: int, layout: str) -> str:
@@ -113,11 +109,10 @@ def parse_zmk_to_yaml(zmk_keymap: Path | io.BytesIO, config: ParseConfig, num_co
     if layout:  # assign or override layout field if provided in app
         parsed["layout"] = json.loads(layout)  # pylint: disable=unsupported-assignment-operation
 
-    with io.StringIO() as out:
-        if "layout" not in parsed:  # pylint: disable=unsupported-membership-test
-            out.write(LAYOUT_PREAMBLE)
-        yaml.safe_dump(parsed, out, indent=2, width=160, sort_keys=False, default_flow_style=None)
-        return out.getvalue()
+    out = yaml.safe_dump(parsed, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
+    if "layout" not in parsed:  # pylint: disable=unsupported-membership-test
+        return LAYOUT_PREAMBLE + out
+    return out
 
 
 def _get_zmk_ref(owner: str, repo: str, head: str) -> str:
