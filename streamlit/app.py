@@ -328,7 +328,7 @@ def main():
         except Exception as err:
             _handle_exception(st, "Error while drawing SVG from keymap YAML", err)
 
-    with st.expander("Configuration"):
+    with st.expander("Configuration", expanded=True):
         st.text_area(
             label="[Config parameters](https://github.com/caksoylar/keymap-drawer/blob/main/keymap_drawer/config.py)",
             key="kd_config",
