@@ -33,6 +33,7 @@ class KeymapParser(ABC):
         self.layer_names: list[str] | None = layer_names
         self.base_keymap = base_keymap
         self.layer_activated_from: dict[int, set[int]] = {}
+        self.trans_key = LayoutKey.from_key_spec(self.cfg.trans_legend)
 
     def update_layer_activated_from(self, from_layer: int | None, to_layer: int, key_positions: Sequence[int]) -> None:
         """
@@ -56,8 +57,12 @@ class KeymapParser(ABC):
         """Add "held" specifiers to keys that we previously determined were held to activate a given layer."""
         assert self.layer_names is not None
         for layer_index, activating_keys in self.layer_activated_from.items():
-            for key in activating_keys:
-                layers[self.layer_names[layer_index]][key] = LayoutKey(type="held")
+            for key_idx in activating_keys:
+                key = layers[self.layer_names[layer_index]][key_idx]
+                if key == self.trans_key:  # clear legend if it is a transparent key
+                    layers[self.layer_names[layer_index]][key_idx] = LayoutKey(type="held")
+                else:
+                    key.type = "held"
         return layers
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
@@ -105,7 +110,7 @@ class QmkJsonParser(KeymapParser):
         key_str = self._prefix_re.sub("", key_str)
 
         if m := self._trans_re.fullmatch(key_str):  # transparent
-            return LayoutKey.from_key_spec(self.cfg.trans_legend)
+            return self.trans_key
         if m := self._mo_re.fullmatch(key_str):  # momentary layer
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from(current_layer, to_layer, key_positions)
@@ -210,7 +215,7 @@ class ZmkKeymapParser(KeymapParser):
             case ["&none"]:
                 return LayoutKey()
             case ["&trans"]:
-                return LayoutKey.from_key_spec(self.cfg.trans_legend)
+                return self.trans_key
             case [ref]:
                 return LayoutKey(tap=ref)
             case ["&kp", par]:
