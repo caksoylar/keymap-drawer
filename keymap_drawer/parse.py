@@ -190,6 +190,7 @@ class ZmkKeymapParser(KeymapParser):
     ):
         super().__init__(config, columns, base_keymap, layer_names)
         self.hold_tap_labels = {"&mt", "&lt"}
+        self.mod_morph_labels: dict[str, list[str]] = {}
 
     @classmethod
     def _get_bindings(cls, node_str: str) -> list[str]:
@@ -205,7 +206,7 @@ class ZmkKeymapParser(KeymapParser):
             ]
         raise RuntimeError(f'Could not find the `bindings` property in node "{node_str}"')
 
-    def _str_to_key(  # pylint: disable=too-many-return-statements
+    def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals
         self, binding: str, current_layer: int | None, key_positions: Sequence[int], no_shifted: bool = False
     ) -> LayoutKey:
         if binding in self.cfg.raw_binding_map:
@@ -230,6 +231,10 @@ class ZmkKeymapParser(KeymapParser):
                 return LayoutKey()
             case ["&trans"]:
                 return self.trans_key
+            case [ref] if ref in self.mod_morph_labels:
+                tap_key = self._str_to_key(self.mod_morph_labels[ref][0], current_layer, key_positions)
+                shifted_key = self._str_to_key(self.mod_morph_labels[ref][1], current_layer, key_positions)
+                return LayoutKey(tap=tap_key.tap, hold=tap_key.hold, shifted=shifted_key.tap)
             case [ref]:
                 return LayoutKey(tap=ref)
             case ["&kp", par]:
@@ -285,7 +290,7 @@ class ZmkKeymapParser(KeymapParser):
                 found_nodes.append((elt_p, elt_n))
         return found_nodes
 
-    def _update_hold_tap_labels(self, parsed: Sequence[pp.ParseResults]) -> None:
+    def _update_behavior_labels(self, parsed: Sequence[pp.ParseResults]) -> None:
         behavior_parents = chain.from_iterable(self._find_nodes_with_name(node, "behaviors") for node in parsed)
         behavior_nodes = {
             node_name: " ".join(item for item in node.as_list() if isinstance(item, str))
@@ -294,8 +299,12 @@ class ZmkKeymapParser(KeymapParser):
         for name, node_str in behavior_nodes.items():
             if ":" not in name:
                 continue
-            if (m := self._compatible_re.search(node_str)) and m.group(1) == "zmk,behavior-hold-tap":
-                self.hold_tap_labels.add("&" + name.split(":", 1)[0])
+            label = "&" + name.split(":", 1)[0]
+            if m := self._compatible_re.search(node_str):
+                if m.group(1) == "zmk,behavior-hold-tap":
+                    self.hold_tap_labels.add(label)
+                elif m.group(1) == "zmk,behavior-mod-morph":
+                    self.mod_morph_labels[label] = self._get_bindings(node_str)[:2]
 
     def _get_layers(self, parsed: Sequence[pp.ParseResults]) -> dict[str, list[LayoutKey]]:
         layer_parents = chain.from_iterable(self._find_nodes_with_name(node, "keymap") for node in parsed)
@@ -363,7 +372,7 @@ class ZmkKeymapParser(KeymapParser):
             )
             if isinstance(node, pp.ParseResults)
         ]
-        self._update_hold_tap_labels(parsed)
+        self._update_behavior_labels(parsed)
         layers = self._get_layers(parsed)
         combos = self._get_combos(parsed)
         layers = self.add_held_keys(layers)
