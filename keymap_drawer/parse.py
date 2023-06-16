@@ -1,18 +1,17 @@
 """Module to parse QMK/ZMK keymaps into KeymapData and then dump them to dict."""
 import re
 import json
-from io import StringIO, TextIOWrapper
+from io import TextIOWrapper
 from pathlib import Path
 from abc import ABC
 from itertools import chain
 from typing import Sequence
 
 import yaml
-import pyparsing as pp
-from pcpp.preprocessor import Preprocessor, OutputDirective, Action  # type: ignore
 
 from .keymap import LayoutKey, ComboSpec, KeymapData
 from .config import ParseConfig
+from .dts import DeviceTree
 
 
 ZMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
@@ -173,12 +172,6 @@ class QmkJsonParser(KeymapParser):
 class ZmkKeymapParser(KeymapParser):
     """Parser for ZMK devicetree keymaps, using C preprocessor and hacky pyparsing-based parsers."""
 
-    _bindings_re = re.compile(r"(?<!sensor-)bindings = <(.*?)>(, <(.*?)>)*")
-    _keypos_re = re.compile(r"key-positions = <(.*?)>")
-    _layers_re = re.compile(r"layers = <(.*?)>")
-    _label_re = re.compile(r'label = "(.*?)"')
-    _compatible_re = re.compile(r'compatible = "(.*?)"')
-    _nodelabel_re = re.compile(r"([\w-]+) *: *([\w-]+) *{")
     _numbers_re = re.compile(r"N(UM(BER)?_)?(\d)")
 
     def __init__(
@@ -191,20 +184,6 @@ class ZmkKeymapParser(KeymapParser):
         super().__init__(config, columns, base_keymap, layer_names)
         self.hold_tap_labels = {"&mt": ["&kp", "&kp"], "&lt": ["&mo", "&kp"]}
         self.mod_morph_labels: dict[str, list[str]] = {}
-
-    @classmethod
-    def _get_bindings(cls, node_str: str) -> list[str]:
-        if m := cls._bindings_re.search(node_str):
-            fields = [m.group(1)]
-            for field in m.groups()[2:]:
-                if field is not None:
-                    fields.append(field)
-            return [
-                f"&{stripped}"
-                for binding in " ".join(fields).split("&")
-                if (stripped := binding.strip().removeprefix("&"))
-            ]
-        raise RuntimeError(f'Could not find the `bindings` property in node "{node_str}"')
 
     def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals
         self, binding: str, current_layer: int | None, key_positions: Sequence[int], no_shifted: bool = False
@@ -256,64 +235,29 @@ class ZmkKeymapParser(KeymapParser):
                 return LayoutKey(tap=ref)
         return LayoutKey(tap=binding)
 
-    def _get_prepped(self, in_str: str, file_name: str | None = None) -> str:
-        if self.cfg.preprocess:
+    def _update_behavior_labels(self, dts: DeviceTree) -> None:
+        def get_behavior_bindings(compatible_value: str, n_bindings: int) -> dict[str, list[str]]:
+            out = {}
+            for node in dts.get_compatible_nodes(compatible_value):
+                if not (bindings := node.get_phandle_array("(?<!sensor-)bindings")):
+                    raise RuntimeError(f'Cannot parse bindings for behavior "{node.name}"')
+                if node.label is None:
+                    raise RuntimeError(f'Cannot find label for behavior "{node.name}"')
+                out[f"&{node.label}"] = bindings[:n_bindings]
+            return out
 
-            def include_handler(*args):
-                raise OutputDirective(Action.IgnoreAndPassThrough)
+        self.hold_tap_labels |= get_behavior_bindings("zmk,behavior-hold-tap", 2)
+        self.mod_morph_labels |= get_behavior_bindings("zmk,behavior-mod-morph", 2)
 
-            preprocessor = Preprocessor()
-            preprocessor.line_directive = None
-            preprocessor.on_include_not_found = include_handler
-            preprocessor.parse(in_str, source=file_name)
-            with StringIO() as f_out:
-                preprocessor.write(f_out)
-                prepped = f_out.getvalue()
-        else:
-            prepped = in_str
-        return re.sub(r"^\s*#.*?$", "", prepped)
+    def _get_layers(self, dts: DeviceTree) -> dict[str, list[LayoutKey]]:
+        if not (layer_parents := dts.get_compatible_nodes("zmk,keymap")):
+            raise RuntimeError('Could not find any keymap nodes with "zmk,keymap" compatible property')
 
-    def _find_nodes_with_name(
-        self, parsed: pp.ParseResults, node_name: str | None = None
-    ) -> list[tuple[str, pp.ParseResults]]:
-        found_nodes = []
-        for elt_p, elt_n in zip(parsed[:-1], parsed[1:]):
-            if (
-                isinstance(elt_p, str)
-                and isinstance(elt_n, pp.ParseResults)
-                and (node_name is None or elt_p.rsplit(":", maxsplit=1)[-1] == node_name)
-            ):
-                found_nodes.append((elt_p, elt_n))
-        return found_nodes
-
-    def _update_behavior_labels(self, parsed: Sequence[pp.ParseResults]) -> None:
-        behavior_parents = chain.from_iterable(self._find_nodes_with_name(node, "behaviors") for node in parsed)
-        behavior_nodes = {
-            node_name: " ".join(item for item in node.as_list() if isinstance(item, str))
-            for node_name, node in chain.from_iterable(self._find_nodes_with_name(node) for _, node in behavior_parents)
-        }
-        for name, node_str in behavior_nodes.items():
-            if ":" not in name:
-                continue
-            label = "&" + name.split(":", 1)[0]
-            if m := self._compatible_re.search(node_str):
-                if m.group(1) == "zmk,behavior-hold-tap":
-                    self.hold_tap_labels[label] = self._get_bindings(node_str)[:2]
-                elif m.group(1) == "zmk,behavior-mod-morph":
-                    self.mod_morph_labels[label] = self._get_bindings(node_str)[:2]
-
-    def _get_layers(self, parsed: Sequence[pp.ParseResults]) -> dict[str, list[LayoutKey]]:
-        layer_parents = chain.from_iterable(self._find_nodes_with_name(node, "keymap") for node in parsed)
-        layer_nodes = {
-            node_name: " ".join(item for item in node.as_list() if isinstance(item, str))
-            for node_name, node in chain.from_iterable(self._find_nodes_with_name(node) for _, node in layer_parents)
-        }
+        layer_nodes = [node for parent in layer_parents for node in parent.children]
         if self.layer_names is None:
             self.layer_names = [
-                m.group(1)
-                if (m := self._label_re.search(node_str))
-                else node_name.removeprefix("layer_").removesuffix("_layer")
-                for node_name, node_str in layer_nodes.items()
+                node.get_string("label") or node.name.removeprefix("layer_").removesuffix("_layer")
+                for node in layer_nodes
             ]
         else:
             assert (l_u := len(self.layer_names)) == (
@@ -321,58 +265,49 @@ class ZmkKeymapParser(KeymapParser):
             ), f"Length of provided layer name list ({l_u}) does not match the number of parsed layers ({l_p})"
 
         layers = {}
-        for layer_ind, node_str in enumerate(layer_nodes.values()):
-            layer_name = self.layer_names[layer_ind]
-            try:
-                key_strs = self._get_bindings(node_str)
-                layers[layer_name] = [self._str_to_key(binding, layer_ind, [i]) for i, binding in enumerate(key_strs)]
-            except AttributeError:
-                continue
+        for layer_ind, node in enumerate(layer_nodes):
+            if bindings := node.get_phandle_array(r"(?<!sensor-)bindings"):
+                layers[self.layer_names[layer_ind]] = [
+                    self._str_to_key(binding, layer_ind, [i]) for i, binding in enumerate(bindings)
+                ]
+            else:
+                raise RuntimeError(f'Could not parse `bindings` property under layer node "{node.name}"')
         return layers
 
-    def _get_combos(self, parsed: Sequence[pp.ParseResults]) -> list[ComboSpec]:
+    def _get_combos(self, dts: DeviceTree) -> list[ComboSpec]:
         assert self.layer_names is not None
-        combo_parents = chain.from_iterable(self._find_nodes_with_name(node, "combos") for node in parsed)
-        combo_nodes = chain.from_iterable(self._find_nodes_with_name(node) for _, node in combo_parents)
+        if not (combo_parents := dts.get_compatible_nodes("zmk,combos")):
+            return []
+        combo_nodes = chain.from_iterable(parent.children for parent in combo_parents)
 
         combos = []
-        for name, node in combo_nodes:
-            try:
-                node_str = " ".join(item for item in node.as_list() if isinstance(item, str))
-                binding = self._get_bindings(node_str)[0]  # assume single binding
-                key_pos = [int(pos) for pos in self._keypos_re.search(node_str).group(1).split()]  # type: ignore
-                combo = {
-                    "k": self._str_to_key(binding, None, key_pos, no_shifted=True),  # ignore current layer for combos
-                    "p": key_pos,
-                }
-                if m := self._layers_re.search(node_str):
-                    combo["l"] = [self.layer_names[int(layer)] for layer in m.group(1).split()]
+        for node in combo_nodes:
+            if not (bindings := node.get_phandle_array("bindings")):
+                raise RuntimeError(f'Could not parse `bindings` for combo node "{node.name}"')
+            if not (key_pos_strs := node.get_array("key-positions")):
+                raise RuntimeError(f'Could not parse `key-positions` for combo node "{node.name}"')
 
-                # see if combo had additional properties specified in the config, if so merge them in
-                cfg_combo = ComboSpec.normalize_fields(self.cfg.zmk_combos.get(name, {}))
-                combos.append(ComboSpec(**(combo | cfg_combo)))
-            except (AttributeError, ValueError):
-                continue
+            key_pos = [int(pos) for pos in key_pos_strs]
+            combo = {
+                "k": self._str_to_key(bindings[0], None, key_pos, no_shifted=True),  # ignore current layer for combos
+                "p": key_pos,
+            }
+            if layers := node.get_array("layers"):
+                combo["l"] = [self.layer_names[int(layer)] for layer in layers]
+
+            # see if combo had additional properties specified in the config, if so merge them in
+            cfg_combo = ComboSpec.normalize_fields(self.cfg.zmk_combos.get(node.name, {}))
+            combos.append(ComboSpec(**(combo | cfg_combo)))
         return combos
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
         """
         Parse a ZMK keymap with its content and path and return the layout spec and KeymapData to be dumped to YAML.
         """
-        prepped = self._get_prepped(in_str, file_name)
-        parsed = [
-            node
-            for node in (
-                pp.nested_expr("{", "};")
-                .ignore("//" + pp.SkipTo(pp.lineEnd))
-                .ignore(pp.c_style_comment)
-                .parse_string("{ " + self._nodelabel_re.sub(r"\1:\2 {", prepped) + " };")[0]
-            )
-            if isinstance(node, pp.ParseResults)
-        ]
-        self._update_behavior_labels(parsed)
-        layers = self._get_layers(parsed)
-        combos = self._get_combos(parsed)
+        dts = DeviceTree(in_str, file_name, self.cfg.preprocess)
+        self._update_behavior_labels(dts)
+        layers = self._get_layers(dts)
+        combos = self._get_combos(dts)
         layers = self.add_held_keys(layers)
 
         keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
