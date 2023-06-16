@@ -189,7 +189,7 @@ class ZmkKeymapParser(KeymapParser):
         layer_names: list[str] | None = None,
     ):
         super().__init__(config, columns, base_keymap, layer_names)
-        self.hold_tap_labels = {"&mt", "&lt"}
+        self.hold_tap_labels = {"&mt": ["&kp", "&kp"], "&lt": ["&mo", "&kp"]}
         self.mod_morph_labels: dict[str, list[str]] = {}
 
     @classmethod
@@ -227,16 +227,14 @@ class ZmkKeymapParser(KeymapParser):
             return mapped
 
         match binding.split():
-            case ["&none"]:
+            case ["&none", *_]:
                 return LayoutKey()
             case ["&trans"]:
                 return self.trans_key
-            case [ref] if ref in self.mod_morph_labels:
+            case [ref, *_] if ref in self.mod_morph_labels:
                 tap_key = self._str_to_key(self.mod_morph_labels[ref][0], current_layer, key_positions)
                 shifted_key = self._str_to_key(self.mod_morph_labels[ref][1], current_layer, key_positions)
                 return LayoutKey(tap=tap_key.tap, hold=tap_key.hold, shifted=shifted_key.tap)
-            case [ref]:
-                return LayoutKey(tap=ref)
             case ["&kp", par]:
                 return mapped(par)
             case ["&sk", par]:
@@ -251,13 +249,11 @@ class ZmkKeymapParser(KeymapParser):
                     tap=self.layer_names[int(par)], hold=self.cfg.sticky_label if behavior == "&sl" else ""
                 )
             case [ref, hold_par, tap_par] if ref in self.hold_tap_labels:
-                try:
-                    hold = self.layer_names[int(hold_par)]
-                    self.update_layer_activated_from(current_layer, int(hold_par), key_positions)
-                except (ValueError, IndexError):  # not a layer-tap, so maybe a keycode?
-                    hold = mapped(hold_par).tap
-                tap_key = mapped(tap_par)
-                return LayoutKey(tap=tap_key.tap, hold=hold, shifted=tap_key.shifted)
+                hold_key = self._str_to_key(f"{self.hold_tap_labels[ref][0]} {hold_par}", current_layer, key_positions)
+                tap_key = self._str_to_key(f"{self.hold_tap_labels[ref][1]} {tap_par}", current_layer, key_positions)
+                return LayoutKey(tap=tap_key.tap, hold=hold_key.tap, shifted=tap_key.shifted)
+            case [ref] | [ref, "0"]:
+                return LayoutKey(tap=ref)
         return LayoutKey(tap=binding)
 
     def _get_prepped(self, in_str: str, file_name: str | None = None) -> str:
@@ -302,7 +298,7 @@ class ZmkKeymapParser(KeymapParser):
             label = "&" + name.split(":", 1)[0]
             if m := self._compatible_re.search(node_str):
                 if m.group(1) == "zmk,behavior-hold-tap":
-                    self.hold_tap_labels.add(label)
+                    self.hold_tap_labels[label] = self._get_bindings(node_str)[:2]
                 elif m.group(1) == "zmk,behavior-mod-morph":
                     self.mod_morph_labels[label] = self._get_bindings(node_str)[:2]
 
