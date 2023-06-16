@@ -310,7 +310,9 @@ class ZmkKeymapParser(KeymapParser):
         }
         if self.layer_names is None:
             self.layer_names = [
-                m.group(1) if (m := self._label_re.search(node_str)) else node_name
+                m.group(1)
+                if (m := self._label_re.search(node_str))
+                else node_name.removeprefix("layer_").removesuffix("_layer")
                 for node_name, node_str in layer_nodes.items()
             ]
         else:
