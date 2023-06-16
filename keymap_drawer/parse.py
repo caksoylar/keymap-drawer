@@ -173,7 +173,7 @@ class QmkJsonParser(KeymapParser):
 class ZmkKeymapParser(KeymapParser):
     """Parser for ZMK devicetree keymaps, using C preprocessor and hacky pyparsing-based parsers."""
 
-    _bindings_re = re.compile(r"(?<!sensor-)bindings = <(.*?)>")
+    _bindings_re = re.compile(r"(?<!sensor-)bindings = <(.*?)>(, <(.*?)>)*")
     _keypos_re = re.compile(r"key-positions = <(.*?)>")
     _layers_re = re.compile(r"layers = <(.*?)>")
     _label_re = re.compile(r'label = "(.*?)"')
@@ -190,6 +190,20 @@ class ZmkKeymapParser(KeymapParser):
     ):
         super().__init__(config, columns, base_keymap, layer_names)
         self.hold_tap_labels = {"&mt", "&lt"}
+
+    @classmethod
+    def _get_bindings(cls, node_str: str) -> list[str]:
+        if m := cls._bindings_re.search(node_str):
+            fields = [m.group(1)]
+            for field in m.groups()[2:]:
+                if field is not None:
+                    fields.append(field)
+            return [
+                f"&{stripped}"
+                for binding in " ".join(fields).split("&")
+                if (stripped := binding.strip().removeprefix("&"))
+            ]
+        raise RuntimeError(f'Could not find the `bindings` property in node "{node_str}"')
 
     def _str_to_key(  # pylint: disable=too-many-return-statements
         self, binding: str, current_layer: int | None, key_positions: Sequence[int], no_shifted: bool = False
@@ -303,11 +317,7 @@ class ZmkKeymapParser(KeymapParser):
         for layer_ind, node_str in enumerate(layer_nodes.values()):
             layer_name = self.layer_names[layer_ind]
             try:
-                key_strs = [
-                    f"&{stripped}"
-                    for binding in self._bindings_re.search(node_str).group(1).split("&")  # type: ignore
-                    if (stripped := binding.strip().removeprefix("&"))
-                ]
+                key_strs = self._get_bindings(node_str)
                 layers[layer_name] = [self._str_to_key(binding, layer_ind, [i]) for i, binding in enumerate(key_strs)]
             except AttributeError:
                 continue
@@ -322,7 +332,7 @@ class ZmkKeymapParser(KeymapParser):
         for name, node in combo_nodes:
             try:
                 node_str = " ".join(item for item in node.as_list() if isinstance(item, str))
-                binding = self._bindings_re.search(node_str).group(1)  # type: ignore
+                binding = self._get_bindings(node_str)[0]  # assume single binding
                 key_pos = [int(pos) for pos in self._keypos_re.search(node_str).group(1).split()]  # type: ignore
                 combo = {
                     "k": self._str_to_key(binding, None, key_pos, no_shifted=True),  # ignore current layer for combos
