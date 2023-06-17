@@ -182,8 +182,9 @@ class ZmkKeymapParser(KeymapParser):
         layer_names: list[str] | None = None,
     ):
         super().__init__(config, columns, base_keymap, layer_names)
-        self.hold_tap_labels = {"&mt": ["&kp", "&kp"], "&lt": ["&mo", "&kp"]}
-        self.mod_morph_labels: dict[str, list[str]] = {}
+        self.hold_taps = {"&mt": ["&kp", "&kp"], "&lt": ["&mo", "&kp"]}
+        self.mod_morphs: dict[str, list[str]] = {}
+        self.sticky_keys = {"&sk": ["&kp"], "&sl": ["&mo"]}
 
     def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals
         self, binding: str, current_layer: int | None, key_positions: Sequence[int], no_shifted: bool = False
@@ -210,32 +211,30 @@ class ZmkKeymapParser(KeymapParser):
                 return LayoutKey()
             case ["&trans"]:
                 return self.trans_key
-            case [ref, *_] if ref in self.mod_morph_labels:
-                tap_key = self._str_to_key(self.mod_morph_labels[ref][0], current_layer, key_positions)
-                shifted_key = self._str_to_key(self.mod_morph_labels[ref][1], current_layer, key_positions)
+            case [ref, *_] if ref in self.mod_morphs:
+                tap_key = self._str_to_key(self.mod_morphs[ref][0], current_layer, key_positions)
+                shifted_key = self._str_to_key(self.mod_morphs[ref][1], current_layer, key_positions)
                 return LayoutKey(tap=tap_key.tap, hold=tap_key.hold, shifted=shifted_key.tap)
             case ["&kp", par]:
                 return mapped(par)
-            case ["&sk", par]:
-                l_key = mapped(par)
+            case [ref, par] if ref in self.sticky_keys:
+                l_key = self._str_to_key(f"{self.sticky_keys[ref][0]} {par}", current_layer, key_positions)
                 return LayoutKey(tap=l_key.tap, hold=self.cfg.sticky_label, shifted=l_key.shifted)
             case [("&out" | "&bt" | "&ext_power" | "&rgb_ug"), *pars]:
                 return LayoutKey(tap=" ".join(pars).replace("_", " ").replace(" SEL ", " "))
-            case [("&mo" | "&to" | "&tog" | "&sl") as behavior, par]:
-                if behavior in ("&mo", "&sl"):
+            case [("&mo" | "&to" | "&tog") as behavior, par]:
+                if behavior in ("&mo",):
                     self.update_layer_activated_from(current_layer, int(par), key_positions)
-                return LayoutKey(
-                    tap=self.layer_names[int(par)], hold=self.cfg.sticky_label if behavior == "&sl" else ""
-                )
-            case [ref, hold_par, tap_par] if ref in self.hold_tap_labels:
-                hold_key = self._str_to_key(f"{self.hold_tap_labels[ref][0]} {hold_par}", current_layer, key_positions)
-                tap_key = self._str_to_key(f"{self.hold_tap_labels[ref][1]} {tap_par}", current_layer, key_positions)
+                return LayoutKey(tap=self.layer_names[int(par)])
+            case [ref, hold_par, tap_par] if ref in self.hold_taps:
+                hold_key = self._str_to_key(f"{self.hold_taps[ref][0]} {hold_par}", current_layer, key_positions)
+                tap_key = self._str_to_key(f"{self.hold_taps[ref][1]} {tap_par}", current_layer, key_positions)
                 return LayoutKey(tap=tap_key.tap, hold=hold_key.tap, shifted=tap_key.shifted)
             case [ref] | [ref, "0"]:
                 return LayoutKey(tap=ref)
         return LayoutKey(tap=binding)
 
-    def _update_behavior_labels(self, dts: DeviceTree) -> None:
+    def _update_behaviors(self, dts: DeviceTree) -> None:
         def get_behavior_bindings(compatible_value: str, n_bindings: int) -> dict[str, list[str]]:
             out = {}
             for node in dts.get_compatible_nodes(compatible_value):
@@ -246,8 +245,9 @@ class ZmkKeymapParser(KeymapParser):
                 out[f"&{node.label}"] = bindings[:n_bindings]
             return out
 
-        self.hold_tap_labels |= get_behavior_bindings("zmk,behavior-hold-tap", 2)
-        self.mod_morph_labels |= get_behavior_bindings("zmk,behavior-mod-morph", 2)
+        self.hold_taps |= get_behavior_bindings("zmk,behavior-hold-tap", 2)
+        self.mod_morphs |= get_behavior_bindings("zmk,behavior-mod-morph", 2)
+        self.sticky_keys |= get_behavior_bindings("zmk,behavior-sticky-key", 1)
 
     def _get_layers(self, dts: DeviceTree) -> dict[str, list[LayoutKey]]:
         if not (layer_parents := dts.get_compatible_nodes("zmk,keymap")):
@@ -305,7 +305,7 @@ class ZmkKeymapParser(KeymapParser):
         Parse a ZMK keymap with its content and path and return the layout spec and KeymapData to be dumped to YAML.
         """
         dts = DeviceTree(in_str, file_name, self.cfg.preprocess)
-        self._update_behavior_labels(dts)
+        self._update_behaviors(dts)
         layers = self._get_layers(dts)
         combos = self._get_combos(dts)
         layers = self.add_held_keys(layers)

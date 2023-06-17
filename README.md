@@ -67,7 +67,7 @@ See [the development section](#development) for instructions to install from sou
   keymap parse -c 10 -z ~/zmk-config/config/cradio.keymap >sweep_keymap.yaml
   ```
 
-  Currently combos, hold-taps (including custom ones), mod-morphs, layer names and sticky keys (`&sk`/`&sl`) can be determined via parsing.
+  Currently combos, hold-taps, mod-morphs, sticky keys and layer names can be determined via parsing.
   For layer names, the value of the `label` property will take precedence over the layer's node name if provided.
 
 As an alternative to parsing, you can also check out the [examples](examples/) to find a layout similar to yours to use as a starting point.
