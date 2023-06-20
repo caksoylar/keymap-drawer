@@ -43,13 +43,23 @@ class KeymapDrawer:
             f'width="{w}" height="{h}"{self._to_class_str(classes)}/>\n'
         )
 
+    def _get_scaling(self, width: int) -> str:
+        if not self.cfg.shrink_wide_legends or width <= self.cfg.shrink_wide_legends:
+            return ""
+        return f' style="font-size: {max(60.0, 100 * self.cfg.shrink_wide_legends / width):.0f}%"'
+
     def _draw_text(self, p: Point, word: str, classes: Sequence[str]) -> None:
         if not word:
             return
-        self.out.write(f'<text x="{p.x}" y="{p.y}"{self._to_class_str(classes)}>{escape(word)}</text>\n')
+        self.out.write(
+            f'<text x="{p.x}" y="{p.y}"{self._to_class_str(classes)}{self._get_scaling(len(word))}>'
+            f"{escape(word)}</text>\n"
+        )
 
     def _draw_textblock(self, p: Point, words: Sequence[str], classes: Sequence[str], shift: float = 0) -> None:
-        self.out.write(f'<text x="{p.x}" y="{p.y}"{self._to_class_str(classes)}>\n')
+        self.out.write(
+            f'<text x="{p.x}" y="{p.y}"{self._to_class_str(classes)}{self._get_scaling(max(len(w) for w in words))}>\n'
+        )
         dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift) / 2)
         self.out.write(f'<tspan x="{p.x}" dy="-{dy_0}em">{escape(words[0])}</tspan>')
         for word in words[1:]:
@@ -92,6 +102,12 @@ class KeymapDrawer:
             diff = (1 - shorten / magn) * diff
         line = f"l{diff.x},{diff.y}"
         self.out.write(f'<path d="{start} {line}" class="combo"/>\n')
+
+    def print_layer_header(self, p: Point, header: str) -> None:
+        """Print a layer header that precedes the layer visualization."""
+        if self.cfg.append_colon_to_layer_header:
+            header += ":"
+        self.out.write(f'<text x="{p.x}" y="{p.y}" class="label">{escape(header)}</text>\n')
 
     def print_key(self, p_0: Point, p_key: PhysicalKey, l_key: LayoutKey) -> None:
         """
@@ -289,10 +305,7 @@ class KeymapDrawer:
             self.out.write(f'<g class="layer-{name}">\n')
 
             # draw layer name
-            layer_header = name
-            if self.cfg.append_colon_to_layer_header:
-                layer_header += ":"
-            self._draw_text(p + Point(0, self.cfg.outer_pad_h / 2), layer_header, classes=["label"])
+            self.print_layer_header(p + Point(0, self.cfg.outer_pad_h / 2), name)
 
             # get offsets added by combo alignments, draw keys and combos
             p += Point(0, self.cfg.outer_pad_h + offsets_per_layer[name][0])
