@@ -33,6 +33,7 @@ class KeymapParser(ABC):
         self.base_keymap = base_keymap
         self.layer_activated_from: dict[int, set[int]] = {}
         self.trans_key = LayoutKey.from_key_spec(self.cfg.trans_legend)
+        self.raw_binding_map = self.cfg.raw_binding_map.copy()
 
     def update_layer_activated_from(self, from_layer: int | None, to_layer: int, key_positions: Sequence[int]) -> None:
         """
@@ -96,8 +97,8 @@ class QmkJsonParser(KeymapParser):
     def _str_to_key(  # pylint: disable=too-many-return-statements
         self, key_str: str, current_layer: int, key_positions: Sequence[int]
     ) -> LayoutKey:
-        if key_str in self.cfg.raw_binding_map:
-            return LayoutKey.from_key_spec(self.cfg.raw_binding_map[key_str])
+        if key_str in self.raw_binding_map:
+            return LayoutKey.from_key_spec(self.raw_binding_map[key_str])
         if self.cfg.skip_binding_parsing:
             return LayoutKey(tap=key_str)
 
@@ -186,11 +187,22 @@ class ZmkKeymapParser(KeymapParser):
         self.mod_morphs: dict[str, list[str]] = {}
         self.sticky_keys = {"&sk": ["&kp"], "&sl": ["&mo"]}
 
+    def _update_raw_binding_map(self, dts: DeviceTree) -> None:
+        raw_keys = list(self.raw_binding_map.keys())
+        prep_keys = dts.preprocess_extra_data("\n".join(raw_keys)).splitlines()
+        assert len(raw_keys) == len(
+            prep_keys
+        ), "Keys in parse_config.raw_binding_map did not preprocess properly, please check for issues"
+        for old, new in zip(raw_keys, prep_keys):
+            if new != old:
+                self.raw_binding_map[new] = self.raw_binding_map[old]
+                del self.raw_binding_map[old]
+
     def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals
         self, binding: str, current_layer: int | None, key_positions: Sequence[int], no_shifted: bool = False
     ) -> LayoutKey:
-        if binding in self.cfg.raw_binding_map:
-            return LayoutKey.from_key_spec(self.cfg.raw_binding_map[binding])
+        if binding in self.raw_binding_map:
+            return LayoutKey.from_key_spec(self.raw_binding_map[binding])
         if self.cfg.skip_binding_parsing:
             return LayoutKey(tap=binding)
 
@@ -305,6 +317,10 @@ class ZmkKeymapParser(KeymapParser):
         Parse a ZMK keymap with its content and path and return the layout spec and KeymapData to be dumped to YAML.
         """
         dts = DeviceTree(in_str, file_name, self.cfg.preprocess)
+
+        if self.cfg.preprocess and self.raw_binding_map:
+            self._update_raw_binding_map(dts)
+
         self._update_behaviors(dts)
         layers = self._get_layers(dts)
         combos = self._get_combos(dts)

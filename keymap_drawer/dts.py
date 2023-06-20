@@ -76,14 +76,18 @@ class DeviceTree:
 
     _nodelabel_re = re.compile(r"([\w-]+) *: *([\w-]+) *{")
     _compatible_re = re.compile(r'compatible = "(.*?)"')
+    _custom_data_header = "__keymap_drawer_data__"
 
     def __init__(self, in_str: str, file_name: str | None = None, preprocess: bool = True):
         """
         Given an input DTS string `in_str` and `file_name` it is read from, parse it into an internap
         tree representation and track what "compatible" value each node has.
         """
+        self.raw_buffer = in_str
+        self.file_name = file_name
+
         if preprocess:
-            prepped = self._get_prepped(in_str, file_name) if preprocess else in_str
+            prepped = self._preprocess(in_str, file_name) if preprocess else in_str
 
         # make sure node labels and names are glued together and comments are removed,
         # then parse with nested curly braces
@@ -106,7 +110,7 @@ class DeviceTree:
         assign_compatibles(self.root)
 
     @staticmethod
-    def _get_prepped(in_str: str, file_name: str | None = None) -> str:
+    def _preprocess(in_str: str, file_name: str | None = None) -> str:
         def include_handler(*args):  # type: ignore
             raise OutputDirective(Action.IgnoreAndPassThrough)
 
@@ -122,3 +126,21 @@ class DeviceTree:
     def get_compatible_nodes(self, compatible_value: str) -> list[DTNode]:
         """Return a list of nodes that have the given compatible value."""
         return self.compatibles[compatible_value]
+
+    def preprocess_extra_data(self, data: str) -> str:
+        """
+        Given a string containing data, preprocess it in the same context as the
+        original input buffer by appending the data to it and extracting the result
+        afterwards.
+
+        TODO(perf): Figure out a good interface to achieve this without running preprocessing
+        twice.
+        """
+        in_str = self.raw_buffer + f"\n{self._custom_data_header}\n{data}"
+        out = self._preprocess(in_str, self.file_name)
+        data_pos = out.rfind(f"\n{self._custom_data_header}\n")
+        assert data_pos >= 0, (
+            f"Preprocessing extra data failed, please make sure '{self._custom_data_header}' "
+            "does not get modified by #define's"
+        )
+        return out[data_pos + len(self._custom_data_header) + 2 :]
