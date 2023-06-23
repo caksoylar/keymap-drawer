@@ -17,7 +17,7 @@ from .dts import DeviceTree
 ZMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
 
 
-class KeymapParser(ABC):
+class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
     """Abstract base class for parsing firmware keymap representations."""
 
     def __init__(
@@ -31,31 +31,44 @@ class KeymapParser(ABC):
         self.columns = columns if columns is not None else 0
         self.layer_names: list[str] | None = layer_names
         self.base_keymap = base_keymap
-        self.layer_activated_from: dict[int, set[int]] = {}
+        self.layer_activated_from: dict[int, set[int]] = {}  # layer to key positions
+        self.conditional_layers: dict[int, list[int]] = {}  # then-layer to if-layers mapping
         self.trans_key = LayoutKey.from_key_spec(self.cfg.trans_legend)
         self.raw_binding_map = self.cfg.raw_binding_map.copy()
 
-    def update_layer_activated_from(self, from_layer: int | None, to_layer: int, key_positions: Sequence[int]) -> None:
+    def update_layer_activated_from(
+        self, from_layers: Sequence[int], to_layer: int, key_positions: Sequence[int]
+    ) -> None:
         """
         Update the data structure that keeps track of what keys were held (i.e. momentary layer keys)
         in order to activate a given layer. Also considers what keys were already being held in order
-        to activate the `from_layer` that the `to_layer` is being activated from.
+        to activate the `from_layers` that the `to_layer` is being activated from.
+
+        `from_layers` can be empty (e.g. for combos) or have multiple elements (for conditional layers).
 
         In order to properly keep track of multiple layer activation sequences, this method needs
         to be called in the order of increasing `to_layer` indices. It also ignores activating lower
         layer indices from higher layers and only considers the first discovered keys.
         """
         # ignore reverse order activations and if we already have a way to get to this layer
-        if (from_layer is not None and from_layer >= to_layer) or to_layer in self.layer_activated_from:
+        if (from_layers and any(layer >= to_layer for layer in from_layers)) or to_layer in self.layer_activated_from:
             return
+
         self.layer_activated_from[to_layer] = set(key_positions)  # came here through these key(s)
+
         # also consider how the layer we are coming from got activated
-        if from_layer is not None:
+        for from_layer in from_layers:
             self.layer_activated_from[to_layer] |= self.layer_activated_from.get(from_layer, set())
 
     def add_held_keys(self, layers: dict[str, list[LayoutKey]]) -> dict[str, list[LayoutKey]]:
         """Add "held" specifiers to keys that we previously determined were held to activate a given layer."""
         assert self.layer_names is not None
+
+        # handle conditional layers
+        for then_layer, if_layers in sorted(self.conditional_layers.items()):
+            self.update_layer_activated_from(if_layers, then_layer, [])
+
+        # assign held keys
         for layer_index, activating_keys in self.layer_activated_from.items():
             for key_idx in activating_keys:
                 key = layers[self.layer_names[layer_index]][key_idx]
@@ -63,6 +76,7 @@ class KeymapParser(ABC):
                     layers[self.layer_names[layer_index]][key_idx] = LayoutKey(type="held")
                 else:
                     key.type = "held"
+
         return layers
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
@@ -113,7 +127,7 @@ class QmkJsonParser(KeymapParser):
             return self.trans_key
         if m := self._mo_re.fullmatch(key_str):  # momentary layer
             to_layer = int(m.group(1).strip())
-            self.update_layer_activated_from(current_layer, to_layer, key_positions)
+            self.update_layer_activated_from([current_layer], to_layer, key_positions)
             return LayoutKey(tap=self.layer_names[to_layer])
         if m := self._mts_re.fullmatch(key_str):  # short mod-tap syntax
             tap_key = mapped(m.group(2).strip())
@@ -123,7 +137,7 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=tap_key.tap, hold=m.group(1).strip(), shifted=tap_key.shifted)
         if m := self._lt_re.fullmatch(key_str):  # layer-tap
             to_layer = int(m.group(1).strip())
-            self.update_layer_activated_from(current_layer, to_layer, key_positions)
+            self.update_layer_activated_from([current_layer], to_layer, key_positions)
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=self.layer_names[to_layer], shifted=tap_key.shifted)
         if m := self._osm_re.fullmatch(key_str):  # one-shot mod
@@ -131,7 +145,7 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=tap_key.tap, hold=self.cfg.sticky_label, shifted=tap_key.shifted)
         if m := self._osl_re.fullmatch(key_str):  # one-shot layer
             to_layer = int(m.group(1).strip())
-            self.update_layer_activated_from(current_layer, to_layer, key_positions)
+            self.update_layer_activated_from([current_layer], to_layer, key_positions)
             return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.sticky_label)
         return mapped(key_str)
 
@@ -236,7 +250,9 @@ class ZmkKeymapParser(KeymapParser):
                 return LayoutKey(tap=" ".join(pars).replace("_", " ").replace(" SEL ", " "))
             case [("&mo" | "&to" | "&tog") as behavior, par]:
                 if behavior in ("&mo",):
-                    self.update_layer_activated_from(current_layer, int(par), key_positions)
+                    self.update_layer_activated_from(
+                        [current_layer] if current_layer is not None else [], int(par), key_positions
+                    )
                 return LayoutKey(tap=self.layer_names[int(par)])
             case [ref, hold_par, tap_par] if ref in self.hold_taps:
                 hold_key = self._str_to_key(f"{self.hold_taps[ref][0]} {hold_par}", current_layer, key_positions)
@@ -260,6 +276,16 @@ class ZmkKeymapParser(KeymapParser):
         self.hold_taps |= get_behavior_bindings("zmk,behavior-hold-tap", 2)
         self.mod_morphs |= get_behavior_bindings("zmk,behavior-mod-morph", 2)
         self.sticky_keys |= get_behavior_bindings("zmk,behavior-sticky-key", 1)
+
+    def _update_conditional_layers(self, dts: DeviceTree) -> None:
+        cl_parents = dts.get_compatible_nodes("zmk,conditional-layers")
+        cl_nodes = [node for parent in cl_parents for node in parent.children]
+        for node in cl_nodes:
+            if not (then_layer_val := node.get_array("then-layer")):
+                raise RuntimeError(f'Could not parse `then-layer` for conditional layer node "{node.name}"')
+            if not (if_layers := node.get_array("if-layers")):
+                raise RuntimeError(f'Could not parse `if-layers` for conditional layer node "{node.name}"')
+            self.conditional_layers[int(then_layer_val[0])] = [int(val) for val in if_layers]
 
     def _get_layers(self, dts: DeviceTree) -> dict[str, list[LayoutKey]]:
         if not (layer_parents := dts.get_compatible_nodes("zmk,keymap")):
@@ -322,6 +348,7 @@ class ZmkKeymapParser(KeymapParser):
             self._update_raw_binding_map(dts)
 
         self._update_behaviors(dts)
+        self._update_conditional_layers(dts)
         layers = self._get_layers(dts)
         combos = self._get_combos(dts)
         layers = self.add_held_keys(layers)
