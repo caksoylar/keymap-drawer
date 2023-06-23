@@ -184,7 +184,7 @@ class ZmkKeymapParser(KeymapParser):
     ):
         super().__init__(config, columns, base_keymap, layer_names)
         self.hold_taps = {"&mt": ["&kp", "&kp"], "&lt": ["&mo", "&kp"]}
-        self.mod_morphs: dict[str, list[str]] = {}
+        self.mod_morphs = {"&gresc": ["&kp ESC", "&kp GRAVE"]}
         self.sticky_keys = {"&sk": ["&kp"], "&sl": ["&mo"]}
 
     def _update_raw_binding_map(self, dts: DeviceTree) -> None:
