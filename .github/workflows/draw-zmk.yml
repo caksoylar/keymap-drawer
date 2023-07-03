@@ -34,6 +34,11 @@ on:
         default: "[Skip CI] keymap-drawer render"
         required: false
         type: string
+      install_branch:
+        description: "Install keymap-drawer from a git branch, use empty for pypi release (default)"
+        default: ""
+        required: false
+        type: string
 
 jobs:
   draw:
@@ -44,8 +49,12 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3      
-    - name: Install keymap-drawer
+    - name: Install keymap-drawer (pypi)
+      if: inputs.install_branch == ''
       run: python3 -m pip install keymap-drawer
+    - name: Install keymap-drawer (git)
+      if: inputs.install_branch != ''
+      run: python3 -m pip install "git+https://github.com/caksoylar/keymap-drawer.git@${{ inputs.install_branch }}"
     - name: Draw keymaps
       run: |
         get_args() {
