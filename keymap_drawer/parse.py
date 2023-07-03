@@ -229,8 +229,8 @@ class ZmkKeymapParser(KeymapParser):
                     self._numbers_re.sub(r"\3", key)
                     .removeprefix("C_")
                     .removeprefix("K_")
-                    .replace("_", " ")
-                    .replace(" SEL ", " "),
+                    .replace("BT_SEL", "BT")
+                    .replace("_", " "),
                 )
             )
             if no_shifted:
