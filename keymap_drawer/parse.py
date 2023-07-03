@@ -225,7 +225,12 @@ class ZmkKeymapParser(KeymapParser):
         def mapped(key: str) -> LayoutKey:
             mapped = LayoutKey.from_key_spec(
                 self.cfg.zmk_keycode_map.get(
-                    key, self._numbers_re.sub(r"\3", key).removeprefix("C_").removeprefix("K_").replace("_", " ")
+                    key,
+                    self._numbers_re.sub(r"\3", key)
+                    .removeprefix("C_")
+                    .removeprefix("K_")
+                    .replace("_", " ")
+                    .replace(" SEL ", " "),
                 )
             )
             if no_shifted:
@@ -246,8 +251,13 @@ class ZmkKeymapParser(KeymapParser):
             case [ref, par] if ref in self.sticky_keys:
                 l_key = self._str_to_key(f"{self.sticky_keys[ref][0]} {par}", current_layer, key_positions)
                 return LayoutKey(tap=l_key.tap, hold=self.cfg.sticky_label, shifted=l_key.shifted)
-            case [("&out" | "&bt" | "&ext_power" | "&rgb_ug"), *pars]:
-                return LayoutKey(tap=" ".join(pars).replace("_", " ").replace(" SEL ", " "))
+            case ["&bt", *pars]:
+                mapped_action = mapped(pars[0])
+                if len(pars) == 1:
+                    return mapped_action
+                return LayoutKey(tap=mapped_action.tap, shifted=mapped_action.shifted, hold=pars[1])
+            case [("&out" | "&ext_power" | "&rgb_ug"), *pars]:
+                return LayoutKey(tap=" ".join(pars).replace("_", " "))
             case [("&mo" | "&to" | "&tog") as behavior, par]:
                 if behavior in ("&mo",):
                     self.update_layer_activated_from(
