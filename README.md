@@ -210,7 +210,7 @@ To get started, [install Poetry](https://python-poetry.org/docs/#installation), 
 ```sh
 git clone https://github.com/caksoylar/keymap-drawer.git
 cd keymap-drawer
-poetry install  # --with dev,lsp,streamlit optional dependencies
+poetry install  # --with dev,lsp optional dependencies
 ```
 
 `poetry shell` will activate a virtual environment with the `keymap_drawer` module in Python path and `keymap` executable available.
