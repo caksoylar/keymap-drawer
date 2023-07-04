@@ -218,6 +218,8 @@ Changes you make in the source code will be reflected when using the module or t
 
 If you prefer not to use Poetry, you can get an editable install with `pip install --editable .` inside the `keymap-drawer` folder.
 
+The source code for the Streamlit app lives in the [`keymap-drawer-web`](https://github.com/caksoylar/keymap-drawer-web) repo.
+
 ## Related projects
 
 - [@nickcoutsos's ZMK keymap editor](https://github.com/nickcoutsos/keymap-editor)
