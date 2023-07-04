@@ -5,7 +5,7 @@ description = "A module and CLI tool to help parse and draw keyboard layouts."
 authors = ["Cem Aksoylar <caksoylar@gmail.com>"]
 readme = ["README.md", "KEYMAP_SPEC.md"]
 packages = [{include = "keymap_drawer"}]
-include = ["resources/zmk_keyboard_layouts.yaml", "resources/qmk_layouts/*.json"]
+include = ["keymap_drawer/py.typed", "resources/zmk_keyboard_layouts.yaml", "resources/qmk_layouts/*.json"]
 license = "MIT"
 homepage = "https://github.com/caksoylar/keymap-drawer"
 repository = "https://github.com/caksoylar/keymap-drawer"
