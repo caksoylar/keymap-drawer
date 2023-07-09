@@ -104,6 +104,9 @@ A `LayoutKey` can be defined with either a string value or with a mapping with t
 Using a string value such as `"A"` for a key spec is equivalent to defining a mapping with only the tap field, i.e., `{tap: "A"}`.
 It is meant to be used as a shortcut for keys that do not need `hold` or `type` fields.
 
+You can use the special `$$..$$` syntax to refer to custom SVG glyphs in `tap`/`hold`/`shifted` fields, however note that they cannot be used with other text or glyphs inside the same field value.
+See the [custom glyphs section](README.md#custom-glyphs) for more information.
+
 `layers` field also flattens any lists that are contained in its value: This allows you to semantically divide keys to "rows," if you prefer to do so.
 The two layers in the following example are functionally identical:
 
