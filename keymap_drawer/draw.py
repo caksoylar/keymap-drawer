@@ -75,8 +75,12 @@ class KeymapDrawer:
             f'height="{height}" width="{width}"{self._to_class_str(classes)}/>\n'
         )
 
-    def _draw_arc_dendron(self, p_1: Point, p_2: Point, x_first: bool, shorten: float) -> None:
+    def _draw_arc_dendron(  # pylint: disable=too-many-arguments
+        self, p_1: Point, p_2: Point, x_first: bool, shorten: float, arc_scale: float
+    ) -> None:
         diff = p_2 - p_1
+
+        # check if the points are too close to draw an arc, if so draw a line instead
         if (x_first and abs(diff.x) < self.cfg.arc_radius) or (not x_first and abs(diff.y) < self.cfg.arc_radius):
             self._draw_line_dendron(p_1, p_2, shorten)
             return
@@ -86,11 +90,11 @@ class KeymapDrawer:
         arc_y = copysign(self.cfg.arc_radius, diff.y)
         clockwise = (diff.x > 0) ^ (diff.y > 0)
         if x_first:
-            line_1 = f"h{self.cfg.arc_scale * diff.x - arc_x}"
+            line_1 = f"h{arc_scale * diff.x - arc_x}"
             line_2 = f"v{diff.y - arc_y - copysign(shorten, diff.y)}"
             clockwise = not clockwise
         else:
-            line_1 = f"v{self.cfg.arc_scale * diff.y - arc_y}"
+            line_1 = f"v{arc_scale * diff.y - arc_y}"
             line_2 = f"h{diff.x - arc_x - copysign(shorten, diff.x)}"
         arc = f"a{self.cfg.arc_radius},{self.cfg.arc_radius} 0 0 {int(clockwise)} {arc_x},{arc_y}"
         self.out.write(f'<path d="{start} {line_1} {arc} {line_2}" class="combo"/>\n')
@@ -225,11 +229,11 @@ class KeymapDrawer:
                 case "top" | "bottom":
                     for k in p_keys:
                         offset = k.height / 5 if abs(p_0.x + k.pos.x - p.x) < self.cfg.combo_w / 2 else k.height / 3
-                        self._draw_arc_dendron(p, p_0 + k.pos, True, offset)
+                        self._draw_arc_dendron(p, p_0 + k.pos, True, offset, combo.arc_scale)
                 case "left" | "right":
                     for k in p_keys:
                         offset = k.width / 5 if abs(p_0.y + k.pos.y - p.y) < self.cfg.combo_h / 2 else k.width / 3
-                        self._draw_arc_dendron(p, p_0 + k.pos, False, offset)
+                        self._draw_arc_dendron(p, p_0 + k.pos, False, offset, combo.arc_scale)
                 case "mid":
                     for k in p_keys:
                         if combo.dendron is True or abs(p_0 + k.pos - p) >= k.width - 1:

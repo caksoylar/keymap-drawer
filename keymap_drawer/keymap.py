@@ -58,6 +58,7 @@ class ComboSpec(BaseModel, allow_population_by_field_name=True):
     offset: float = Field(alias="o", default=0.0)
     dendron: bool | None = Field(alias="d", default=None)
     slide: float | None = Field(alias="s", default=None)
+    arc_scale: float = 1.0
     type: str = "combo"
 
     @classmethod

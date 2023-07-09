@@ -39,9 +39,6 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # curve radius for combo dendrons
     arc_radius: float = 6
 
-    # length multiplier for dendrons
-    arc_scale: float = 1.0
-
     # whether to add a colon after layer name while printing the layer header
     append_colon_to_layer_header: bool = True
 
