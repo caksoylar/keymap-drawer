@@ -186,8 +186,9 @@ on:
   workflow_dispatch:  # can be triggered manually
   push:               # automatically run on changes to following paths
     paths:
-      - 'config/*.keymap'
-      - 'config/*.dtsi'
+      - "config/*.keymap"
+      - "config/*.dtsi"
+      - "keymap_drawer.config.yaml"
       # - 'config/boards/*/*/*.keymap'
 
 jobs:
