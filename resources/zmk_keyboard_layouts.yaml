@@ -24,7 +24,7 @@ boardsource5x12: {qmk_keyboard: boardsource/5x12}
 chalice: {qmk_keyboard: chalice, qmk_layout: LAYOUT_default}
 clog: {qmk_keyboard: clog}
 contra: {qmk_keyboard: contra}
-corne: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
+corne: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
 cradio: {qmk_keyboard: ferris/sweep}
 crbn: {ortho_layout: {split: false, rows: 4, columns: 12}}
 eek: {qmk_keyboard: eek/silk_down}
@@ -61,7 +61,7 @@ romac: {qmk_keyboard: kingly_keys/romac}
 romac_plus: {qmk_keyboard: kingly_keys/romac_plus}
 snap: {qmk_keyboard: nullbitsco/snap}
 sofle: {qmk_keyboard: sofle/rev1}
-splitkb_aurora_corne: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
+splitkb_aurora_corne: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
 splitkb_aurora_lily58: {qmk_keyboard: lily58/rev1}
 splitkb_aurora_sweep: {qmk_keyboard: ferris/sweep}
 splitreus62: {qmk_keyboard: nacly/splitreus62}
@@ -76,7 +76,6 @@ zodiark: {qmk_keyboard: aleblazer/zodiark}
 adv360: {qmk_keyboard: adv360}
 adv360pro: {qmk_keyboard: adv360}
 ahokore: {qmk_keyboard: obosob/arch_36}
-ahokore: {qmk_keyboard: obosob/arch_36}
 arch36: {qmk_keyboard: obosob/arch_36}
 basbousa: {qmk_keyboard: clog}
 battoota: {qmk_keyboard: berylline}
@@ -84,6 +83,8 @@ berylline: {qmk_keyboard: berylline}
 ble_chiffre: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2}}
 breeze: {qmk_keyboard: afternoonlabs/breeze/rev1}
 bt65: {qmk_keyboard: novelkeys/nk65}
+chipper: {qmk_keyboard: corne_rotated}
+chippy: {qmk_keyboard: corne_rotated}
 chocofi: {qmk_keyboard: chocofi}
 chocv: {qmk_keyboard: chocv}
 clog_v2: {qmk_keyboard: clog}
@@ -120,12 +121,14 @@ reviung34: {qmk_keyboard: reviung/reviung34}
 reviung39: {qmk_keyboard: reviung/reviung39}
 revlp: {qmk_keyboard: reviung/reviung39}
 revxlp: {qmk_keyboard: revxlp}
-rollow: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
+rollow: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
 rufous: {qmk_keyboard: rufous}
 slicemk_ergodox: {qmk_keyboard: ergodox_ez/base, qmk_layout: LAYOUT_ergodox_pretty}
 swweeep: {qmk_keyboard: obosob/arch_36}
 tbkmini: {qmk_keyboard: bastardkb/tbkmini/v2/splinky_3}
 technikable: {ortho_layout: {split: true, rows: 3, columns: 6, thumbs: 4}}
+tenaxxiao: {qmk_keyboard: chocofi}
+tenaxoled: {qmk_keyboard: chocofi}
 tipper_tf: {qmk_keyboard: ferris/sweep}
 tornblue: {qmk_keyboard: torn}
 totem: {qmk_keyboard: totem}
