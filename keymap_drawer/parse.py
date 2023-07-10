@@ -50,11 +50,16 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         to be called in the order of increasing `to_layer` indices. It also ignores activating lower
         layer indices from higher layers and only considers the first discovered keys.
         """
-        # ignore reverse order activations and if we already have a way to get to this layer
-        if (from_layers and any(layer >= to_layer for layer in from_layers)) or to_layer in self.layer_activated_from:
+        # ignore if we already have a way to get to this layer (unless mark_alternate_layer_activators is set)
+        # or if this is a reverse layer order activation
+        if (not self.cfg.mark_alternate_layer_activators and to_layer in self.layer_activated_from) or (
+            from_layers and any(layer >= to_layer for layer in from_layers)
+        ):
             return
 
-        self.layer_activated_from[to_layer] = set(key_positions)  # came here through these key(s)
+        if to_layer not in self.layer_activated_from:
+            self.layer_activated_from[to_layer] = set()
+        self.layer_activated_from[to_layer] |= set(key_positions)  # came here through these key(s)
 
         # also consider how the layer we are coming from got activated
         for from_layer in from_layers:

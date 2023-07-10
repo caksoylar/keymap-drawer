@@ -183,7 +183,14 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # display text to place in hold field for sticky/one-shot keys
     sticky_label: str = "sticky"
 
+    # legend to output for transparent keys
     trans_legend: str | dict = {"t": "▽", "type": "trans"}
+
+    # rather than only marking the first sequence of key positions to reach a layer as "held",
+    # mark all of the sequences to reach a given layer. this is disabled by default because it
+    # creates ambiguity: you cannot tell if *all* the marked keys need to be held down while a
+    # layer is active (which is the default behavior) or *any* of them (with this option)
+    mark_alternate_layer_activators: bool = False
 
     # convert QMK keycodes to their display forms, omitting "KC_" prefix on the keys
     qmk_keycode_map: dict[str, str | dict] = {
