@@ -79,7 +79,8 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 
         /* color accent for ghost (optional) keys */
         rect.ghost, rect.combo.ghost {
-            fill: #ddd;
+            stroke-dasharray: 4, 4;
+            stroke-width: 2;
         }
 
         text {
