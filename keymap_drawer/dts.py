@@ -86,8 +86,7 @@ class DeviceTree:
         self.raw_buffer = in_str
         self.file_name = file_name
 
-        if preprocess:
-            prepped = self._preprocess(in_str, file_name) if preprocess else in_str
+        prepped = self._preprocess(in_str, file_name) if preprocess else in_str
 
         # make sure node labels and names are glued together and comments are removed,
         # then parse with nested curly braces
