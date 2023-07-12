@@ -43,22 +43,22 @@ class DTNode:
         ]
 
     def get_string(self, property_re: str) -> str | None:
-        """Extract value from `string` type property matching the `property_re` regex."""
-        string_re = re.compile(rf'{property_re} = "(.*?)"')
-        if m := string_re.search(self.content):
-            return m.group(1)
-        return None
+        """Extract last defined value for a `string` type property matching the `property_re` regex."""
+        out = None
+        for m in re.finditer(rf'{property_re} = "(.*?)"', self.content):
+            out = m.group(1)
+        return out
 
     def get_array(self, property_re: str) -> list[str] | None:
-        """Extract values from `array` type property matching the `property_re` regex."""
-        array_re = re.compile(rf"{property_re} = <(.*?)>(, <(.*?)>)*")
-        if m := array_re.search(self.content):
+        """Extract last defined values for a `array` type property matching the `property_re` regex."""
+        out = None
+        for m in re.finditer(rf"{property_re} = <(.*?)>(, <(.*?)>)*", self.content):
             fields = [m.group(1)] + [field for field in m.groups()[2:] if field is not None]
-            return list(chain.from_iterable(field.split(" ") for field in fields))
-        return None
+            out = list(chain.from_iterable(field.split(" ") for field in fields))
+        return out
 
     def get_phandle_array(self, property_re: str) -> list[str] | None:
-        """Extract values from `phandle-array` type property matching the `property_re` regex."""
+        """Extract last defined values for a `phandle-array` type property matching the `property_re` regex."""
         if array_vals := self.get_array(property_re):
             return [
                 f"&{stripped}"
@@ -98,6 +98,7 @@ class DeviceTree:
             .parse_string("{ " + self._nodelabel_re.sub(r"\1:\2 {", prepped) + " };")[0],
         )
 
+        # parse through all nodes and hash according to "compatible" values
         self.compatibles: defaultdict[str, list[DTNode]] = defaultdict(list)
 
         def assign_compatibles(node: DTNode) -> None:
