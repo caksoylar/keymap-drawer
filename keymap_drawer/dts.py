@@ -67,6 +67,16 @@ class DTNode:
             ]
         return None
 
+    def get_path(self, property_re: str) -> str | None:
+        """
+        Extract last defined value for a `path` type property matching the `property_re` regex.
+        Only supports phandle paths `&p` rather than path types `"/a/b"` right now.
+        """
+        out = None
+        for m in re.finditer(rf"{property_re} = &(.*?);", self.content):
+            out = m.group(1)
+        return out
+
 
 class DeviceTree:
     """
@@ -109,6 +119,13 @@ class DeviceTree:
 
         assign_compatibles(self.root)
 
+        # find all chosen nodes and concatenate their content
+        self.chosen = DTNode("__chosen__", pp.ParseResults())
+        for root_child in self.root.children:
+            for node in root_child.children:
+                if node.name == "chosen":
+                    self.chosen.content += " " + node.content
+
     @staticmethod
     def _preprocess(in_str: str, file_name: str | None = None) -> str:
         def include_handler(*args):  # type: ignore
@@ -126,6 +143,10 @@ class DeviceTree:
     def get_compatible_nodes(self, compatible_value: str) -> list[DTNode]:
         """Return a list of nodes that have the given compatible value."""
         return self.compatibles[compatible_value]
+
+    def get_chosen_property(self, property_name: str) -> str | None:
+        """Return phandle for a given property in the /chosen node."""
+        return self.chosen.get_path(re.escape(property_name))
 
     def preprocess_extra_data(self, data: str) -> str:
         """
