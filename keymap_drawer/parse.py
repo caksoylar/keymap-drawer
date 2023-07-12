@@ -353,6 +353,23 @@ class ZmkKeymapParser(KeymapParser):
             combos.append(ComboSpec(**(combo | cfg_combo)))
         return combos
 
+    def _get_physical_layout(self, file_name: str | None, dts: DeviceTree) -> dict:
+        if not file_name:
+            return {}
+
+        keyboard_name = Path(file_name).stem
+        with open(ZMK_LAYOUTS_PATH, "rb") as f:
+            keyboard_to_layout_map = yaml.safe_load(f)
+
+        if (keyboard_layouts := keyboard_to_layout_map.get(keyboard_name)) is None:
+            return {}
+
+        # if no chosen set, use first transform as the default
+        if (transform := dts.get_chosen_property("zmk,matrix_transform")) is None:
+            return next(iter(keyboard_layouts.values()))
+
+        return keyboard_layouts.get(transform, {})
+
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
         """
         Parse a ZMK keymap with its content and path and return the layout spec and KeymapData to be dumped to YAML.
@@ -370,10 +387,4 @@ class ZmkKeymapParser(KeymapParser):
 
         keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
 
-        if not file_name:
-            return {}, keymap_data
-
-        keyboard_name = Path(file_name).stem
-        with open(ZMK_LAYOUTS_PATH, "rb") as f:
-            keyboard_to_layout_map = yaml.safe_load(f)
-        return keyboard_to_layout_map.get(keyboard_name), keymap_data
+        return self._get_physical_layout(file_name, dts), keymap_data
