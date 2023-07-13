@@ -14,8 +14,6 @@ _hummingbird_splay: &hummingbird_splay
   default_transform: {qmk_keyboard: berylline}
 _hummingbird_ortho: &hummingbird_ortho
   default_transform: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2, drop_pinky: true, drop_inner: true}}
-_generic_40p: &generic_40p
-  default_transform: {qmk_keyboard: tg4x}
 
 # Upstream boards
 bdn9: &bdn9
@@ -42,16 +40,22 @@ dz60rgb: &dz60rgb
 dz60rgb_rev1: *dz60rgb
 ferris: *ferris
 ferris_rev02: *ferris
+kbdfans_tofu65: &kbdfans_tofu65
+  default_transform: {qmk_keyboard: tada68, qmk_layout: LAYOUT_65_ansi}
+kbdfans_tofu65_v2: *kbdfans_tofu65
 nice60: *generic_60p
-planck_rev6: &planck
+planck: &planck
   layout_grid_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_ortho_4x12}
   layout_mit_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_planck_1x2uC}
   layout_2x2u_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_planck_2x2u}
-preonic_rev3:
+planck_rev6: *planck
+preonic: &preonic
   layout_grid_transform: {qmk_keyboard: preonic/rev3, qmk_layout: LAYOUT_ortho_5x12}
   layout_mit_transform: {qmk_keyboard: preonic/rev3, qmk_layout: LAYOUT_preonic_1x2uC}
   layout_2x2u_transform: {qmk_keyboard: preonic/rev3, qmk_layout: LAYOUT_preonic_2x2u}
-s40nc: *generic_40p
+preonic_rev3: *preonic
+s40nc:
+  default_transform: {qmk_keyboard: coseyfannitutti/romeo, qmk_layout: LAYOUT_ansi_split_space}
 
 # Upstream shields
 a_dux:
@@ -68,6 +72,8 @@ chalice:
   default_transform: {qmk_keyboard: chalice, qmk_layout: LAYOUT_default}
   splitbs_transform: {qmk_keyboard: chalice, qmk_layout: LAYOUT_split_bs}
 clog: *pinky_cluster_34
+clueboard_california:
+  null: {qmk_keyboard: clueboard/california}
 contra:
   null: {qmk_keyboard: contra}
 corne: *corne
@@ -102,8 +108,8 @@ jorne: &jorne
   default_transform: {qmk_keyboard: jorne/rev1}
   crkbd_transform: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
   five_column_transform: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x5_3}
-knob_goblin:
-  null: {qmk_keyboard: knobgoblin}
+knob_goblin:  # this has some empty spots that are not removed through a matrix transform
+  null: {ortho_layout: {split: false, rows: 5, columns: 5}}  # {qmk_keyboard: knobgoblin}
 kyria: &kyria
   default_transform: {qmk_keyboard: splitkb/kyria/rev1}
   five_column_transform: {qmk_keyboard: splitkb/kyria/rev1, qmk_layout: LAYOUT_split_3x5_5} # non-existent layout
@@ -150,9 +156,10 @@ splitkb_aurora_lily58: *lily58
 splitkb_aurora_sweep: *ferris
 splitreus62:
   default_transform: {qmk_keyboard: nacly/splitreus62}
-tg4x: *generic_40p
-tidbit:
-  default_transform: {qmk_keyboard: nullbitsco/tidbit}
+#tg4x:  # this weird layout variation doesn't exist
+#  default_transform: {qmk_keyboard: tg4x}
+#tidbit:  # the QMK one includes fake keys for encoder turns
+#  default_transform: {qmk_keyboard: nullbitsco/tidbit}
 two_percent_milk:
   null: {ortho_layout: {split: false, rows: 2, columns: 1}}
 waterfowl:
