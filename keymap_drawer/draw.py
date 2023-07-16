@@ -5,6 +5,7 @@ representation of the keymap using these two.
 """
 from math import copysign
 from html import escape
+from copy import deepcopy
 from typing import Sequence, TextIO, Literal
 
 from .keymap import KeymapData, ComboSpec, LayoutKey
@@ -268,13 +269,25 @@ class KeymapDrawer:
             self.print_combo(p_0, combo_spec)
 
     def print_board(
-        self, draw_layers: Sequence[str] | None = None, keys_only: bool = False, combos_only: bool = False
+        self,
+        draw_layers: Sequence[str] | None = None,
+        keys_only: bool = False,
+        combos_only: bool = False,
+        ghost_keys: Sequence[int] | None = None,
     ) -> None:
         """Print SVG code representing the keymap."""
-        layers = self.keymap.layers
+        layers = deepcopy(self.keymap.layers)
         if draw_layers:
             assert all(l in layers for l in draw_layers), "Some layer names selected for drawing are not in the keymap"
             layers = {name: layer for name, layer in layers.items() if name in draw_layers}
+
+        if ghost_keys:
+            for key_position in ghost_keys:
+                assert (
+                    0 <= key_position < len(self.layout)
+                ), "Some key positions for `ghost_keys` are negative or too large for the layout"
+                for layer in layers.values():
+                    layer[key_position].type = "ghost"
 
         if not keys_only:
             combos_per_layer = self.keymap.get_combos_per_layer(layers)

@@ -39,9 +39,18 @@ def draw(args: Namespace, config: DrawConfig) -> None:
         config = config.copy(update=custom_config)
 
     drawer = KeymapDrawer(
-        config=config, out=sys.stdout, layers=yaml_data["layers"], layout=layout, combos=yaml_data.get("combos", [])
+        config=config,
+        out=sys.stdout,
+        layers=yaml_data["layers"],
+        layout=layout,
+        combos=yaml_data.get("combos", []),
     )
-    drawer.print_board(draw_layers=args.select_layers, keys_only=args.keys_only, combos_only=args.combos_only)
+    drawer.print_board(
+        draw_layers=args.select_layers,
+        keys_only=args.keys_only,
+        combos_only=args.combos_only,
+        ghost_keys=args.ghost_keys,
+    )
 
 
 def parse(args: Namespace, config: ParseConfig) -> None:
@@ -119,6 +128,13 @@ def main() -> None:
     draw_p.add_argument("-s", "--select-layers", help="A list of layer names to draw, draw all by default", nargs="+")
     draw_p.add_argument("--keys-only", help="Only draw keys, not combos on layers", action="store_true")
     draw_p.add_argument("--combos-only", help="Only draw combos, not keys on layers", action="store_true")
+    draw_p.add_argument(
+        "-g",
+        "--ghost-keys",
+        help="A list of zero-based key indices to assign `type: ghost` in all drawn layers",
+        nargs="+",
+        type=int,
+    )
     draw_p.add_argument(
         "keymap_yaml",
         help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
