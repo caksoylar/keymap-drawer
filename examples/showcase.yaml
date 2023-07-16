@@ -6,8 +6,8 @@ layers:
     - [Q, W, F, P, B, J, L, U, Y, "'"]
     - [{h: Ctrl, t: A}, {h: Gui, t: R}, {h: Alt, t: S}, {h: Shift, t: T}, G, M, {h: Shift, t: N}, {h: Alt, t: E}, {h: Gui, t: I}, {h: Ctrl, t: O}]
     - [Z, X, C, D, V, K, H, {t: ',', s: '<'}, {t: ., s: '>'}, {t: /, s: '?'}]
-    - {h: Gui,   t: Tab, type: ghost}
-    - {h: Ctrl,  t: Esc}
+    - {h: Gui,   t: $$mdi:keyboard-tab$$, type: ghost}
+    - {h: Ctrl,  t: $$mdi:keyboard-esc$$}
     - {h: NAV,   t: $$mdi:backspace-outline$$}
     - {h: SYM,   t: $$mdi:keyboard-space$$}
     - {h: Shift, t: $$mdi:keyboard-return$$}
@@ -21,6 +21,6 @@ combos:
   - {p: [16, 17], k: ')'}
   - {p: [11, 12], k: '['}
   - {p: [17, 18], k: ']'}
-  - {p: [14, 24], k: MB1}
+  - {p: [14, 24], k: $$mdi:play-pause$$}
 draw_config:
   glyph_tap_size: 18
