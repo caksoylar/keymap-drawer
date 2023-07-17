@@ -202,6 +202,19 @@ jobs:
       draw_args: ""   # map of extra args to pass to `keymap draw`, e.g. "corne:'-k corne_rotated' cradio:'-k paroxysm'"
 ```
 
+## Community
+
+Below are a few example usages from the community that might be inspirational, whether they are doing unique things with styling, configuration or legends used, or integrate `keymap-drawer` into other workflows.
+- [minusfive's ZMK config](https://github.com/minusfive/zmk-config): Uses an [extensive config file](https://github.com/minusfive/zmk-config/blob/main/keymap_drawer.config.yaml) for great results out of the automated drawing workflow, with plenty of SVG glyphs
+- [SethMilliken's Swept Corne config](https://github.com/SethMilliken/swept-corne-zmk/tree/seth): Another config using the automated workflow with a [nice configuration](https://github.com/SethMilliken/swept-corne-zmk/blob/seth/keymap_drawer.config.yaml) and SVG glyphs
+- [jbarr21's `keymap-display`](https://github.com/jbarr21/keymap-display): Uses a [converter script](https://github.com/jbarr21/keymap-display/blob/main/scripts/json2yaml) to convert QMK `keymap.c` to a keymap YAML
+- [casuanoob's keymap](https://github.com/casuanoob/zmk-config-bkb): Many useful unicode and SVG glyphs in the [keymap YAML](https://github.com/casuanoob/zmk-config-bkb/blob/master/assets/split34_keymap_zmk.yaml)
+- [possumvibes's keymap](https://github.com/possumvibes/keyboard-layout): Separate layer and combo diagrams
+- [infused-kim's ZMK config](https://github.com/infused-kim/zmk-config): [Uses the `--base-keymap` feature](https://github.com/infused-kim/zmk-config/blob/chocofi/main/keymap_img/update_keymap_img.sh) to pre-assign held keys and combo positions
+- [crides's Fissure write-up](https://github.com/crides/fissure): Custom physical layout with non-square keys and unique SVG styling
+
+If you use `keymap-drawer`, tag your Github repo with the [`keymap-drawer` topic](https://github.com/topics/keymap-drawer) and it will show up for anyone else searching for it!
+
 ## Development
 
 This project requires Python 3.10+ and uses [Poetry](https://python-poetry.org/) for packaging.
