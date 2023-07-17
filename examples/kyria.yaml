@@ -1,7 +1,7 @@
 # parsed and tweaked from the default QMK keymap
 layout:
   qmk_keyboard: splitkb/kyria/rev1
-  qmk_layout: LAYOUT
+  qmk_layout: LAYOUT_split_3x6_5
 layers:
   QWERTY:
   - [TAB, Q, W, E, R, T, Y, U, I, O, P, BSPC]
