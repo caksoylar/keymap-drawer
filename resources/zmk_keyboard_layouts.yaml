@@ -118,7 +118,7 @@ kyria_rev3: *kyria
 leeloo:
   default_transform: {qmk_keyboard: clickety_split/leeloo/rev1}
 lily58: &lily58
-  default_transform: {qmk_keyboard: lily58/rev1}
+  default_transform: {qmk_keyboard: lily58_rotated}
 lotus58:
   default_transform: {qmk_keyboard: tweetydabird/lotus58/elite_c}  # might have a key order mismatch
 m60: *generic_60p
