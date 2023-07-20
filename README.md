@@ -218,7 +218,6 @@ jobs:
 
 Alternatively, you can choose to amend the triggering commit instead of generating a new one by using the `amend_commit: true` option. In this case the triggering commit's message will be used by default, and the `commit_message` input will be ignored. E.g.:
 
-
 ```yaml
 jobs:
   draw:
