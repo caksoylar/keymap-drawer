@@ -176,7 +176,7 @@ Fetched SVGs will be [cached by default](keymap_drawer/config.py#L166) to speed 
 
 ## Setting up an automated drawing workflow
 
-If you use a [ZMK config repo](https://zmk.dev/docs/user-setup), you can set up an automated workflow to parse your keymaps, then draw and commit SVG outputs to your repo.
+If you use a [ZMK config repo](https://zmk.dev/docs/user-setup), you can set up an automated workflow that parses and draws your keymaps, then commits the YAML parse outputs and produced SVGs to your repo.
 To do that you can add a new workflow to your repo at `.github/workflows/draw-keymaps.yml` that refers to the reusable `keymap-drawer` [workflow](.github/workflows/draw-zmk.yml):
 
 ```yaml
@@ -197,10 +197,38 @@ jobs:
     with:
       keymap_patterns: "config/*.keymap"        # path to the keymaps to parse
       config_path: "keymap_drawer.config.yaml"  # config file, ignored if not exists
-      output_folder: "svg"                      # path to save produced SVGs
+      output_folder: "keymap-drawer"            # path to save produced SVG and keymap YAML files
       parse_args: ""  # map of extra args to pass to `keymap parse`, e.g. "corne:'-l Def Lwr Rse' cradio:''"
       draw_args: ""   # map of extra args to pass to `keymap draw`, e.g. "corne:'-k corne_rotated' cradio:'-k paroxysm'"
 ```
+
+### Modifying the workflow-generated commit
+
+The workflow will add the generated SVG and keymap representation YAML files to the `output-folder`, and generate a new `"keymap-drawer render"` commit by default. You can modify this commit message with the `commit_message` input param, e.g.:
+
+```yaml
+jobs:
+  draw:
+    uses: caksoylar/keymap-drawer/.github/workflows/draw-zmk.yml@main
+    with:
+      # Use the triggering commit's message, prepending the "[Draw]" tag
+      commit_message: "[Draw] ${{ github.event.head_commit.message }}"
+      # …other inputs
+```
+
+Alternatively, you can choose to amend the triggering commit instead of generating a new one by using the `amend_commit: true` option. In this case the triggering commit's message will be used by default, and the `commit_message` input will be ignored. E.g.:
+
+```yaml
+jobs:
+  draw:
+    uses: caksoylar/keymap-drawer/.github/workflows/draw-zmk.yml@main
+    with:
+      amend_commit: true
+      # …other inputs
+```
+
+> **Warning**
+> You should understand the implications of rewriting history if you amend a commit that has already been published. See [remarks](https://git-scm.com/docs/git-rebase#_recovering_from_upstream_rebase) in `git-rebase` documentation.
 
 ## Community
 

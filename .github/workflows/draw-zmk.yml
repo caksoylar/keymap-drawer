@@ -15,8 +15,8 @@ on:
         required: false
         type: string
       output_folder:
-        description: "Output folder for SVGs"
-        default: "svg"
+        description: "Output folder for SVG and YAML files"
+        default: "keymap-drawer"
         required: false
         type: string
       parse_args:
@@ -30,10 +30,15 @@ on:
         required: false
         type: string
       commit_message:
-        description: "Commit message for updated images"
-        default: "[Skip CI] keymap-drawer render"
+        description: "Commit message for updated images. Ignored if `amend_commit` is `true`."
+        default: "keymap-drawer render"
         required: false
         type: string
+      amend_commit:
+        description: "Whether to amend the last commit instead of creating a new one. Make sure you understand the implications of rewriting the branch history if you use this option!"
+        default: false
+        required: false
+        type: boolean
       install_branch:
         description: "Install keymap-drawer from a git branch, use empty for pypi release (default)"
         default: ""
@@ -47,53 +52,78 @@ jobs:
       contents: write
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3      
-    - name: Install keymap-drawer (pypi)
-      if: inputs.install_branch == ''
-      run: python3 -m pip install keymap-drawer
-    - name: Install keymap-drawer (git)
-      if: inputs.install_branch != ''
-      run: python3 -m pip install "git+https://github.com/caksoylar/keymap-drawer.git@${{ inputs.install_branch }}"
-    - name: Draw keymaps
-      run: |
-        get_args() {
-            local keyboard=$2
-            eval set -- "$1"
-            for arg; do
-                local key=${arg%%:*}
-                local val=${arg#*:}
-                if [ "$key" = "$keyboard" ]; then
-                    echo "$val"
-                    break
-                fi
-            done
-        }
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # So the reference to the parent commit is available when amending
+          # See:
+          # - https://github.com/stefanzweifel/git-auto-commit-action#using---amend-and---no-edit-as-commit-options
+          # - https://github.com/stefanzweifel/git-auto-commit-action/issues/159#issuecomment-845347950
+          # - https://github.com/actions/checkout
+          fetch-depth: ${{ (inputs.amend_commit == true && 2) || 1 }}
 
-        mkdir -p "${{ inputs.output_folder }}"
+      - name: Install keymap-drawer (pypi)
+        if: inputs.install_branch == ''
+        run: python3 -m pip install keymap-drawer
 
-        config_path="${{ inputs.config_path }}"
-        [ -e "$config_path" ] && config_arg=(-c "$config_path") || config_arg=()
-        for keymap_file in ${{ inputs.keymap_patterns }}; do
-            keyboard=$(basename -s .keymap "$keymap_file")
-            echo "INFO: drawing for $keyboard"
+      - name: Install keymap-drawer (git)
+        if: inputs.install_branch != ''
+        run: python3 -m pip install "git+https://github.com/caksoylar/keymap-drawer.git@${{ inputs.install_branch }}"
 
-            parse_args=$(get_args "${{ inputs.parse_args }}" "$keyboard")
-            echo "INFO:   got extra parse args: $parse_args"
-            draw_args=$(get_args "${{ inputs.draw_args }}" "$keyboard")
-            echo "INFO:   got extra draw args: $draw_args"
+      - name: Draw keymaps
+        run: |
+          get_args() {
+              local keyboard=$2
+              eval set -- "$1"
+              for arg; do
+                  local key=${arg%%:*}
+                  local val=${arg#*:}
+                  if [ "$key" = "$keyboard" ]; then
+                      echo "$val"
+                      break
+                  fi
+              done
+          }
 
-            if [ -f "config/${keyboard}.json" ]; then
-                echo "INFO:   found config/${keyboard}.json";
-                draw_args+=" -j config/${keyboard}.json"
-            fi
+          mkdir -p "${{ inputs.output_folder }}"
 
-            keymap "${config_arg[@]}" parse -z "$keymap_file" $parse_args >"$keyboard.yaml" \
-            && keymap "${config_arg[@]}" draw "$keyboard.yaml" $draw_args >"${{ inputs.output_folder }}/$keyboard.svg" \
-            || echo "ERROR: parsing or drawing failed for $keyboard!"
-        done
-    - name: Commit updated images
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: "${{ inputs.commit_message }}"
-        file_pattern: "${{ inputs.output_folder }}/*.svg"
+          config_path="${{ inputs.config_path }}"
+          [ -e "$config_path" ] && config_arg=(-c "$config_path") || config_arg=()
+          for keymap_file in ${{ inputs.keymap_patterns }}; do
+              keyboard=$(basename -s .keymap "$keymap_file")
+              echo "INFO: drawing for $keyboard"
+
+              parse_args=$(get_args "${{ inputs.parse_args }}" "$keyboard")
+              echo "INFO:   got extra parse args: $parse_args"
+              draw_args=$(get_args "${{ inputs.draw_args }}" "$keyboard")
+              echo "INFO:   got extra draw args: $draw_args"
+
+              if [ -f "config/${keyboard}.json" ]; then
+                  echo "INFO:   found config/${keyboard}.json";
+                  draw_args+=" -j config/${keyboard}.json"
+              fi
+
+              keymap "${config_arg[@]}" parse -z "$keymap_file" $parse_args >"${{ inputs.output_folder }}/$keyboard.yaml" \
+              && keymap "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" $draw_args >"${{ inputs.output_folder }}/$keyboard.svg" \
+              || echo "ERROR: parsing or drawing failed for $keyboard!"
+          done
+
+      - name: Get last commit message
+        id: last_commit_message
+        if: inputs.amend_commit == true
+        run: |
+          echo "msg=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
+
+      - name: Commit updated images
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: "${{ inputs.output_folder }}/*.svg ${{ inputs.output_folder }}/*.yaml"
+          # So the previous commit is amended instead of creating a new one when desired
+          # See:
+          # - https://github.com/stefanzweifel/git-auto-commit-action#using---amend-and---no-edit-as-commit-options
+          # - https://github.com/stefanzweifel/git-auto-commit-action/issues/159#issuecomment-845347950
+          # - https://github.com/actions/checkout
+          commit_message: "${{ (inputs.amend_commit == true && steps.last_commit_message.outputs.msg) || inputs.commit_message }}"
+          commit_options: "${{ (inputs.amend_commit == true && '--amend --no-edit') || '' }}"
+          push_options: "${{ (inputs.amend_commit == true && '--force-with-lease') || '' }}"
+          skip_fetch: ${{ inputs.amend_commit == true }}
