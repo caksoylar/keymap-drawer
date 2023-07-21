@@ -1,6 +1,13 @@
 name: Run lint checks
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths:
+      - keymap_drawer
+      - pyproject.toml
+      - poetry.lock
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   Lint:

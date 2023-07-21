@@ -1,0 +1,247 @@
+<svg width="788.0" height="386.6530669589464" viewBox="0 0 788.0 386.6530669589464" class="keymap" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>/* start glyphs */
+<svg id="mdi:keyboard-space">
+<svg xmlns="http://www.w3.org/2000/svg" id="mdi-keyboard-space" viewBox="0 0 24 24"><path d="M3 15H5V19H19V15H21V19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19V15Z" /></svg>
+</svg>
+<svg id="mdi:keyboard-esc">
+<svg xmlns="http://www.w3.org/2000/svg" id="mdi-keyboard-esc" viewBox="0 0 24 24"><path d="M1 7H7V9H3V11H7V13H3V15H7V17H1V7M11 7H15V9H11V11H13C14.11 11 15 11.9 15 13V15C15 16.11 14.11 17 13 17H9V15H13V13H11C9.9 13 9 12.11 9 11V9C9 7.9 9.9 7 11 7M19 7H21C22.11 7 23 7.9 23 9V10H21V9H19V15H21V14H23V15C23 16.11 22.11 17 21 17H19C17.9 17 17 16.11 17 15V9C17 7.9 17.9 7 19 7Z" /></svg>
+</svg>
+<svg id="mdi:keyboard-tab">
+<svg xmlns="http://www.w3.org/2000/svg" id="mdi-keyboard-tab" viewBox="0 0 24 24"><path d="M20,18H22V6H20M11.59,7.41L15.17,11H1V13H15.17L11.59,16.58L13,18L19,12L13,6L11.59,7.41Z" /></svg>
+</svg>
+<svg id="mdi:backspace-reverse-outline">
+<svg xmlns="http://www.w3.org/2000/svg" id="mdi-backspace-reverse-outline" viewBox="0 0 24 24"><path d="M5,15.59L6.41,17L10,13.41L13.59,17L15,15.59L11.41,12L15,8.41L13.59,7L10,10.59L6.41,7L5,8.41L8.59,12L5,15.59M2,3A2,2 0 0,0 0,5V19A2,2 0 0,0 2,21H17C17.69,21 18.23,20.64 18.59,20.11L24,12L18.59,3.88C18.23,3.35 17.69,3 17,3H2M2,5H17L21.72,12L17,19H2V5Z" /></svg>
+</svg>
+<svg id="mdi:play-pause">
+<svg xmlns="http://www.w3.org/2000/svg" id="mdi-play-pause" viewBox="0 0 24 24"><path d="M3,5V19L11,12M13,19H16V5H13M18,5V19H21V5" /></svg>
+</svg>
+<svg id="mdi:backspace-outline">
+<svg xmlns="http://www.w3.org/2000/svg" id="mdi-backspace-outline" viewBox="0 0 24 24"><path d="M19,15.59L17.59,17L14,13.41L10.41,17L9,15.59L12.59,12L9,8.41L10.41,7L14,10.59L17.59,7L19,8.41L15.41,12L19,15.59M22,3A2,2 0 0,1 24,5V19A2,2 0 0,1 22,21H7C6.31,21 5.77,20.64 5.41,20.11L0,12L5.41,3.88C5.77,3.35 6.31,3 7,3H22M22,5H7L2.28,12L7,19H22V5Z" /></svg>
+</svg>
+<svg id="mdi:keyboard-return">
+<svg xmlns="http://www.w3.org/2000/svg" id="mdi-keyboard-return" viewBox="0 0 24 24"><path d="M19,7V11H5.83L9.41,7.41L8,6L2,12L8,18L9.41,16.58L5.83,13H21V7H19Z" /></svg>
+</svg>
+</defs>/* end glyphs */
+<style>/* inherit to force styles through use tags*/
+svg path {
+    fill: inherit;
+}
+/* font and background color specifications */
+svg.keymap {
+    font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
+    font-size: 14px;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    fill: #24292e;
+}
+
+/* default key styling */
+rect.key {
+    fill: #f6f8fa;
+    stroke: #c9cccf;
+    stroke-width: 1;
+}
+
+/* color accent for combo boxes */
+rect.combo {
+    fill: #cdf;
+}
+
+/* color accent for held keys */
+rect.held, rect.combo.held {
+    fill: #fdd;
+}
+
+/* color accent for ghost (optional) keys */
+rect.ghost, rect.combo.ghost {
+    stroke-dasharray: 4, 4;
+    stroke-width: 2;
+}
+
+text {
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+/* styling for layer labels */
+text.label {
+    font-weight: bold;
+    text-anchor: start;
+    stroke: white;
+    stroke-width: 2;
+    paint-order: stroke;
+}
+
+/* styling for combo tap, and key hold/shifted label text */
+text.combo, text.hold, text.shifted {
+    font-size: 11px;
+}
+
+text.hold {
+    text-anchor: middle;
+    dominant-baseline: auto;
+}
+
+text.shifted {
+    text-anchor: middle;
+    dominant-baseline: hanging;
+}
+
+/* styling for hold/shifted label text in combo box */
+text.combo.hold, text.combo.shifted {
+    font-size: 8px;
+}
+
+/* lighter symbol for transparent keys */
+text.trans {
+    fill: #7b7e81;
+}
+
+/* styling for combo dendrons */
+path.combo {
+    stroke-width: 1;
+    stroke: gray;
+    fill: none;
+}
+
+/* Start Tabler Icons Cleanup */
+/* cannot use height/width with glyphs */
+.icon-tabler > path {
+    fill: inherit;
+    stroke: inherit;
+}
+/* hide tabler's default box */
+.icon-tabler > path[stroke="none"][fill="none"] {
+    visibility: collapse;
+}
+/* End Tabler Icons Cleanup */
+</style>
+<g class="layer-Base">
+<text x="30.0" y="28.0" class="label">Base:</text>
+<rect rx="6.0" ry="6.0" x="32.0" y="79.0" width="52.0" height="52.0" class="key"/>
+<text x="58.0" y="105.0" class="tap">Q</text>
+<rect rx="6.0" ry="6.0" x="88.0" y="65.0" width="52.0" height="52.0" class="key"/>
+<text x="114.0" y="91.0" class="tap">W</text>
+<rect rx="6.0" ry="6.0" x="144.0" y="58.0" width="52.0" height="52.0" class="key"/>
+<text x="170.0" y="84.0" class="tap">F</text>
+<rect rx="6.0" ry="6.0" x="200.0" y="65.0" width="52.0" height="52.0" class="key"/>
+<text x="226.0" y="91.0" class="tap">P</text>
+<rect rx="6.0" ry="6.0" x="256.0" y="72.0" width="52.0" height="52.0" class="key"/>
+<text x="282.0" y="98.0" class="tap">B</text>
+<rect rx="6.0" ry="6.0" x="480.0" y="72.0" width="52.0" height="52.0" class="key"/>
+<text x="506.0" y="98.0" class="tap">J</text>
+<rect rx="6.0" ry="6.0" x="536.0" y="65.0" width="52.0" height="52.0" class="key"/>
+<text x="562.0" y="91.0" class="tap">L</text>
+<rect rx="6.0" ry="6.0" x="592.0" y="58.0" width="52.0" height="52.0" class="key"/>
+<text x="618.0" y="84.0" class="tap">U</text>
+<rect rx="6.0" ry="6.0" x="648.0" y="65.0" width="52.0" height="52.0" class="key"/>
+<text x="674.0" y="91.0" class="tap">Y</text>
+<rect rx="6.0" ry="6.0" x="704.0" y="79.0" width="52.0" height="52.0" class="key"/>
+<text x="730.0" y="105.0" class="tap">&#x27;</text>
+<rect rx="6.0" ry="6.0" x="32.0" y="135.0" width="52.0" height="52.0" class="key"/>
+<text x="58.0" y="161.0" class="tap">A</text>
+<text x="58.0" y="185.0" class="hold">Ctrl</text>
+<rect rx="6.0" ry="6.0" x="88.0" y="121.0" width="52.0" height="52.0" class="key"/>
+<text x="114.0" y="147.0" class="tap">R</text>
+<text x="114.0" y="171.0" class="hold">Gui</text>
+<rect rx="6.0" ry="6.0" x="144.0" y="114.0" width="52.0" height="52.0" class="key"/>
+<text x="170.0" y="140.0" class="tap">S</text>
+<text x="170.0" y="164.0" class="hold">Alt</text>
+<rect rx="6.0" ry="6.0" x="200.0" y="121.0" width="52.0" height="52.0" class="key"/>
+<text x="226.0" y="147.0" class="tap">T</text>
+<text x="226.0" y="171.0" class="hold">Shift</text>
+<rect rx="6.0" ry="6.0" x="256.0" y="128.0" width="52.0" height="52.0" class="key"/>
+<text x="282.0" y="154.0" class="tap">G</text>
+<rect rx="6.0" ry="6.0" x="480.0" y="128.0" width="52.0" height="52.0" class="key"/>
+<text x="506.0" y="154.0" class="tap">M</text>
+<rect rx="6.0" ry="6.0" x="536.0" y="121.0" width="52.0" height="52.0" class="key"/>
+<text x="562.0" y="147.0" class="tap">N</text>
+<text x="562.0" y="171.0" class="hold">Shift</text>
+<rect rx="6.0" ry="6.0" x="592.0" y="114.0" width="52.0" height="52.0" class="key"/>
+<text x="618.0" y="140.0" class="tap">E</text>
+<text x="618.0" y="164.0" class="hold">Alt</text>
+<rect rx="6.0" ry="6.0" x="648.0" y="121.0" width="52.0" height="52.0" class="key"/>
+<text x="674.0" y="147.0" class="tap">I</text>
+<text x="674.0" y="171.0" class="hold">Gui</text>
+<rect rx="6.0" ry="6.0" x="704.0" y="135.0" width="52.0" height="52.0" class="key"/>
+<text x="730.0" y="161.0" class="tap">O</text>
+<text x="730.0" y="185.0" class="hold">Ctrl</text>
+<rect rx="6.0" ry="6.0" x="32.0" y="191.0" width="52.0" height="52.0" class="key"/>
+<text x="58.0" y="217.0" class="tap">Z</text>
+<rect rx="6.0" ry="6.0" x="88.0" y="177.0" width="52.0" height="52.0" class="key"/>
+<text x="114.0" y="203.0" class="tap">X</text>
+<rect rx="6.0" ry="6.0" x="144.0" y="170.0" width="52.0" height="52.0" class="key"/>
+<text x="170.0" y="196.0" class="tap">C</text>
+<rect rx="6.0" ry="6.0" x="200.0" y="177.0" width="52.0" height="52.0" class="key"/>
+<text x="226.0" y="203.0" class="tap">D</text>
+<rect rx="6.0" ry="6.0" x="256.0" y="184.0" width="52.0" height="52.0" class="key"/>
+<text x="282.0" y="210.0" class="tap">V</text>
+<rect rx="6.0" ry="6.0" x="480.0" y="184.0" width="52.0" height="52.0" class="key"/>
+<text x="506.0" y="210.0" class="tap">K</text>
+<rect rx="6.0" ry="6.0" x="536.0" y="177.0" width="52.0" height="52.0" class="key"/>
+<text x="562.0" y="203.0" class="tap">H</text>
+<rect rx="6.0" ry="6.0" x="592.0" y="170.0" width="52.0" height="52.0" class="key"/>
+<text x="618.0" y="196.0" class="tap">,</text>
+<text x="618.0" y="172.0" class="shifted">&lt;</text>
+<rect rx="6.0" ry="6.0" x="648.0" y="177.0" width="52.0" height="52.0" class="key"/>
+<text x="674.0" y="203.0" class="tap">.</text>
+<text x="674.0" y="179.0" class="shifted">&gt;</text>
+<rect rx="6.0" ry="6.0" x="704.0" y="191.0" width="52.0" height="52.0" class="key"/>
+<text x="730.0" y="217.0" class="tap">/</text>
+<text x="730.0" y="193.0" class="shifted">?</text>
+<rect rx="6.0" ry="6.0" x="172.0" y="234.84799999999996" width="52.0" height="52.0" class="ghost key"/>
+<use href="#mdi:keyboard-tab" xlink:href="#mdi:keyboard-tab" x="189.0" y="251.84799999999996" height="18" width="18.0" class="ghost tap glyph mdi:keyboard-tab"/>
+<text x="198.0" y="284.84799999999996" class="ghost hold">Gui</text>
+<g transform="rotate(15.0, 259.59999999999997, 269.08000000000004)">
+<rect rx="6.0" ry="6.0" x="233.59999999999997" y="243.08000000000004" width="52.0" height="52.0" class="key"/>
+<use href="#mdi:keyboard-esc" xlink:href="#mdi:keyboard-esc" x="250.59999999999997" y="260.08000000000004" height="18" width="18.0" class="tap glyph mdi:keyboard-esc"/>
+<text x="259.59999999999997" y="293.08000000000004" class="hold">Ctrl</text>
+</g>
+<g transform="rotate(30.0, 325.12, 280.28)">
+<rect rx="6.0" ry="6.0" x="299.12" y="240.27999999999997" width="52.0" height="80.0" class="key"/>
+<use href="#mdi:backspace-outline" xlink:href="#mdi:backspace-outline" x="316.12" y="271.28" height="18" width="18.0" class="tap glyph mdi:backspace-outline"/>
+<text x="325.12" y="318.28" class="hold">NAV</text>
+</g>
+<g transform="rotate(-30.0, 462.88, 280.28)">
+<rect rx="6.0" ry="6.0" x="436.88" y="240.27999999999997" width="52.0" height="80.0" class="key"/>
+<use href="#mdi:keyboard-space" xlink:href="#mdi:keyboard-space" x="453.88" y="271.28" height="18" width="18.0" class="tap glyph mdi:keyboard-space"/>
+<text x="462.88" y="318.28" class="hold">SYM</text>
+</g>
+<g transform="rotate(-15.0, 528.4000000000001, 269.08000000000004)">
+<rect rx="6.0" ry="6.0" x="502.4000000000001" y="243.08000000000004" width="52.0" height="52.0" class="key"/>
+<use href="#mdi:keyboard-return" xlink:href="#mdi:keyboard-return" x="519.4000000000001" y="260.08000000000004" height="18" width="18.0" class="tap glyph mdi:keyboard-return"/>
+<text x="528.4000000000001" y="293.08000000000004" class="hold">Shift</text>
+</g>
+<rect rx="6.0" ry="6.0" x="564.0" y="234.84799999999996" width="52.0" height="52.0" class="ghost key"/>
+<use href="#mdi:backspace-reverse-outline" xlink:href="#mdi:backspace-reverse-outline" x="581.0" y="251.84799999999996" height="18" width="18.0" class="ghost tap glyph mdi:backspace-reverse-outline"/>
+<text x="590.0" y="284.84799999999996" class="ghost hold">Alt</text>
+<path d="M29.0,161.0 v-50.0 a6.0,6.0 0 0 1 6.0,-6.0 h4.333333333333332" class="combo"/>
+<path d="M29.0,161.0 l17.8,0.0" class="combo"/>
+<path d="M29.0,161.0 v50.0 a6.0,6.0 0 0 0 6.0,6.0 h4.333333333333332" class="combo"/>
+<rect rx="6.0" ry="6.0" x="15.0" y="148.0" width="28.0" height="26.0" class="combo"/>
+<text x="29.0" y="161.0" class="combo tap">RST</text>
+<path d="M394.0,69.0 h-106.0 a6.0,6.0 0 0 0 -6.0,6.0 v4.333333333333332" class="combo"/>
+<path d="M394.0,69.0 h106.0 a6.0,6.0 0 0 1 6.0,6.0 v4.333333333333332" class="combo"/>
+<rect rx="6.0" ry="6.0" x="380.0" y="56.0" width="28.0" height="26.0" class="combo"/>
+<text x="394.0" y="69.0" class="combo tap">BOOT</text>
+<path d="M394.0,118.0 h-162.0 a6.0,6.0 0 0 0 -6.0,6.0 v4.333333333333332" class="combo"/>
+<path d="M394.0,118.0 h162.0 a6.0,6.0 0 0 1 6.0,6.0 v4.333333333333332" class="combo"/>
+<rect rx="6.0" ry="6.0" x="380.0" y="105.0" width="28.0" height="26.0" class="combo"/>
+<text x="394.0" y="118.0" class="combo tap">
+<tspan x="394.0" dy="-0.6em">Caps</tspan><tspan x="394.0" dy="1.2em">Wrd</tspan></text>
+<path d="M674.0,246.0 h-50.0 a6.0,6.0 0 0 1 -6.0,-6.0 v-25.333333333333332" class="combo"/>
+<path d="M674.0,246.0 h50.0 a6.0,6.0 0 0 0 6.0,-6.0 v-4.333333333333332" class="combo"/>
+<rect rx="6.0" ry="6.0" x="660.0" y="233.0" width="28.0" height="26.0" class="combo"/>
+<text x="674.0" y="246.0" class="combo tap">😬</text>
+<rect rx="6.0" ry="6.0" x="184.0" y="130.5" width="28.0" height="26.0" class="combo"/>
+<text x="198.0" y="143.5" class="combo tap">(</text>
+<rect rx="6.0" ry="6.0" x="576.0" y="130.5" width="28.0" height="26.0" class="combo"/>
+<text x="590.0" y="143.5" class="combo tap">)</text>
+<rect rx="6.0" ry="6.0" x="128.0" y="130.5" width="28.0" height="26.0" class="combo"/>
+<text x="142.0" y="143.5" class="combo tap">[</text>
+<rect rx="6.0" ry="6.0" x="632.0" y="130.5" width="28.0" height="26.0" class="combo"/>
+<text x="646.0" y="143.5" class="combo tap">]</text>
+<rect rx="6.0" ry="6.0" x="268.0" y="169.0" width="28.0" height="26.0" class="combo"/>
+<use href="#mdi:play-pause" xlink:href="#mdi:play-pause" x="273.0" y="173.0" height="18" width="18.0" class="combo tap glyph mdi:play-pause"/>
+</g>
+</svg>
