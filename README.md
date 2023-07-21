@@ -84,8 +84,7 @@ Please refer to [the keymap schema specification](KEYMAP_SPEC.md) while making c
 
 It might be beneficial to start by `draw`'ing the current representation and iterate over these changes, especially for tweaking combo positioning.
 
-> **Note**
->
+> #### ℹ️ Preserving manual modifications
 > If you need to re-parse a firmware file after it was changed, you can provide the previous parse output that you tweaked to the
 > parse command via `keymap parse -b old_keymap.yaml ... >new_keymap.yaml` and the tool will try to preserve your manual tweaks.
 
@@ -103,8 +102,7 @@ keymap draw sweep_keymap.yaml >sweep_keymap.ortho.svg
 
 And you are done! You can render the SVG on your browser or use a tool like [CairoSVG](https://cairosvg.org/) or [Inkscape](https://inkscape.org/) to export to a different format.
 
-> **Note**
->
+> #### ℹ️ Specifying layouts in the CLI
 > If you like you can override the layout specification on the command line.
 > For instance you can provide a QMK keyboard name with `-q`/`--qmk-keyboard` and layout with `-l`/`--qmk-layout`,
 > or an ortho layout with `-o`/`--ortho-layout` (using YAML syntax for the value). See `keymap draw --help` for details.
@@ -227,7 +225,7 @@ jobs:
       # …other inputs
 ```
 
-> **Warning**
+> #### ⚠️ Rewriting history
 > You should understand the implications of rewriting history if you amend a commit that has already been published. See [remarks](https://git-scm.com/docs/git-rebase#_recovering_from_upstream_rebase) in `git-rebase` documentation.
 
 ## Community

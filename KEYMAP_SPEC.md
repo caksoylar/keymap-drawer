@@ -82,8 +82,7 @@ Following physical layout parameters can be specified either in the command line
 
 **Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for `qmk_keyboard` and `qmk_layout` values, and preview the physical layout.
 
-> **Note**
->
+> #### ℹ️ CLI+keymap YAML specification
 > If these parameters are specified in both command line and under the `layout` section, the former will take precedence.
 
 ## `layers`
