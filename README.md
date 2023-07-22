@@ -52,10 +52,14 @@ See [the development section](#development) for instructions to install from sou
 **`keymap parse`** command helps to parse an existing QMK or ZMK keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
 `-c`/`--columns` is an optional parameter that specifies the total number of columns in the keymap to better reorganize output layers.
 
-- **QMK**: Only json-format keymaps are supported, which can be exported from [QMK Configurator](https://config.qmk.fm/), converted from `keymap.c` via `qmk c2json`, or from a VIA backup json via `qmk via2json`:
+- **QMK**: Only json-format keymaps are supported, which can be exported from [QMK Configurator](https://config.qmk.fm/), converted from `keymap.c` via [`qmk c2json`](https://docs.qmk.fm/#/cli_commands?id=qmk-c2json), or from a VIA backup json via [`qmk via2json`](https://docs.qmk.fm/#/cli_commands?id=qmk-via2json):
 
   ```sh
+  # from keymap.c
   qmk c2json ~/qmk_firmware/keyboards/ferris/keymaps/username/keymap.c | keymap parse -c 10 -q - >sweep_keymap.yaml
+
+  # from VIA backup
+  qmk via2json -kb ferris/sweep sweep_via_backup.json | keymap parse -c 10 -q - >sweep_keymap.yaml
   ```
 
   Due to current limitations of the `keymap.json` format, combos and `#define`'d layer names will not be present in the parsing output.
