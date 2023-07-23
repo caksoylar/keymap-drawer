@@ -45,6 +45,23 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # padding from edge of cap to top and bottom legends
     small_pad: float = 2.0
 
+    # relative position of key legend
+    legend_rel_x: float = 0
+    legend_rel_y: float = 0
+
+    # change key style: None, base-tile
+    keys_style: str = None
+
+    # relative position of external key rectangle
+    key_base_tile_rel_x: float = 0
+    key_base_tile_rel_y: float = -2.5
+    # relative dimension of internal key rectangles
+    key_base_tile_rel_w: float = -12
+    key_base_tile_rel_h: float = -12
+    # curvature of rounded internal key rectangles
+    key_base_tile_rx: float = 4.5
+    key_base_tile_ry: float = 4.5
+
     svg_style: str = dedent(
         """\
         /* inherit to force styles through use tags*/
@@ -60,11 +77,21 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
             fill: #24292e;
         }
 
+        /* default key background styling  */
+        rect.key-background, rect.held-background, rect.ghost-background {
+            fill: black
+        }
+
         /* default key styling */
-        rect.key {
+        rect.key, rect.key-side {
             fill: #f6f8fa;
             stroke: #c9cccf;
             stroke-width: 1;
+        }
+
+        /* default key side styling */
+        rect.key-side, rect.held-side, rect.ghost-side {
+            opacity: 0.9;
         }
 
         /* color accent for combo boxes */
@@ -73,12 +100,12 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         }
 
         /* color accent for held keys */
-        rect.held, rect.combo.held {
+        rect.held, rect.combo.held, rect.held-side {
             fill: #fdd;
         }
 
         /* color accent for ghost (optional) keys */
-        rect.ghost, rect.combo.ghost {
+        rect.ghost, rect.combo.ghost, rect.ghost-side {
             stroke-dasharray: 4, 4;
             stroke-width: 2;
         }

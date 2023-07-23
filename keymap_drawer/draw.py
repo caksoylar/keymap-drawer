@@ -38,11 +38,42 @@ class KeymapDrawer:
         # do not split on double spaces, but do split on single
         return [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
 
-    def _draw_rect(self, p: Point, w: float, h: float, classes: Sequence[str]) -> None:
+    def _draw_rect(self, p: Point, w: float, h: float, rx: float, ry: float, classes: Sequence[str]) -> None:
         self.out.write(
-            f'<rect rx="{self.cfg.key_rx}" ry="{self.cfg.key_ry}" x="{p.x - w / 2}" y="{p.y - h / 2}" '
+            f'<rect rx="{rx}" ry="{ry}" x="{p.x - w / 2}" y="{p.y - h / 2}" '
             f'width="{w}" height="{h}"{self._to_class_str(classes)}/>\n'
         )
+
+    def _draw_rect_styled(self, p: Point, w: float, h: float, tp: str, cl: str) -> None:
+        # get curvature of rounded key rectangles from config
+        rx = self.cfg.key_rx
+        ry = self.cfg.key_ry
+        # get inner pad from config
+        in_pad_h = self.cfg.inner_pad_h
+        in_pad_w = self.cfg.inner_pad_w
+
+        # check style
+        if self.cfg.keys_style == 'base':
+            # draw external rectangle
+            # External rectangle is composed by 2 rectangles.
+            # The first is needed to have a black background (or what you want).
+            # The second is meant to be filled with the same color of the internal rectangle with some opacity.
+            self._draw_rect(p, w - 2 * in_pad_w, h - 2 * in_pad_h, rx, ry, classes=[tp, f'{cl}-background'])
+            self._draw_rect(p, w - 2 * in_pad_w, h - 2 * in_pad_h, rx, ry, classes=[tp, f'{cl}-side'])
+
+            # draw internal rectangle
+            self._draw_rect(
+                 Point(p.x+self.cfg.key_base_tile_rel_x, p.y+self.cfg.key_base_tile_rel_y),
+                (w+self.cfg.key_base_tile_rel_w) - 2 * in_pad_w,
+                (h+self.cfg.key_base_tile_rel_h) - 2 * in_pad_h,
+                self.cfg.key_base_tile_rx,
+                self.cfg.key_base_tile_ry,
+                classes=[tp, cl]
+            )
+
+        else:
+            # default key style
+            self._draw_rect(p, h - 2 * in_pad_w, h - 2 * in_pad_h, rx, ry, classes=[tp, cl])
 
     def _get_scaling(self, width: int) -> str:
         if not self.cfg.shrink_wide_legends or width <= self.cfg.shrink_wide_legends:
@@ -128,7 +159,7 @@ class KeymapDrawer:
         )
         if r != 0:
             self.out.write(f'<g transform="rotate({r}, {p.x}, {p.y})">\n')
-        self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, classes=[l_key.type, "key"])
+        self._draw_rect_styled(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, l_key.type, "key")
 
         tap_words = self._split_text(l_key.tap)
 
@@ -140,7 +171,13 @@ class KeymapDrawer:
             elif l_key.hold and not l_key.shifted:  # shift up
                 shift = 1
 
-        self._draw_legend(p, tap_words, key_type=l_key.type, legend_type="tap", shift=shift)
+        self._draw_legend(
+            p + Point(self.cfg.legend_rel_x, self.cfg.legend_rel_y),
+            tap_words,
+            key_type=l_key.type,
+            legend_type="tap",
+            shift=shift
+        )
         self._draw_legend(
             p + Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
             [l_key.hold],
@@ -241,7 +278,7 @@ class KeymapDrawer:
                             self._draw_line_dendron(p, p_0 + k.pos, k.width / 3)
 
         # draw combo box with text
-        self._draw_rect(p, self.cfg.combo_w, self.cfg.combo_h, classes=[combo.type])
+        self._draw_rect(p, self.cfg.combo_w, self.cfg.combo_h, self.cfg.key_rx, self.cfg.key_ry, classes=[combo.type])
 
         self._draw_legend(p, self._split_text(combo.key.tap), key_type=combo.type, legend_type="tap")
         self._draw_legend(
