@@ -49,8 +49,8 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     legend_rel_x: float = 0
     legend_rel_y: float = 0
 
-    # change key style: None, base-tile
-    keys_style: str = None
+    # change key style: default, base
+    keys_style: str = "default"
 
     # relative position of external key rectangle
     key_base_tile_rel_x: float = 0
