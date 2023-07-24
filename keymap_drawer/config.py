@@ -45,22 +45,25 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # padding from edge of cap to top and bottom legends
     small_pad: float = 2.0
 
-    # relative position of key legend
+    # position of key legend relative to the center of the key
     legend_rel_x: float = 0
     legend_rel_y: float = 0
 
-    # change key style: default, base
-    keys_style: str = "default"
+    # draw key sides
+    draw_key_sides: bool = False
 
-    # relative position of external key rectangle
-    key_base_tile_rel_x: float = 0
-    key_base_tile_rel_y: float = -2.5
-    # relative dimension of internal key rectangles
-    key_base_tile_rel_w: float = -12
-    key_base_tile_rel_h: float = -12
-    # curvature of rounded internal key rectangles
-    key_base_tile_rx: float = 4.5
-    key_base_tile_ry: float = 4.5
+    # key sides configurations
+    key_sides: dict[str, float] = {
+        # position of internal key rectangle relative to the center of the key
+        "rel_x": 0,
+        "rel_y": -2.5,
+        # dimension of internal key rectangle relative to the center of the key
+        "rel_w": -12,
+        "rel_h": -12,
+        # curvature of rounded internal key rectangle
+        "rx": 4.5,
+        "ry": 4.5,
+    }
 
     svg_style: str = dedent(
         """\

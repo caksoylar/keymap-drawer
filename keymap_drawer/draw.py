@@ -6,7 +6,7 @@ representation of the keymap using these two.
 from math import copysign
 from html import escape
 from copy import deepcopy
-from typing import Sequence, TextIO, Literal, Tuple, Dict
+from typing import Sequence, TextIO, Literal
 
 from .keymap import KeymapData, ComboSpec, LayoutKey
 from .physical_layout import Point, PhysicalKey
@@ -38,54 +38,55 @@ class KeymapDrawer:
         # do not split on double spaces, but do split on single
         return [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
 
-    def _draw_rect(self, p: Point, d: Tuple[str, float], r: Tuple[str, float], classes: Sequence[str]) -> None:
-        w, h = d
+    def _draw_rect(
+        self, p: Point, dim_w_h: tuple[float, float], r: tuple[float, float], classes: Sequence[str]
+    ) -> None:
+        w, h = dim_w_h
         key_rx, key_ry = r
         self.out.write(
             f'<rect rx="{key_rx}" ry="{key_ry}" x="{p.x - w / 2}" y="{p.y - h / 2}" '
             f'width="{w}" height="{h}"{self._to_class_str(classes)}/>\n'
         )
 
-    def _draw_rect_style_base(self, p: Point, d: Tuple[float, float], classes: Dict[str, str]) -> None:
+    def _draw_rect_style_base(self, p: Point, dim_w_h: tuple[float, float], classes: dict[str, str]) -> None:
         # get key dimension
-        w, h = d
-        # get curvature of rounded key rectangles from config
-        key_rx = self.cfg.key_rx
-        key_ry = self.cfg.key_ry
-        # get inner pad from config
-        in_pad_w = self.cfg.inner_pad_w
-        in_pad_h = self.cfg.inner_pad_h
-
+        w, h = dim_w_h
         # draw external rectangle
         # External rectangle is composed by 2 rectangles.
         # The first is needed to have a black background (or what you want).
         # The second is meant to be filled with the same color of the internal rectangle with some opacity.
+        # draw background rectangle
         self._draw_rect(
             p,
-            (w - 2 * in_pad_w, h - 2 * in_pad_h),
-            (key_rx, key_ry),
+            (w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h),
+            (self.cfg.key_rx, self.cfg.key_ry),
             classes=[classes["type"], f'{classes["class"]}-background'],
         )
+        # draw side rectangle
         self._draw_rect(
             p,
-            (w - 2 * in_pad_w, h - 2 * in_pad_h),
-            (key_rx, key_ry),
+            (w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h),
+            (self.cfg.key_rx, self.cfg.key_ry),
             classes=[classes["type"], f'{classes["class"]}-side'],
         )
         # draw internal rectangle
         self._draw_rect(
-            Point(p.x + self.cfg.key_base_tile_rel_x, p.y + self.cfg.key_base_tile_rel_y),
-            ((w + self.cfg.key_base_tile_rel_w) - 2 * in_pad_w, (h + self.cfg.key_base_tile_rel_h) - 2 * in_pad_h),
-            (self.cfg.key_base_tile_rx, self.cfg.key_base_tile_ry),
+            Point(p.x + self.cfg.key_sides["rel_x"], p.y + self.cfg.key_sides["rel_y"]),
+            (
+                (w + self.cfg.key_sides["rel_w"]) - 2 * self.cfg.inner_pad_w,
+                (h + self.cfg.key_sides["rel_h"]) - 2 * self.cfg.inner_pad_h,
+            ),
+            (self.cfg.key_sides["rx"], self.cfg.key_sides["ry"]),
             classes=[classes["type"], classes["class"]],
         )
 
-    def _draw_rect_styled(self, p: Point, d: Tuple[float, float], classes: Dict[str, str]) -> None:
+    def _draw_rect_styled(self, p: Point, dim_w_h: tuple[float, float], classes: dict[str, str]) -> None:
         # get key dimension
-        w, h = d
+        w, h = dim_w_h
         # check style
-        if self.cfg.keys_style == "base":
-            self._draw_rect_style_base(p, d, classes)
+        if self.cfg.draw_key_sides:
+            print()
+            self._draw_rect_style_base(p, dim_w_h, classes)
         else:
             # default key style
             self._draw_rect(
