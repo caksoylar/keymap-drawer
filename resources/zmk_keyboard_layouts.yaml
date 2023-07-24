@@ -264,6 +264,7 @@ revxlp: &revxlp
 humla: *revxlp
 one42: *revxlp
 rollow: *corne
+rommana: *hummingbird_splay
 rufous:
   default_transform: {qmk_keyboard: rufous}
 skeletyl:
