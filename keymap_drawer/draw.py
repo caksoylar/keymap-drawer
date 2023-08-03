@@ -40,9 +40,9 @@ class KeymapDrawer:
 
     def _draw_rect(self, p: Point, w: float, h: float, classes: Sequence[str]) -> None:
         self.out.write(
-            f'<rect rx="{self.cfg.key_rx}" ry="{self.cfg.key_ry}"'
+            f'<rect rx="{round(self.cfg.key_rx)}" ry="{round(self.cfg.key_ry)}"'
             f' x="{round(p.x - w / 2)}" y="{round(p.y - h / 2)}" '
-            f'width="{w}" height="{h}"{self._to_class_str(classes)}/>\n'
+            f'width="{round(w)}" height="{round(h)}"{self._to_class_str(classes)}/>\n'
         )
 
     def _get_scaling(self, width: int) -> str:
