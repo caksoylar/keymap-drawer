@@ -40,7 +40,8 @@ class KeymapDrawer:
 
     def _draw_rect(self, p: Point, w: float, h: float, classes: Sequence[str]) -> None:
         self.out.write(
-            f'<rect rx="{self.cfg.key_rx}" ry="{self.cfg.key_ry}" x="{p.x - w / 2}" y="{p.y - h / 2}" '
+            f'<rect rx="{self.cfg.key_rx}" ry="{self.cfg.key_ry}"'
+            f' x="{round(p.x - w / 2)}" y="{round(p.y - h / 2)}" '
             f'width="{w}" height="{h}"{self._to_class_str(classes)}/>\n'
         )
 
@@ -53,13 +54,13 @@ class KeymapDrawer:
         if not word:
             return
         self.out.write(
-            f'<text x="{p.x}" y="{p.y}"{self._to_class_str(classes)}{self._get_scaling(len(word))}>'
+            f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}{self._get_scaling(len(word))}>'
             f"{escape(word)}</text>\n"
         )
 
     def _draw_textblock(self, p: Point, words: Sequence[str], classes: Sequence[str], shift: float = 0) -> None:
         self.out.write(
-            f'<text x="{p.x}" y="{p.y}"{self._to_class_str(classes)}{self._get_scaling(max(len(w) for w in words))}>\n'
+            f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}{self._get_scaling(max(len(w) for w in words))}>\n'
         )
         dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift) / 2)
         self.out.write(f'<tspan x="{p.x}" dy="-{dy_0}em">{escape(words[0])}</tspan>')
@@ -72,7 +73,7 @@ class KeymapDrawer:
 
         classes = [*classes, "glyph", name]
         self.out.write(
-            f'<use href="#{name}" xlink:href="#{name}" x="{p.x - (width / 2)}" y="{p.y - d_y}" '
+            f'<use href="#{name}" xlink:href="#{name}" x="{round(p.x - (width / 2))}" y="{round(p.y - d_y)}" '
             f'height="{height}" width="{width}"{self._to_class_str(classes)}/>\n'
         )
 
@@ -127,7 +128,7 @@ class KeymapDrawer:
             p_key.rotation,
         )
         if r != 0:
-            self.out.write(f'<g transform="rotate({r}, {p.x}, {p.y})">\n')
+            self.out.write(f'<g transform="rotate({r}, {round(p.x)}, {round(p.y)})">\n')
         self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, classes=[l_key.type, "key"])
 
         tap_words = self._split_text(l_key.tap)
