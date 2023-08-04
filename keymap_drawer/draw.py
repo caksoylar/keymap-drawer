@@ -49,7 +49,7 @@ class KeymapDrawer:
             f'width="{round(w)}" height="{round(h)}"{self._to_class_str(classes)}/>\n'
         )
 
-    def _draw_rect_style_base(self, p: Point, dim_w_h: tuple[float, float], classes: dict[str, str]) -> None:
+    def _draw_key_with_sides(self, p: Point, dim_w_h: tuple[float, float], classes: dict[str, str]) -> None:
         # get key dimension
         w, h = dim_w_h
         # draw external rectangle
@@ -59,40 +59,35 @@ class KeymapDrawer:
         # draw background rectangle
         self._draw_rect(
             p,
-            (w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h),
+            dim_w_h,
             (self.cfg.key_rx, self.cfg.key_ry),
             classes=[classes["type"], f'{classes["class"]}-background'],
         )
         # draw side rectangle
         self._draw_rect(
             p,
-            (w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h),
+            dim_w_h,
             (self.cfg.key_rx, self.cfg.key_ry),
             classes=[classes["type"], f'{classes["class"]}-side'],
         )
         # draw internal rectangle
         self._draw_rect(
             Point(p.x + self.cfg.key_sides["rel_x"], p.y + self.cfg.key_sides["rel_y"]),
-            (
-                (w + self.cfg.key_sides["rel_w"]) - 2 * self.cfg.inner_pad_w,
-                (h + self.cfg.key_sides["rel_h"]) - 2 * self.cfg.inner_pad_h,
-            ),
+            (w + self.cfg.key_sides["rel_w"], h + self.cfg.key_sides["rel_h"]),
             (self.cfg.key_sides["rx"], self.cfg.key_sides["ry"]),
             classes=[classes["type"], classes["class"]],
         )
 
     def _draw_rect_styled(self, p: Point, dim_w_h: tuple[float, float], classes: dict[str, str]) -> None:
-        # get key dimension
-        w, h = dim_w_h
         # check style
         if self.cfg.draw_key_sides:
             print()
-            self._draw_rect_style_base(p, dim_w_h, classes)
+            self._draw_key_with_sides(p, dim_w_h, classes)
         else:
             # default key style
             self._draw_rect(
                 p,
-                (w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h),
+                dim_w_h,
                 (self.cfg.key_rx, self.cfg.key_ry),
                 classes=[classes["type"], classes["class"]],
             )
