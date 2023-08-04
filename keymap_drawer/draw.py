@@ -60,7 +60,8 @@ class KeymapDrawer:
 
     def _draw_textblock(self, p: Point, words: Sequence[str], classes: Sequence[str], shift: float = 0) -> None:
         self.out.write(
-            f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}{self._get_scaling(max(len(w) for w in words))}>\n'
+            f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}'
+            f'{self._get_scaling(max(len(w) for w in words))}>\n'
         )
         dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift) / 2)
         self.out.write(f'<tspan x="{p.x}" dy="-{dy_0}em">{escape(words[0])}</tspan>')
