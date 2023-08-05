@@ -1,35 +1,20 @@
 """Module containing class and methods to draw combo representations."""
 from math import copysign
-from typing import Sequence, TextIO, Literal
+from typing import Sequence, TextIO
 
 from keymap_drawer.keymap import ComboSpec
 from keymap_drawer.physical_layout import Point, PhysicalLayout
 from keymap_drawer.config import DrawConfig
+from keymap_drawer.draw.utils import UtilsMixin
 
 
-LegendType = Literal["tap", "hold", "shifted"]
-
-
-class ComboDrawerMixin:
+class ComboDrawerMixin(UtilsMixin):
     """Mixin that adds combo drawing for KeymapDrawer."""
 
     # initialized in KeymapDrawer
     cfg: DrawConfig
     out: TextIO
     layout: PhysicalLayout
-
-    # methods defined in KeymapDrawer to make mypy happy
-    def _draw_rect(self, p: Point, dims: Point, radii: Point, classes: Sequence[str]) -> None:
-        raise NotImplementedError
-
-    def _draw_legend(  # pylint: disable=too-many-arguments
-        self, p: Point, words: Sequence[str], key_type: str, legend_type: LegendType, shift: float = 0
-    ):
-        raise NotImplementedError
-
-    @staticmethod
-    def _split_text(text: str) -> list[str]:
-        raise NotImplementedError
 
     # actual methods
     def get_offsets_per_layer(self, combos_per_layer):
