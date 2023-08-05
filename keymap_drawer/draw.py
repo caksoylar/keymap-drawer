@@ -286,16 +286,29 @@ class KeymapDrawer:
             match combo.align:
                 case "top" | "bottom":
                     for k in p_keys:
-                        offset = k.height / 5 if abs(p_0.x + k.pos.x - p.x) < self.cfg.combo_w / 2 else k.height / 3
-                        self._draw_arc_dendron(p, p_0 + k.pos, True, offset, combo.arc_scale)
+                        key_pos = p_0 + k.pos
+                        offset = (
+                            k.height / 5
+                            if abs((key_pos - p).x) < self.cfg.combo_w / 2
+                            and abs((key_pos - p).y) <= k.height / 3 + self.cfg.combo_h / 2
+                            else k.height / 3
+                        )
+                        self._draw_arc_dendron(p, key_pos, True, offset, combo.arc_scale)
                 case "left" | "right":
                     for k in p_keys:
-                        offset = k.width / 5 if abs(p_0.y + k.pos.y - p.y) < self.cfg.combo_h / 2 else k.width / 3
-                        self._draw_arc_dendron(p, p_0 + k.pos, False, offset, combo.arc_scale)
+                        key_pos = p_0 + k.pos
+                        offset = (
+                            k.width / 5
+                            if abs((key_pos - p).y) < self.cfg.combo_h / 2
+                            and abs((key_pos - p).x) <= k.width / 3 + self.cfg.combo_w / 2
+                            else k.width / 3
+                        )
+                        self._draw_arc_dendron(p, key_pos, False, offset, combo.arc_scale)
                 case "mid":
                     for k in p_keys:
-                        if combo.dendron is True or abs(p_0 + k.pos - p) >= k.width - 1:
-                            self._draw_line_dendron(p, p_0 + k.pos, k.width / 3)
+                        key_pos = p_0 + k.pos
+                        if combo.dendron is True or abs(key_pos - p) >= k.width - 1:
+                            self._draw_line_dendron(p, key_pos, k.width / 3)
 
         # draw combo box with text
         self._draw_rect(
