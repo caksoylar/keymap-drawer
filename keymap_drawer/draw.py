@@ -3,21 +3,21 @@ Module that contains the KeymapDrawer class which takes a physical layout,
 keymap with layers and optionally combo definitions, then can draw an SVG
 representation of the keymap using these two.
 """
-from math import copysign
 from html import escape
 from copy import deepcopy
 from typing import Sequence, TextIO, Literal
 
-from .keymap import KeymapData, ComboSpec, LayoutKey
+from .keymap import KeymapData, LayoutKey
 from .physical_layout import Point, PhysicalKey
 from .config import DrawConfig
 from .glyph import GlyphMixin
+from .combo_drawer import ComboDrawerMixin
 
 
 LegendType = Literal["tap", "hold", "shifted"]
 
 
-class KeymapDrawer(GlyphMixin):
+class KeymapDrawer(GlyphMixin, ComboDrawerMixin):
     """Class that draws a keyboard representation in SVG."""
 
     def __init__(self, config: DrawConfig, out: TextIO, **kwargs) -> None:
@@ -103,38 +103,6 @@ class KeymapDrawer(GlyphMixin):
             f'height="{height}" width="{width}"{self._to_class_str(classes)}/>\n'
         )
 
-    def _draw_arc_dendron(  # pylint: disable=too-many-arguments
-        self, p_1: Point, p_2: Point, x_first: bool, shorten: float, arc_scale: float
-    ) -> None:
-        diff = p_2 - p_1
-
-        # check if the points are too close to draw an arc, if so draw a line instead
-        if (x_first and abs(diff.x) < self.cfg.arc_radius) or (not x_first and abs(diff.y) < self.cfg.arc_radius):
-            self._draw_line_dendron(p_1, p_2, shorten)
-            return
-
-        start = f"M{p_1.x},{p_1.y}"
-        arc_x = copysign(self.cfg.arc_radius, diff.x)
-        arc_y = copysign(self.cfg.arc_radius, diff.y)
-        clockwise = (diff.x > 0) ^ (diff.y > 0)
-        if x_first:
-            line_1 = f"h{arc_scale * diff.x - arc_x}"
-            line_2 = f"v{diff.y - arc_y - copysign(shorten, diff.y)}"
-            clockwise = not clockwise
-        else:
-            line_1 = f"v{arc_scale * diff.y - arc_y}"
-            line_2 = f"h{diff.x - arc_x - copysign(shorten, diff.x)}"
-        arc = f"a{self.cfg.arc_radius},{self.cfg.arc_radius} 0 0 {int(clockwise)} {arc_x},{arc_y}"
-        self.out.write(f'<path d="{start} {line_1} {arc} {line_2}" class="combo"/>\n')
-
-    def _draw_line_dendron(self, p_1: Point, p_2: Point, shorten: float) -> None:
-        start = f"M{p_1.x},{p_1.y}"
-        diff = p_2 - p_1
-        if shorten and shorten < (magn := abs(diff)):
-            diff = (1 - shorten / magn) * diff
-        line = f"l{diff.x},{diff.y}"
-        self.out.write(f'<path d="{start} {line}" class="combo"/>\n')
-
     def print_layer_header(self, p: Point, header: str) -> None:
         """Print a layer header that precedes the layer visualization."""
         if self.cfg.append_colon_to_layer_header:
@@ -215,113 +183,14 @@ class KeymapDrawer(GlyphMixin):
 
         self._draw_textblock(p, words, classes, shift)
 
-    def print_combo(self, p_0: Point, combo: ComboSpec) -> None:
-        """
-        Given anchor coordinates p_0, print SVG code for a rectangle with text representing
-        a combo specification, which contains the key positions that trigger it and what it does
-        when triggered. The position of the rectangle depends on the alignment specified,
-        along with whether dendrons are drawn going to each key position from the combo.
-        """
-        p_keys = [self.layout.keys[p] for p in combo.key_positions]
-
-        # find center of combo box
-        p = p_0.copy()
-        p_mid = (1 / len(p_keys)) * sum((k.pos for k in p_keys), start=Point(0, 0))
-        if combo.slide is not None:  # find two keys furthest from the midpoint, interpolate between their positions
-            sorted_keys = sorted(p_keys, key=lambda k: (-abs(k.pos - p_mid), k.pos.x, k.pos.y))
-            start, end = sorted_keys[0:2]
-            p_mid = (1 - combo.slide) / 2 * start.pos + (1 + combo.slide) / 2 * end.pos
-
-        match combo.align:
-            case "mid":
-                p += p_mid
-            case "top":
-                p += Point(
-                    p_mid.x,
-                    min(k.pos.y - k.height / 2 for k in p_keys)
-                    - self.cfg.inner_pad_h / 2
-                    - combo.offset * self.layout.min_height,
-                )
-            case "bottom":
-                p += Point(
-                    p_mid.x,
-                    max(k.pos.y + k.height / 2 for k in p_keys)
-                    + self.cfg.inner_pad_h / 2
-                    + combo.offset * self.layout.min_height,
-                )
-            case "left":
-                p += Point(
-                    min(k.pos.x - k.width / 2 for k in p_keys)
-                    - self.cfg.inner_pad_w / 2
-                    - combo.offset * self.layout.min_width,
-                    p_mid.y,
-                )
-            case "right":
-                p += Point(
-                    max(k.pos.x + k.width / 2 for k in p_keys)
-                    + self.cfg.inner_pad_w / 2
-                    + combo.offset * self.layout.min_width,
-                    p_mid.y,
-                )
-
-        # draw dendrons going from box to combo keys
-        if combo.dendron is not False:
-            match combo.align:
-                case "top" | "bottom":
-                    for k in p_keys:
-                        key_pos = p_0 + k.pos
-                        offset = (
-                            k.height / 5
-                            if abs((key_pos - p).x) < self.cfg.combo_w / 2
-                            and abs((key_pos - p).y) <= k.height / 3 + self.cfg.combo_h / 2
-                            else k.height / 3
-                        )
-                        self._draw_arc_dendron(p, key_pos, True, offset, combo.arc_scale)
-                case "left" | "right":
-                    for k in p_keys:
-                        key_pos = p_0 + k.pos
-                        offset = (
-                            k.width / 5
-                            if abs((key_pos - p).y) < self.cfg.combo_h / 2
-                            and abs((key_pos - p).x) <= k.width / 3 + self.cfg.combo_w / 2
-                            else k.width / 3
-                        )
-                        self._draw_arc_dendron(p, key_pos, False, offset, combo.arc_scale)
-                case "mid":
-                    for k in p_keys:
-                        key_pos = p_0 + k.pos
-                        if combo.dendron is True or abs(key_pos - p) >= k.width - 1:
-                            self._draw_line_dendron(p, key_pos, k.width / 3)
-
-        # draw combo box with text
-        self._draw_rect(
-            p, Point(self.cfg.combo_w, self.cfg.combo_h), Point(self.cfg.key_rx, self.cfg.key_ry), classes=[combo.type]
-        )
-
-        self._draw_legend(p, self._split_text(combo.key.tap), key_type=combo.type, legend_type="tap")
-        self._draw_legend(
-            p + Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
-            [combo.key.hold],
-            key_type=combo.type,
-            legend_type="hold",
-        )
-        self._draw_legend(
-            p - Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
-            [combo.key.shifted],
-            key_type=combo.type,
-            legend_type="shifted",
-        )
-
     def print_layer(
-        self, p_0: Point, layer_keys: Sequence[LayoutKey], combos: Sequence[ComboSpec], empty_layer: bool = False
+        self, p_0: Point, layer_keys: Sequence[LayoutKey], empty_layer: bool = False
     ) -> None:
         """
-        Given anchor coordinates p_0, print SVG code for keys and combos for a given layer.
+        Given anchor coordinates p_0, print SVG code for keys for a given layer.
         """
         for p_key, l_key in zip(self.layout.keys, layer_keys):
             self.print_key(p_0, p_key, l_key if not empty_layer else LayoutKey())
-        for combo_spec in combos:
-            self.print_combo(p_0, combo_spec)
 
     def print_board(
         self,
@@ -348,13 +217,7 @@ class KeymapDrawer(GlyphMixin):
             combos_per_layer = self.keymap.get_combos_per_layer(layers)
         else:
             combos_per_layer = {layer_name: [] for layer_name in layers}
-        offsets_per_layer = {
-            name: (
-                max((c.offset * self.layout.min_height for c in combos if c.align == "top"), default=0.0),
-                max((c.offset * self.layout.min_height for c in combos if c.align == "bottom"), default=0.0),
-            )
-            for name, combos in combos_per_layer.items()
-        }
+        offsets_per_layer = self.get_offsets_per_layer(combos_per_layer)
 
         board_w = self.layout.width + 2 * self.cfg.outer_pad_w
         board_h = (
@@ -381,7 +244,8 @@ class KeymapDrawer(GlyphMixin):
 
             # get offsets added by combo alignments, draw keys and combos
             p += Point(0, self.cfg.outer_pad_h + offsets_per_layer[name][0])
-            self.print_layer(p, layer_keys, combos_per_layer[name], empty_layer=combos_only)
+            self.print_layer(p, layer_keys, empty_layer=combos_only)
+            self.print_combos_for_layer(p, combos_per_layer[name])
             p += Point(0, self.layout.height + offsets_per_layer[name][1])
 
             self.out.write("</g>\n")
