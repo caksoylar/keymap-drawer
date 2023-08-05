@@ -12,7 +12,7 @@ from keymap_drawer.keymap import KeymapData, LayoutKey
 from keymap_drawer.physical_layout import Point, PhysicalKey
 from keymap_drawer.config import DrawConfig
 from keymap_drawer.draw.glyph import GlyphMixin
-from keymap_drawer.draw.combo_drawer import ComboDrawerMixin
+from keymap_drawer.draw.combo import ComboDrawerMixin
 
 
 LegendType = Literal["tap", "hold", "shifted"]
