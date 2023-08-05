@@ -12,8 +12,8 @@ from typing import Iterable
 
 from platformdirs import user_cache_dir
 
-from .keymap import KeymapData, LayoutKey
-from .config import DrawConfig
+from keymap_drawer.keymap import KeymapData, LayoutKey
+from keymap_drawer.config import DrawConfig
 
 
 FETCH_WORKERS = 8

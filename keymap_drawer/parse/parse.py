@@ -9,12 +9,12 @@ from typing import Sequence
 
 import yaml
 
-from .keymap import LayoutKey, ComboSpec, KeymapData
-from .config import ParseConfig
-from .dts import DeviceTree
+from keymap_drawer.keymap import LayoutKey, ComboSpec, KeymapData
+from keymap_drawer.config import ParseConfig
+from keymap_drawer.parse.dts import DeviceTree
 
 
-ZMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
+ZMK_LAYOUTS_PATH = Path(__file__).parent.parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
 
 
 class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes

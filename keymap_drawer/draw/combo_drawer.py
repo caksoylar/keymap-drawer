@@ -2,9 +2,9 @@
 from math import copysign
 from typing import Sequence, TextIO, Literal
 
-from .keymap import ComboSpec
-from .physical_layout import Point, PhysicalLayout
-from .config import DrawConfig
+from keymap_drawer.keymap import ComboSpec
+from keymap_drawer.physical_layout import Point, PhysicalLayout
+from keymap_drawer.config import DrawConfig
 
 
 LegendType = Literal["tap", "hold", "shifted"]

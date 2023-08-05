@@ -7,11 +7,11 @@ from html import escape
 from copy import deepcopy
 from typing import Sequence, TextIO, Literal
 
-from .keymap import KeymapData, LayoutKey
-from .physical_layout import Point, PhysicalKey
-from .config import DrawConfig
-from .glyph import GlyphMixin
-from .combo_drawer import ComboDrawerMixin
+from keymap_drawer.keymap import KeymapData, LayoutKey
+from keymap_drawer.physical_layout import Point, PhysicalKey
+from keymap_drawer.config import DrawConfig
+from keymap_drawer.draw.glyph import GlyphMixin
+from keymap_drawer.draw.combo_drawer import ComboDrawerMixin
 
 
 LegendType = Literal["tap", "hold", "shifted"]
@@ -183,9 +183,7 @@ class KeymapDrawer(GlyphMixin, ComboDrawerMixin):
 
         self._draw_textblock(p, words, classes, shift)
 
-    def print_layer(
-        self, p_0: Point, layer_keys: Sequence[LayoutKey], empty_layer: bool = False
-    ) -> None:
+    def print_layer(self, p_0: Point, layer_keys: Sequence[LayoutKey], empty_layer: bool = False) -> None:
         """
         Given anchor coordinates p_0, print SVG code for keys for a given layer.
         """
