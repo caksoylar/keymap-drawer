@@ -7,6 +7,7 @@ The implementation is based on a nested expression parser for curly braces
 through pyparsing with some additions on top to clean up comments and run the
 C preprocessor using pcpp.
 """
+
 import re
 from itertools import chain
 from io import StringIO
