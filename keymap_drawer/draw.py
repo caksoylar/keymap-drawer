@@ -11,22 +11,22 @@ from typing import Sequence, TextIO, Literal
 from .keymap import KeymapData, ComboSpec, LayoutKey
 from .physical_layout import Point, PhysicalKey
 from .config import DrawConfig
-from .glyph import GlyphHandler
+from .glyph import GlyphMixin
 
 
 LegendType = Literal["tap", "hold", "shifted"]
 
 
-class KeymapDrawer:
+class KeymapDrawer(GlyphMixin):
     """Class that draws a keyboard representation in SVG."""
 
     def __init__(self, config: DrawConfig, out: TextIO, **kwargs) -> None:
         self.cfg = config
         self.keymap = KeymapData(config=config, **kwargs)
+        self.init_glyphs()
         assert self.keymap.layout is not None, "A PhysicalLayout must be provided for drawing"
         assert self.keymap.config is not None, "A DrawConfig must be provided for drawing"
         self.layout = self.keymap.layout
-        self.glyph_handler = GlyphHandler(self.cfg, self.keymap)
         self.out = out
 
     @staticmethod
@@ -95,7 +95,7 @@ class KeymapDrawer:
         self.out.write("</text>\n")
 
     def _draw_glyph(self, p: Point, name: str, legend_type: LegendType, classes: Sequence[str]) -> None:
-        width, height, d_y = self.glyph_handler.get_glyph_dimensions(name, legend_type)
+        width, height, d_y = self.get_glyph_dimensions(name, legend_type)
 
         classes = [*classes, "glyph", name]
         self.out.write(
@@ -206,7 +206,7 @@ class KeymapDrawer:
         classes = [key_type, legend_type]
 
         if len(words) == 1:
-            if glyph := self.glyph_handler.legend_is_glyph(words[0]):
+            if glyph := self.legend_is_glyph(words[0]):
                 self._draw_glyph(p, glyph, legend_type, classes)
                 return
 
@@ -367,7 +367,7 @@ class KeymapDrawer:
             'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n'
         )
 
-        self.out.write(self.glyph_handler.get_glyph_defs())
+        self.out.write(self.get_glyph_defs())
 
         self.out.write(f"<style>{self.cfg.svg_style}</style>\n")
 
