@@ -19,7 +19,7 @@ class UtilsMixin(GlyphMixin):
     out: TextIO
 
     @staticmethod
-    def _to_class_str(classes: Sequence[str]):
+    def _to_class_str(classes: Sequence[str]) -> str:
         return (' class="' + " ".join(c for c in classes if c) + '"') if classes else ""
 
     @staticmethod
@@ -94,7 +94,7 @@ class UtilsMixin(GlyphMixin):
 
     def _draw_legend(  # pylint: disable=too-many-arguments
         self, p: Point, words: Sequence[str], key_type: str, legend_type: LegendType, shift: float = 0
-    ):
+    ) -> None:
         if not words:
             return
 

@@ -1,6 +1,6 @@
 """Module containing class and methods to draw combo representations."""
 from math import copysign
-from typing import Sequence, TextIO
+from typing import Sequence, Mapping, TextIO
 
 from keymap_drawer.keymap import ComboSpec
 from keymap_drawer.physical_layout import Point, PhysicalLayout
@@ -17,7 +17,9 @@ class ComboDrawerMixin(UtilsMixin):
     layout: PhysicalLayout
 
     # actual methods
-    def get_offsets_per_layer(self, combos_per_layer):
+    def get_offsets_per_layer(
+        self, combos_per_layer: Mapping[str, Sequence[ComboSpec]]
+    ) -> dict[str, tuple[float, float]]:
         """For each layer, return the minimum and maximum y-coordinates that can be caused by the combos."""
         return {
             name: (
@@ -156,7 +158,7 @@ class ComboDrawerMixin(UtilsMixin):
             legend_type="shifted",
         )
 
-    def print_combos_for_layer(self, p_0: Point, combos: Sequence[ComboSpec]):
+    def print_combos_for_layer(self, p_0: Point, combos: Sequence[ComboSpec]) -> None:
         """For a given anchor point p_0, print SVG for all given combos, relative to that point."""
         for combo_spec in combos:
             self.print_combo(p_0, combo_spec)
