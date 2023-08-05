@@ -3,6 +3,7 @@ Given keymap description with layers and combos (in a yaml), and physical
 keyboard layout definition (either via QMK info files or using a parametrized
 ortho layout), print an SVG representing the keymap to standard output.
 """
+
 import sys
 from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path

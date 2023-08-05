@@ -3,6 +3,7 @@ Module that contains the KeymapDrawer class which takes a physical layout,
 keymap with layers and optionally combo definitions, then can draw an SVG
 representation of the keymap using these two.
 """
+
 from html import escape
 from copy import deepcopy
 from typing import Sequence, TextIO, Literal

@@ -3,6 +3,7 @@ Module containing classes pertaining to the physical layout of a keyboard,
 i.e. a sequence of keys each represented by its coordinates, dimensions
 and rotation.
 """
+
 import json
 from math import sqrt, sin, cos, pi
 from dataclasses import dataclass

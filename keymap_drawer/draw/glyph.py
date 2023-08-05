@@ -2,6 +2,7 @@
 Module containing class and methods to help with fetching
 and drawing SVG glyphs.
 """
+
 import re
 from pathlib import Path
 from functools import lru_cache, partial
