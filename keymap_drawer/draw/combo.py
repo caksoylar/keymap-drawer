@@ -39,26 +39,26 @@ class ComboDrawerMixin(UtilsMixin):
             self._draw_line_dendron(p_1, p_2, shorten)
             return
 
-        start = f"M{p_1.x},{p_1.y}"
+        start = f"M{round(p_1.x)},{round(p_1.y)}"
         arc_x = copysign(self.cfg.arc_radius, diff.x)
         arc_y = copysign(self.cfg.arc_radius, diff.y)
         clockwise = (diff.x > 0) ^ (diff.y > 0)
         if x_first:
-            line_1 = f"h{arc_scale * diff.x - arc_x}"
-            line_2 = f"v{diff.y - arc_y - copysign(shorten, diff.y)}"
+            line_1 = f"h{round(arc_scale * diff.x - arc_x)}"
+            line_2 = f"v{round(diff.y - arc_y - copysign(shorten, diff.y))}"
             clockwise = not clockwise
         else:
-            line_1 = f"v{arc_scale * diff.y - arc_y}"
-            line_2 = f"h{diff.x - arc_x - copysign(shorten, diff.x)}"
+            line_1 = f"v{round(arc_scale * diff.y - arc_y)}"
+            line_2 = f"h{round(diff.x - arc_x - copysign(shorten, diff.x))}"
         arc = f"a{self.cfg.arc_radius},{self.cfg.arc_radius} 0 0 {int(clockwise)} {arc_x},{arc_y}"
         self.out.write(f'<path d="{start} {line_1} {arc} {line_2}" class="combo"/>\n')
 
     def _draw_line_dendron(self, p_1: Point, p_2: Point, shorten: float) -> None:
-        start = f"M{p_1.x},{p_1.y}"
+        start = f"M{round(p_1.x)},{round(p_1.y)}"
         diff = p_2 - p_1
         if shorten and shorten < (magn := abs(diff)):
             diff = (1 - shorten / magn) * diff
-        line = f"l{diff.x},{diff.y}"
+        line = f"l{round(diff.x)},{round(diff.y)}"
         self.out.write(f'<path d="{start} {line}" class="combo"/>\n')
 
     def print_combo(self, p_0: Point, combo: ComboSpec, combo_ind: int) -> None:
