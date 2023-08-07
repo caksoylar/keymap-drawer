@@ -46,11 +46,11 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             p_key.rotation,
         )
         transform_attr = f' transform="rotate({r}, {round(p.x)}, {round(p.y)})"' if r != 0 else ""
-        class_str = self._to_class_str(["key-group", l_key.type, f"keypos-{key_ind}"])
+        class_str = self._to_class_str(["key", l_key.type, f"keypos-{key_ind}"])
         self.out.write(f"<g{transform_attr}{class_str}>\n")
 
         self._draw_key(
-            p, Point(w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h), classes=[l_key.type, "key"]
+            p, Point(w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h), classes=["key", l_key.type]
         )
 
         tap_words = self._split_text(l_key.tap)
@@ -71,20 +71,20 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         self._draw_legend(
             p + tap_shift,
             tap_words,
-            key_type=l_key.type,
+            classes=["key", l_key.type],
             legend_type="tap",
             shift=shift,
         )
         self._draw_legend(
             p + Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
             [l_key.hold],
-            key_type=l_key.type,
+            classes=["key", l_key.type],
             legend_type="hold",
         )
         self._draw_legend(
             p - Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
             [l_key.shifted],
-            key_type=l_key.type,
+            classes=["key", l_key.type],
             legend_type="shifted",
         )
 

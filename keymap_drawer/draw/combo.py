@@ -110,7 +110,7 @@ class ComboDrawerMixin(UtilsMixin):
                     p_mid.y,
                 )
 
-        class_str = self._to_class_str(["combo-group", combo.type, f"combopos-{combo_ind}"])
+        class_str = self._to_class_str(["combo", combo.type, f"combopos-{combo_ind}"])
         self.out.write(f"<g{class_str}>\n")
 
         # draw dendrons going from box to combo keys
@@ -144,20 +144,23 @@ class ComboDrawerMixin(UtilsMixin):
 
         # draw combo box with text
         self._draw_rect(
-            p, Point(self.cfg.combo_w, self.cfg.combo_h), Point(self.cfg.key_rx, self.cfg.key_ry), classes=[combo.type]
+            p,
+            Point(self.cfg.combo_w, self.cfg.combo_h),
+            Point(self.cfg.key_rx, self.cfg.key_ry),
+            classes=["combo", combo.type],
         )
 
-        self._draw_legend(p, self._split_text(combo.key.tap), key_type=combo.type, legend_type="tap")
+        self._draw_legend(p, self._split_text(combo.key.tap), classes=["combo", combo.type], legend_type="tap")
         self._draw_legend(
             p + Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
             [combo.key.hold],
-            key_type=combo.type,
+            classes=["combo", combo.type],
             legend_type="hold",
         )
         self._draw_legend(
             p - Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
             [combo.key.shifted],
-            key_type=combo.type,
+            classes=["combo", combo.type],
             legend_type="shifted",
         )
 

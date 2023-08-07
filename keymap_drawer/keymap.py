@@ -59,7 +59,7 @@ class ComboSpec(BaseModel, allow_population_by_field_name=True):
     dendron: bool | None = Field(alias="d", default=None)
     slide: float | None = Field(alias="s", default=None)
     arc_scale: float = 1.0
-    type: str = "combo"
+    type: str = ""
 
     @classmethod
     def normalize_fields(cls, spec_dict: dict) -> dict:

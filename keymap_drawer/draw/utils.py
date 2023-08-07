@@ -93,12 +93,12 @@ class UtilsMixin(GlyphMixin):
         )
 
     def _draw_legend(  # pylint: disable=too-many-arguments
-        self, p: Point, words: Sequence[str], key_type: str, legend_type: LegendType, shift: float = 0
+        self, p: Point, words: Sequence[str], classes: Sequence[str], legend_type: LegendType, shift: float = 0
     ) -> None:
         if not words:
             return
 
-        classes = [key_type, legend_type]
+        classes = [*classes, legend_type]
 
         if len(words) == 1:
             if glyph := self.legend_is_glyph(words[0]):
