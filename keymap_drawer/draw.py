@@ -38,12 +38,37 @@ class KeymapDrawer:
         # do not split on double spaces, but do split on single
         return [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
 
-    def _draw_rect(self, p: Point, w: float, h: float, classes: Sequence[str]) -> None:
+    def _draw_rect(self, p: Point, dims: Point, radii: Point, classes: Sequence[str]) -> None:
         self.out.write(
-            f'<rect rx="{round(self.cfg.key_rx)}" ry="{round(self.cfg.key_ry)}"'
-            f' x="{round(p.x - w / 2)}" y="{round(p.y - h / 2)}" '
-            f'width="{round(w)}" height="{round(h)}"{self._to_class_str(classes)}/>\n'
+            f'<rect rx="{round(radii.x)}" ry="{round(radii.y)}"'
+            f' x="{round(p.x - dims.x / 2)}" y="{round(p.y - dims.y / 2)}" '
+            f'width="{round(dims.x)}" height="{round(dims.y)}"{self._to_class_str(classes)}/>\n'
         )
+
+    def _draw_key(self, p: Point, dims: Point, classes: Sequence[str]) -> None:
+        if self.cfg.draw_key_sides:
+            # draw side rectangle
+            self._draw_rect(
+                p,
+                dims,
+                Point(self.cfg.key_rx, self.cfg.key_ry),
+                classes=[*classes, "side"],
+            )
+            # draw internal rectangle
+            self._draw_rect(
+                p - Point(self.cfg.key_side_pars.rel_x, self.cfg.key_side_pars.rel_y),
+                dims - Point(self.cfg.key_side_pars.rel_w, self.cfg.key_side_pars.rel_h),
+                Point(self.cfg.key_side_pars.rx, self.cfg.key_side_pars.ry),
+                classes=classes,
+            )
+        else:
+            # default key style
+            self._draw_rect(
+                p,
+                dims,
+                Point(self.cfg.key_rx, self.cfg.key_ry),
+                classes=classes,
+            )
 
     def _get_scaling(self, width: int) -> str:
         if not self.cfg.shrink_wide_legends or width <= self.cfg.shrink_wide_legends:
@@ -130,7 +155,9 @@ class KeymapDrawer:
         )
         if r != 0:
             self.out.write(f'<g transform="rotate({r}, {round(p.x)}, {round(p.y)})">\n')
-        self._draw_rect(p, w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h, classes=[l_key.type, "key"])
+        self._draw_key(
+            p, Point(w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h), classes=[l_key.type, "key"]
+        )
 
         tap_words = self._split_text(l_key.tap)
 
@@ -142,7 +169,18 @@ class KeymapDrawer:
             elif l_key.hold and not l_key.shifted:  # shift up
                 shift = 1
 
-        self._draw_legend(p, tap_words, key_type=l_key.type, legend_type="tap", shift=shift)
+        # auto-shift middle legend if key sides are drawn
+        tap_shift = Point(self.cfg.legend_rel_x, self.cfg.legend_rel_y)
+        if self.cfg.draw_key_sides:
+            tap_shift -= Point(self.cfg.key_side_pars.rel_x, self.cfg.key_side_pars.rel_y)
+
+        self._draw_legend(
+            p + tap_shift,
+            tap_words,
+            key_type=l_key.type,
+            legend_type="tap",
+            shift=shift,
+        )
         self._draw_legend(
             p + Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
             [l_key.hold],
@@ -256,7 +294,9 @@ class KeymapDrawer:
                             self._draw_line_dendron(p, key_pos, k.width / 3)
 
         # draw combo box with text
-        self._draw_rect(p, self.cfg.combo_w, self.cfg.combo_h, classes=[combo.type])
+        self._draw_rect(
+            p, Point(self.cfg.combo_w, self.cfg.combo_h), Point(self.cfg.key_rx, self.cfg.key_ry), classes=[combo.type]
+        )
 
         self._draw_legend(p, self._split_text(combo.key.tap), key_type=combo.type, legend_type="tap")
         self._draw_legend(

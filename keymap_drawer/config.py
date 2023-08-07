@@ -4,11 +4,24 @@ keycode converters for parsing.
 """
 
 from textwrap import dedent
-from pydantic import BaseSettings
+from pydantic import BaseSettings, BaseModel
 
 
 class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     """Configuration related to SVG drawing, including key sizes, padding amounts, combo drawing settings etc."""
+
+    class KeySidePars(BaseModel):
+        """Parameters of key side drawing for `draw_key_sides` config."""
+
+        # position of internal key rectangle relative to the center of the key
+        rel_x: float = 0
+        rel_y: float = 4
+        # delta dimension between extenal key rectangle and internal key rectangle
+        rel_w: float = 12
+        rel_h: float = 12
+        # curvature of rounded internal key rectangle
+        rx: float = 4
+        ry: float = 4
 
     # key dimensions, non-ortho layouts use key_h for width as well
     key_w: float = 60
@@ -45,6 +58,16 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # padding from edge of cap to top and bottom legends
     small_pad: float = 2.0
 
+    # position of center ("tap") key legend relative to the center of the key
+    legend_rel_x: float = 0
+    legend_rel_y: float = 0
+
+    # draw key sides
+    draw_key_sides: bool = False
+
+    # key side parameters
+    key_side_pars: KeySidePars = KeySidePars()
+
     svg_style: str = dedent(
         """\
         /* inherit to force styles through use tags*/
@@ -65,6 +88,11 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
             fill: #f6f8fa;
             stroke: #c9cccf;
             stroke-width: 1;
+        }
+
+        /* default key side styling, only used is draw_key_sides is set */
+        rect.side {
+            filter: brightness(90%);
         }
 
         /* color accent for combo boxes */
