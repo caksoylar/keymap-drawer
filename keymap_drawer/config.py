@@ -41,6 +41,12 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # number of columns in the output drawing
     n_columns: int = 1
 
+    # draw separate combo diagrams instead of drawing them on layers
+    separate_combo_diagrams: bool = False
+
+    # if drawing separate combo diagrams, shrink physical layout by this factor
+    combo_diagrams_scale: int = 2
+
     # padding between keys
     inner_pad_w: float = 2
     inner_pad_h: float = 2
@@ -73,10 +79,11 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 
     svg_style: str = dedent(
         """\
-        /* inherit to force styles through use tags*/
+        /* inherit to force styles through use tags */
         svg path {
             fill: inherit;
         }
+
         /* font and background color specifications */
         svg.keymap {
             font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
@@ -99,7 +106,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         }
 
         /* color accent for combo boxes */
-        rect.combo {
+        rect.combo, rect.combo-separate {
             fill: #cdf;
         }
 

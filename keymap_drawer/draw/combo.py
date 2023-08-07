@@ -3,8 +3,8 @@ from math import copysign
 from io import StringIO
 from typing import Sequence
 
-from keymap_drawer.keymap import ComboSpec
-from keymap_drawer.physical_layout import Point, PhysicalLayout
+from keymap_drawer.keymap import LayoutKey, ComboSpec
+from keymap_drawer.physical_layout import Point, PhysicalKey, PhysicalLayout
 from keymap_drawer.config import DrawConfig
 from keymap_drawer.draw.utils import UtilsMixin
 
@@ -161,3 +161,31 @@ class ComboDrawerMixin(UtilsMixin):
         """Print SVG for all given combos, relative to that point."""
         for combo_ind, combo_spec in enumerate(combos):
             self.print_combo(combo_spec, combo_ind)
+
+    def create_combo_diagrams(
+        self, scale_factor: int, ghost_keys: Sequence[int] | None = None
+    ) -> tuple[PhysicalLayout, dict[str, list[LayoutKey]]]:
+        """
+        Create and return both a shrunk down physical layout and layers representing combo
+        locations with held key highlighting.
+        """
+        w, h = self.layout.min_width, self.layout.min_height
+        header_p_key = PhysicalKey(Point(w / 2, h / 2), w, h)
+
+        layout = 1 / scale_factor * self.layout + Point(0, h + self.cfg.inner_pad_h)
+        layout.keys = [header_p_key, *layout.keys]
+
+        layers = {}
+        for ind, combo in enumerate(self.keymap.combos):
+            empty_layer = [LayoutKey() for _ in range(len(self.layout))]
+            if ghost_keys:
+                for key_position in ghost_keys:
+                    empty_layer[key_position].type = "ghost"
+            for key_position in combo.key_positions:
+                empty_layer[key_position].type = "held"
+
+            header_l_key = combo.key
+            header_l_key.type = " ".join([header_l_key.type, "combo-separate"])
+            layers[f"combopos-{ind}"] = [combo.key] + empty_layer
+
+        return layout, layers

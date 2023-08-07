@@ -40,8 +40,11 @@ class Point:
     def __abs__(self) -> float:
         return sqrt(self.x**2 + self.y**2)
 
-    def __rmul__(self, other: int | float) -> "Point":
+    def __mul__(self, other: int | float) -> "Point":
         return Point(other * self.x, other * self.y)
+
+    def __rmul__(self, other: int | float) -> "Point":
+        return self.__mul__(other)
 
     def copy(self) -> "Point":  # pylint: disable=missing-function-docstring
         return Point(self.x, self.y)
@@ -91,6 +94,22 @@ class PhysicalKey:
         )
         return origin + rotated
 
+    def __add__(self, other: "Point") -> "PhysicalKey":
+        return PhysicalKey(
+            pos=self.pos + other,
+            width=self.width,
+            height=self.height,
+            rotation=self.rotation,
+        )
+
+    def __rmul__(self, other: int | float) -> "PhysicalKey":
+        return PhysicalKey(
+            pos=self.pos * other,
+            width=self.width * other,
+            height=self.height * other,
+            rotation=self.rotation,
+        )
+
 
 class PhysicalLayout(BaseModel, keep_untouched=(cached_property,)):
     """Represents the physical layout of keys on the keyboard, as a sequence of keys."""
@@ -119,6 +138,12 @@ class PhysicalLayout(BaseModel, keep_untouched=(cached_property,)):
     def min_height(self) -> float:
         """Return minimum key height in the layout."""
         return min(k.height for k in self.keys)
+
+    def __add__(self, other: Point) -> "PhysicalLayout":
+        return PhysicalLayout(keys=[k + other for k in self.keys])
+
+    def __rmul__(self, other: int | float) -> "PhysicalLayout":
+        return PhysicalLayout(keys=[other * k for k in self.keys])
 
 
 def layout_factory(

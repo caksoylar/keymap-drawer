@@ -97,38 +97,44 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         layers: Mapping[str, Sequence[LayoutKey]],
         combos_per_layer: Mapping[str, Sequence[ComboSpec]],
         n_cols: int = 1,
+        draw_header: bool = True,
+        pad_divisor: int = 1,
     ) -> Point:
         """
         Print SVG code for keys for all layers (including combos on them) starting at coordinate p,
         into n_cols columns and return the bottom right coordinate.
         """
         original_x = p.x
-        col_width = self.layout.width + 2 * self.cfg.outer_pad_w
+        outer_pad_w = self.cfg.outer_pad_w // pad_divisor
+        col_width = layout.width + 2 * outer_pad_w
         max_offset = 0.0
         for ind, (name, layer_keys) in enumerate(layers.items()):
+            outer_pad_h = self.cfg.outer_pad_h // pad_divisor if ind > n_cols - 1 else self.cfg.outer_pad_h
+
             # per-layer class group
             self.out.write(
-                f'<g transform="translate({round(p.x + self.cfg.outer_pad_w)}, {round(p.y)})" class="layer-{name}">\n'
+                f'<g transform="translate({round(p.x + outer_pad_w)}, {round(p.y)})" class="layer-{name}">\n'
             )
 
             # draw layer name
-            self.print_layer_header(Point(0, self.cfg.outer_pad_h / 2), name)
+            if draw_header:
+                self.print_layer_header(Point(0, outer_pad_h / 2), name)
 
             # get offsets added by combo alignments, draw keys and combos
-            top_offset, bot_offset = self.get_combo_offsets(combos_per_layer[name])
-            self.out.write(f'<g transform="translate(0, {round(self.cfg.outer_pad_h + top_offset)})">\n')
+            top_offset, bot_offset = self.get_combo_offsets(combos_per_layer.get(name, []))
+            self.out.write(f'<g transform="translate(0, {round(outer_pad_h + top_offset)})">\n')
 
             for key_ind, (p_key, l_key) in enumerate(zip(layout.keys, layer_keys)):
                 self.print_key(p_key, l_key, key_ind)
 
-            self.print_combos_for_layer(combos_per_layer[name])
+            self.print_combos_for_layer(combos_per_layer.get(name, []))
             self.out.write("</g>\n")
             self.out.write("</g>\n")
 
             max_offset = max(max_offset, top_offset + bot_offset)
 
             if ind % n_cols == n_cols - 1 or ind == len(layers) - 1:
-                p = Point(original_x, p.y + self.cfg.outer_pad_h + self.layout.height + max_offset)
+                p = Point(original_x, p.y + outer_pad_h + layout.height + max_offset)
                 max_offset = 0.0
             else:
                 p += Point(col_width, 0)
@@ -149,7 +155,10 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             layers = {name: layer for name, layer in layers.items() if name in draw_layers}
 
         if combos_only:
-            layers = {name: [LayoutKey() for _ in range(len(self.layout))] for name, layer in layers.items()}
+            if not self.cfg.separate_combo_diagrams:
+                layers = {name: [LayoutKey() for _ in range(len(self.layout))] for name, layer in layers.items()}
+            else:
+                layers = {}
 
         if ghost_keys:
             for key_position in ghost_keys:
@@ -159,13 +168,26 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
                 for layer in layers.values():
                     layer[key_position].type = "ghost"
 
-        if not keys_only:
-            combos_per_layer = self.keymap.get_combos_per_layer(layers)
+        if keys_only or self.cfg.separate_combo_diagrams:
+            combos_per_layer: dict[str, list[ComboSpec]] = {}
         else:
-            combos_per_layer = {layer_name: [] for layer_name in layers}
+            combos_per_layer = self.keymap.get_combos_per_layer(layers)
 
         # write to internal output stream self.out
         p = self.print_layers(Point(0, 0), self.layout, layers, combos_per_layer, self.cfg.n_columns)
+
+        if self.cfg.separate_combo_diagrams:
+            self.print_layer_header(Point(self.cfg.outer_pad_w, p.y + self.cfg.outer_pad_h / 2), "Combos")
+            layout, layers = self.create_combo_diagrams(self.cfg.combo_diagrams_scale, ghost_keys)
+            p = self.print_layers(
+                Point(0, p.y),
+                layout,
+                layers,
+                combos_per_layer,
+                self.cfg.n_columns * self.cfg.combo_diagrams_scale,
+                draw_header=False,
+                pad_divisor=self.cfg.combo_diagrams_scale,
+            )
 
         # write to final output stream self.output_stream
         board_w, board_h = round(p.x), round(p.y + self.cfg.outer_pad_h)
