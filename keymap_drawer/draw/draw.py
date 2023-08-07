@@ -33,7 +33,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             header += ":"
         self.out.write(f'<text x="{p.x}" y="{p.y}" class="label">{escape(header)}</text>\n')
 
-    def print_key(self, p_0: Point, p_key: PhysicalKey, l_key: LayoutKey) -> None:
+    def print_key(self, p_0: Point, p_key: PhysicalKey, l_key: LayoutKey, key_ind: int) -> None:
         """
         Given anchor coordinates p_0, print SVG code for a rectangle with text representing
         the key, which is described by its physical representation (p_key) and what it does in
@@ -45,8 +45,10 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             p_key.height,
             p_key.rotation,
         )
-        if r != 0:
-            self.out.write(f'<g transform="rotate({r}, {round(p.x)}, {round(p.y)})">\n')
+        transform_attr = f' transform="rotate({r}, {round(p.x)}, {round(p.y)})"' if r != 0 else ""
+        class_str = self._to_class_str(["key-group", l_key.type, f"keypos-{key_ind}"])
+        self.out.write(f"<g{transform_attr}{class_str}>\n")
+
         self._draw_key(
             p, Point(w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h), classes=[l_key.type, "key"]
         )
@@ -86,15 +88,14 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             legend_type="shifted",
         )
 
-        if r != 0:
-            self.out.write("</g>\n")
+        self.out.write("</g>\n")
 
     def print_layer(self, p_0: Point, layer_keys: Sequence[LayoutKey], empty_layer: bool = False) -> None:
         """
         Given anchor coordinates p_0, print SVG code for keys for a given layer.
         """
-        for p_key, l_key in zip(self.layout.keys, layer_keys):
-            self.print_key(p_0, p_key, l_key if not empty_layer else LayoutKey())
+        for key_ind, (p_key, l_key) in enumerate(zip(self.layout.keys, layer_keys)):
+            self.print_key(p_0, p_key, l_key if not empty_layer else LayoutKey(), key_ind)
 
     def print_board(
         self,

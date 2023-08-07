@@ -61,7 +61,7 @@ class ComboDrawerMixin(UtilsMixin):
         line = f"l{diff.x},{diff.y}"
         self.out.write(f'<path d="{start} {line}" class="combo"/>\n')
 
-    def print_combo(self, p_0: Point, combo: ComboSpec) -> None:
+    def print_combo(self, p_0: Point, combo: ComboSpec, combo_ind: int) -> None:
         """
         Given anchor coordinates p_0, print SVG code for a rectangle with text representing
         a combo specification, which contains the key positions that trigger it and what it does
@@ -109,6 +109,9 @@ class ComboDrawerMixin(UtilsMixin):
                     + combo.offset * self.layout.min_width,
                     p_mid.y,
                 )
+
+        class_str = self._to_class_str(["combo-group", combo.type, f"combopos-{combo_ind}"])
+        self.out.write(f"<g{class_str}>\n")
 
         # draw dendrons going from box to combo keys
         if combo.dendron is not False:
@@ -158,7 +161,9 @@ class ComboDrawerMixin(UtilsMixin):
             legend_type="shifted",
         )
 
+        self.out.write("</g>\n")
+
     def print_combos_for_layer(self, p_0: Point, combos: Sequence[ComboSpec]) -> None:
         """For a given anchor point p_0, print SVG for all given combos, relative to that point."""
-        for combo_spec in combos:
-            self.print_combo(p_0, combo_spec)
+        for combo_ind, combo_spec in enumerate(combos):
+            self.print_combo(p_0, combo_spec, combo_ind)
