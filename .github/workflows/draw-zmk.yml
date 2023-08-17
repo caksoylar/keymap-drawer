@@ -61,6 +61,7 @@ jobs:
           # - https://github.com/stefanzweifel/git-auto-commit-action/issues/159#issuecomment-845347950
           # - https://github.com/actions/checkout
           fetch-depth: ${{ (inputs.amend_commit == true && 2) || 1 }}
+          submodules: recursive
 
       - name: Install keymap-drawer (pypi)
         if: inputs.install_branch == ''
