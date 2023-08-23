@@ -99,7 +99,7 @@ class GlyphMixin:
             return ""
 
         defs = "<defs>/* start glyphs */\n"
-        for name, svg in self.name_to_svg.items():
+        for name, svg in sorted(self.name_to_svg.items()):
             defs += f'<svg id="{name}">\n'
             defs += self._scrub_dims_re.sub("", svg)
             defs += "\n</svg>\n"
