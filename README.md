@@ -206,7 +206,7 @@ jobs:
 
 ### Modifying the workflow-generated commit
 
-The workflow will add the generated SVG and keymap representation YAML files to the `output-folder`, and generate a new `"keymap-drawer render"` commit by default. You can modify this commit message with the `commit_message` input param, e.g.:
+The workflow will add the generated SVG and keymap representation YAML files to the `output_folder`, and generate a new commit with commit message "keymap-drawer render" by default. You can modify this commit message with the `commit_message` input param, e.g.:
 
 ```yaml
 jobs:
