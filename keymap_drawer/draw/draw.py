@@ -31,7 +31,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         """Print a layer header that precedes the layer visualization."""
         if self.cfg.append_colon_to_layer_header:
             header += ":"
-        self.out.write(f'<text x="{p.x}" y="{p.y}" class="label">{escape(header)}</text>\n')
+        self.out.write(f'<text x="{round(p.x)}" y="{round(p.y)}" class="label">{escape(header)}</text>\n')
 
     def print_key(self, p_key: PhysicalKey, l_key: LayoutKey, key_ind: int) -> None:
         """
@@ -121,8 +121,8 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         else:
             combos_per_layer = {layer_name: [] for layer_name in layers}
 
-        board_w = self.layout.width + 2 * self.cfg.outer_pad_w
-        board_h = (
+        board_w = round(self.layout.width + 2 * self.cfg.outer_pad_w)
+        board_h = round(
             len(layers) * self.layout.height
             + (len(layers) + 1) * self.cfg.outer_pad_h
             + sum(sum(self.get_combo_offsets(combos)) for combos in combos_per_layer.values())
@@ -146,7 +146,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
 
             # get offsets added by combo alignments, draw keys and combos
             top_offset, bot_offset = self.get_combo_offsets(combos_per_layer[name])
-            self.out.write(f'<g transform="translate(0, {self.cfg.outer_pad_h + top_offset})">\n')
+            self.out.write(f'<g transform="translate(0, {round(self.cfg.outer_pad_h + top_offset)})">\n')
             self.print_layer(layer_keys, empty_layer=combos_only)
             self.print_combos_for_layer(combos_per_layer[name])
             self.out.write("</g>\n")
