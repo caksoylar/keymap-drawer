@@ -34,18 +34,18 @@ class UtilsMixin(GlyphMixin):
             f'width="{round(dims.x)}" height="{round(dims.y)}"{self._to_class_str(classes)}/>\n'
         )
 
-    def _draw_key(self, p: Point, dims: Point, classes: Sequence[str]) -> None:
+    def _draw_key(self, dims: Point, classes: Sequence[str]) -> None:
         if self.cfg.draw_key_sides:
             # draw side rectangle
             self._draw_rect(
-                p,
+                Point(0.0, 0.0),
                 dims,
                 Point(self.cfg.key_rx, self.cfg.key_ry),
                 classes=[*classes, "side"],
             )
             # draw internal rectangle
             self._draw_rect(
-                p - Point(self.cfg.key_side_pars.rel_x, self.cfg.key_side_pars.rel_y),
+                Point(-self.cfg.key_side_pars.rel_x, -self.cfg.key_side_pars.rel_y),
                 dims - Point(self.cfg.key_side_pars.rel_w, self.cfg.key_side_pars.rel_h),
                 Point(self.cfg.key_side_pars.rx, self.cfg.key_side_pars.ry),
                 classes=classes,
@@ -53,7 +53,7 @@ class UtilsMixin(GlyphMixin):
         else:
             # default key style
             self._draw_rect(
-                p,
+                Point(0.0, 0.0),
                 dims,
                 Point(self.cfg.key_rx, self.cfg.key_ry),
                 classes=classes,

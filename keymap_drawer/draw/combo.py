@@ -1,6 +1,6 @@
 """Module containing class and methods to draw combo representations."""
 from math import copysign
-from typing import Sequence, Mapping, TextIO
+from typing import Sequence, TextIO
 
 from keymap_drawer.keymap import ComboSpec
 from keymap_drawer.physical_layout import Point, PhysicalLayout
@@ -17,17 +17,12 @@ class ComboDrawerMixin(UtilsMixin):
     layout: PhysicalLayout
 
     # actual methods
-    def get_offsets_per_layer(
-        self, combos_per_layer: Mapping[str, Sequence[ComboSpec]]
-    ) -> dict[str, tuple[float, float]]:
-        """For each layer, return the minimum and maximum y-coordinates that can be caused by the combos."""
-        return {
-            name: (
-                max((c.offset * self.layout.min_height for c in combos if c.align == "top"), default=0.0),
-                max((c.offset * self.layout.min_height for c in combos if c.align == "bottom"), default=0.0),
-            )
-            for name, combos in combos_per_layer.items()
-        }
+    def get_combo_offsets(self, combos: Sequence[ComboSpec]) -> tuple[float, float]:
+        """Return the minimum and maximum y-coordinates that can be caused by the given combos."""
+        return (
+            max((c.offset * self.layout.min_height for c in combos if c.align == "top"), default=0.0),
+            max((c.offset * self.layout.min_height for c in combos if c.align == "bottom"), default=0.0),
+        )
 
     def _draw_arc_dendron(  # pylint: disable=too-many-arguments
         self, p_1: Point, p_2: Point, x_first: bool, shorten: float, arc_scale: float
@@ -61,17 +56,15 @@ class ComboDrawerMixin(UtilsMixin):
         line = f"l{round(diff.x)},{round(diff.y)}"
         self.out.write(f'<path d="{start} {line}" class="combo"/>\n')
 
-    def print_combo(self, p_0: Point, combo: ComboSpec, combo_ind: int) -> None:
+    def print_combo(self, combo: ComboSpec, combo_ind: int) -> None:
         """
-        Given anchor coordinates p_0, print SVG code for a rectangle with text representing
-        a combo specification, which contains the key positions that trigger it and what it does
-        when triggered. The position of the rectangle depends on the alignment specified,
-        along with whether dendrons are drawn going to each key position from the combo.
+        Print SVG code for a rectangle with text representing a combo specification, which contains the key positions
+        that trigger it and what it does when triggered. The position of the rectangle depends on the alignment
+        specified, along with whether dendrons are drawn going to each key position from the combo.
         """
         p_keys = [self.layout.keys[p] for p in combo.key_positions]
 
         # find center of combo box
-        p = p_0.copy()
         p_mid = (1 / len(p_keys)) * sum((k.pos for k in p_keys), start=Point(0, 0))
         if combo.slide is not None:  # find two keys furthest from the midpoint, interpolate between their positions
             sorted_keys = sorted(p_keys, key=lambda k: (-abs(k.pos - p_mid), k.pos.x, k.pos.y))
@@ -80,30 +73,30 @@ class ComboDrawerMixin(UtilsMixin):
 
         match combo.align:
             case "mid":
-                p += p_mid
+                p = p_mid
             case "top":
-                p += Point(
+                p = Point(
                     p_mid.x,
                     min(k.pos.y - k.height / 2 for k in p_keys)
                     - self.cfg.inner_pad_h / 2
                     - combo.offset * self.layout.min_height,
                 )
             case "bottom":
-                p += Point(
+                p = Point(
                     p_mid.x,
                     max(k.pos.y + k.height / 2 for k in p_keys)
                     + self.cfg.inner_pad_h / 2
                     + combo.offset * self.layout.min_height,
                 )
             case "left":
-                p += Point(
+                p = Point(
                     min(k.pos.x - k.width / 2 for k in p_keys)
                     - self.cfg.inner_pad_w / 2
                     - combo.offset * self.layout.min_width,
                     p_mid.y,
                 )
             case "right":
-                p += Point(
+                p = Point(
                     max(k.pos.x + k.width / 2 for k in p_keys)
                     + self.cfg.inner_pad_w / 2
                     + combo.offset * self.layout.min_width,
@@ -118,29 +111,26 @@ class ComboDrawerMixin(UtilsMixin):
             match combo.align:
                 case "top" | "bottom":
                     for k in p_keys:
-                        key_pos = p_0 + k.pos
                         offset = (
                             k.height / 5
-                            if abs((key_pos - p).x) < self.cfg.combo_w / 2
-                            and abs((key_pos - p).y) <= k.height / 3 + self.cfg.combo_h / 2
+                            if abs((k.pos - p).x) < self.cfg.combo_w / 2
+                            and abs((k.pos - p).y) <= k.height / 3 + self.cfg.combo_h / 2
                             else k.height / 3
                         )
-                        self._draw_arc_dendron(p, key_pos, True, offset, combo.arc_scale)
+                        self._draw_arc_dendron(p, k.pos, True, offset, combo.arc_scale)
                 case "left" | "right":
                     for k in p_keys:
-                        key_pos = p_0 + k.pos
                         offset = (
                             k.width / 5
-                            if abs((key_pos - p).y) < self.cfg.combo_h / 2
-                            and abs((key_pos - p).x) <= k.width / 3 + self.cfg.combo_w / 2
+                            if abs((k.pos - p).y) < self.cfg.combo_h / 2
+                            and abs((k.pos - p).x) <= k.width / 3 + self.cfg.combo_w / 2
                             else k.width / 3
                         )
-                        self._draw_arc_dendron(p, key_pos, False, offset, combo.arc_scale)
+                        self._draw_arc_dendron(p, k.pos, False, offset, combo.arc_scale)
                 case "mid":
                     for k in p_keys:
-                        key_pos = p_0 + k.pos
-                        if combo.dendron is True or abs(key_pos - p) >= k.width - 1:
-                            self._draw_line_dendron(p, key_pos, k.width / 3)
+                        if combo.dendron is True or abs(k.pos - p) >= k.width - 1:
+                            self._draw_line_dendron(p, k.pos, k.width / 3)
 
         # draw combo box with text
         self._draw_rect(
@@ -166,7 +156,7 @@ class ComboDrawerMixin(UtilsMixin):
 
         self.out.write("</g>\n")
 
-    def print_combos_for_layer(self, p_0: Point, combos: Sequence[ComboSpec]) -> None:
-        """For a given anchor point p_0, print SVG for all given combos, relative to that point."""
+    def print_combos_for_layer(self, combos: Sequence[ComboSpec]) -> None:
+        """Print SVG for all given combos, relative to that point."""
         for combo_ind, combo_spec in enumerate(combos):
-            self.print_combo(p_0, combo_spec, combo_ind)
+            self.print_combo(combo_spec, combo_ind)
