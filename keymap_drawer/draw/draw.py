@@ -88,20 +88,25 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
 
         self.out.write("</g>\n")
 
-    def print_layers(
+    def print_layers(  # pylint: disable=too-many-arguments
         self,
         p: Point,
         layout: PhysicalLayout,
         layers: Mapping[str, Sequence[LayoutKey]],
         combos_per_layer: Mapping[str, Sequence[ComboSpec]],
+        n_cols: int = 1,
     ) -> Point:
         """
-        Print SVG code for keys for all layers (including combos on them) starting at coordinate p, return final
-        coordinate.
+        Print SVG code for keys for all layers (including combos on them) starting at coordinate p,
+        into n_cols columns and return the final coordinate.
         """
-        for name, layer_keys in layers.items():
+        total_width = self.layout.width + 2 * self.cfg.outer_pad_w
+        max_offset = 0.0
+        for ind, (name, layer_keys) in enumerate(layers.items()):
             # per-layer class group
-            self.out.write(f'<g transform="translate({round(p.x)}, {round(p.y)})" class="layer-{name}">\n')
+            self.out.write(
+                f'<g transform="translate({round(p.x + self.cfg.outer_pad_w)}, {round(p.y)})" class="layer-{name}">\n'
+            )
 
             # draw layer name
             self.print_layer_header(Point(0, self.cfg.outer_pad_h / 2), name)
@@ -117,7 +122,13 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             self.out.write("</g>\n")
             self.out.write("</g>\n")
 
-            p += Point(0, self.cfg.outer_pad_h + top_offset + self.layout.height + bot_offset)
+            max_offset = max(max_offset, top_offset + bot_offset)
+
+            if ind % n_cols == n_cols - 1 or ind == len(layers) - 1:
+                p += Point(-total_width * (n_cols - 1), self.cfg.outer_pad_h + self.layout.height + max_offset)
+                max_offset = 0.0
+            else:
+                p += Point(total_width, 0)
 
         return p
 
@@ -150,7 +161,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         else:
             combos_per_layer = {layer_name: [] for layer_name in layers}
 
-        board_w = round(self.layout.width + 2 * self.cfg.outer_pad_w)
+        board_w = round(self.cfg.n_columns * (self.layout.width + 2 * self.cfg.outer_pad_w))
         board_h = round(
             len(layers) * self.layout.height
             + (len(layers) + 1) * self.cfg.outer_pad_h
@@ -165,6 +176,6 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
 
         self.out.write(f"<style>{self.cfg.svg_style}</style>\n")
 
-        _ = self.print_layers(Point(self.cfg.outer_pad_w, 0.0), self.layout, layers, combos_per_layer)
+        _ = self.print_layers(Point(0, 0), self.layout, layers, combos_per_layer, self.cfg.n_columns)
 
         self.out.write("</svg>\n")

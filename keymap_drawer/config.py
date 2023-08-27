@@ -38,6 +38,9 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     key_rx: float = 6
     key_ry: float = 6
 
+    # number of columns in the output drawing
+    n_columns: int = 1
+
     # padding between keys
     inner_pad_w: float = 2
     inner_pad_h: float = 2
