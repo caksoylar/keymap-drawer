@@ -6,10 +6,10 @@ representation of the keymap using these two.
 
 from html import escape
 from copy import deepcopy
-from typing import Sequence, TextIO
+from typing import Sequence, Mapping, TextIO
 
-from keymap_drawer.keymap import KeymapData, LayoutKey
-from keymap_drawer.physical_layout import Point, PhysicalKey
+from keymap_drawer.keymap import KeymapData, LayoutKey, ComboSpec
+from keymap_drawer.physical_layout import Point, PhysicalKey, PhysicalLayout
 from keymap_drawer.config import DrawConfig
 from keymap_drawer.draw.utils import UtilsMixin
 from keymap_drawer.draw.combo import ComboDrawerMixin
@@ -88,14 +88,40 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
 
         self.out.write("</g>\n")
 
-    def print_layer(self, layer_keys: Sequence[LayoutKey], empty_layer: bool = False) -> None:
+    def print_layers(
+        self,
+        p: Point,
+        layout: PhysicalLayout,
+        layers: Mapping[str, Sequence[LayoutKey]],
+        combos_per_layer: Mapping[str, Sequence[ComboSpec]],
+    ) -> Point:
         """
-        Print SVG code for keys for a given layer.
+        Print SVG code for keys for all layers (including combos on them) starting at coordinate p, return final
+        coordinate.
         """
-        for key_ind, (p_key, l_key) in enumerate(zip(self.layout.keys, layer_keys)):
-            self.print_key(p_key, l_key if not empty_layer else LayoutKey(), key_ind)
+        for name, layer_keys in layers.items():
+            # per-layer class group
+            self.out.write(f'<g transform="translate({round(p.x)}, {round(p.y)})" class="layer-{name}">\n')
 
-    def print_board(  # pylint: disable=too-many-locals
+            # draw layer name
+            self.print_layer_header(Point(0, self.cfg.outer_pad_h / 2), name)
+
+            # get offsets added by combo alignments, draw keys and combos
+            top_offset, bot_offset = self.get_combo_offsets(combos_per_layer[name])
+            self.out.write(f'<g transform="translate(0, {round(self.cfg.outer_pad_h + top_offset)})">\n')
+
+            for key_ind, (p_key, l_key) in enumerate(zip(layout.keys, layer_keys)):
+                self.print_key(p_key, l_key, key_ind)
+
+            self.print_combos_for_layer(combos_per_layer[name])
+            self.out.write("</g>\n")
+            self.out.write("</g>\n")
+
+            p += Point(0, self.cfg.outer_pad_h + top_offset + self.layout.height + bot_offset)
+
+        return p
+
+    def print_board(
         self,
         draw_layers: Sequence[str] | None = None,
         keys_only: bool = False,
@@ -107,6 +133,9 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         if draw_layers:
             assert all(l in layers for l in draw_layers), "Some layer names selected for drawing are not in the keymap"
             layers = {name: layer for name, layer in layers.items() if name in draw_layers}
+
+        if combos_only:
+            layers = {name: [LayoutKey() for _ in range(len(self.layout))] for name, layer in layers.items()}
 
         if ghost_keys:
             for key_position in ghost_keys:
@@ -136,22 +165,6 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
 
         self.out.write(f"<style>{self.cfg.svg_style}</style>\n")
 
-        p = Point(self.cfg.outer_pad_w, 0.0)
-        for name, layer_keys in layers.items():
-            # per-layer class group
-            self.out.write(f'<g transform="translate({round(p.x)}, {round(p.y)})" class="layer-{name}">\n')
-
-            # draw layer name
-            self.print_layer_header(Point(0, self.cfg.outer_pad_h / 2), name)
-
-            # get offsets added by combo alignments, draw keys and combos
-            top_offset, bot_offset = self.get_combo_offsets(combos_per_layer[name])
-            self.out.write(f'<g transform="translate(0, {round(self.cfg.outer_pad_h + top_offset)})">\n')
-            self.print_layer(layer_keys, empty_layer=combos_only)
-            self.print_combos_for_layer(combos_per_layer[name])
-            self.out.write("</g>\n")
-            self.out.write("</g>\n")
-
-            p += Point(0, self.cfg.outer_pad_h + top_offset + self.layout.height + bot_offset)
+        _ = self.print_layers(Point(self.cfg.outer_pad_w, 0.0), self.layout, layers, combos_per_layer)
 
         self.out.write("</svg>\n")
