@@ -1,6 +1,7 @@
 """Module containing class and methods to draw combo representations."""
 from math import copysign
-from typing import Sequence, TextIO
+from io import StringIO
+from typing import Sequence
 
 from keymap_drawer.keymap import ComboSpec
 from keymap_drawer.physical_layout import Point, PhysicalLayout
@@ -13,7 +14,7 @@ class ComboDrawerMixin(UtilsMixin):
 
     # initialized in KeymapDrawer
     cfg: DrawConfig
-    out: TextIO
+    out: StringIO
     layout: PhysicalLayout
 
     # actual methods

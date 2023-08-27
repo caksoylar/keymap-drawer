@@ -1,7 +1,8 @@
 """Module containing lower-level SVG drawing utils, to be used as a mixin."""
 
 from html import escape
-from typing import Sequence, Literal, TextIO
+from io import StringIO
+from typing import Sequence, Literal
 
 from keymap_drawer.physical_layout import Point
 from keymap_drawer.config import DrawConfig
@@ -16,7 +17,7 @@ class UtilsMixin(GlyphMixin):
 
     # initialized in KeymapDrawer
     cfg: DrawConfig
-    out: TextIO
+    out: StringIO
 
     @staticmethod
     def _to_class_str(classes: Sequence[str]) -> str:

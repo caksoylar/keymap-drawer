@@ -4,6 +4,7 @@ keymap with layers and optionally combo definitions, then can draw an SVG
 representation of the keymap using these two.
 """
 
+from io import StringIO
 from html import escape
 from copy import deepcopy
 from typing import Sequence, Mapping, TextIO
@@ -25,7 +26,8 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         assert self.keymap.layout is not None, "A PhysicalLayout must be provided for drawing"
         assert self.keymap.config is not None, "A DrawConfig must be provided for drawing"
         self.layout = self.keymap.layout
-        self.out = out
+        self.output_stream = out
+        self.out = StringIO()
 
     def print_layer_header(self, p: Point, header: str) -> None:
         """Print a layer header that precedes the layer visualization."""
@@ -88,7 +90,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
 
         self.out.write("</g>\n")
 
-    def print_layers(  # pylint: disable=too-many-arguments
+    def print_layers(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         p: Point,
         layout: PhysicalLayout,
@@ -98,9 +100,10 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
     ) -> Point:
         """
         Print SVG code for keys for all layers (including combos on them) starting at coordinate p,
-        into n_cols columns and return the final coordinate.
+        into n_cols columns and return the bottom right coordinate.
         """
-        total_width = self.layout.width + 2 * self.cfg.outer_pad_w
+        original_x = p.x
+        col_width = self.layout.width + 2 * self.cfg.outer_pad_w
         max_offset = 0.0
         for ind, (name, layer_keys) in enumerate(layers.items()):
             # per-layer class group
@@ -125,12 +128,12 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             max_offset = max(max_offset, top_offset + bot_offset)
 
             if ind % n_cols == n_cols - 1 or ind == len(layers) - 1:
-                p += Point(-total_width * (n_cols - 1), self.cfg.outer_pad_h + self.layout.height + max_offset)
+                p = Point(original_x, p.y + self.cfg.outer_pad_h + self.layout.height + max_offset)
                 max_offset = 0.0
             else:
-                p += Point(total_width, 0)
+                p += Point(col_width, 0)
 
-        return p
+        return Point(original_x + col_width * n_cols, p.y)
 
     def print_board(
         self,
@@ -161,21 +164,16 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         else:
             combos_per_layer = {layer_name: [] for layer_name in layers}
 
-        board_w = round(self.cfg.n_columns * (self.layout.width + 2 * self.cfg.outer_pad_w))
-        board_h = round(
-            len(layers) * self.layout.height
-            + (len(layers) + 1) * self.cfg.outer_pad_h
-            + sum(sum(self.get_combo_offsets(combos)) for combos in combos_per_layer.values())
-        )
-        self.out.write(
+        # write to internal output stream self.out
+        p = self.print_layers(Point(0, 0), self.layout, layers, combos_per_layer, self.cfg.n_columns)
+
+        # write to final output stream self.output_stream
+        board_w, board_h = round(p.x), round(p.y + self.cfg.outer_pad_h)
+        self.output_stream.write(
             f'<svg width="{board_w}" height="{board_h}" viewBox="0 0 {board_w} {board_h}" class="keymap" '
             'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n'
         )
-
-        self.out.write(self.get_glyph_defs())
-
-        self.out.write(f"<style>{self.cfg.svg_style}</style>\n")
-
-        _ = self.print_layers(Point(0, 0), self.layout, layers, combos_per_layer, self.cfg.n_columns)
-
-        self.out.write("</svg>\n")
+        self.output_stream.write(self.get_glyph_defs())
+        self.output_stream.write(f"<style>{self.cfg.svg_style}</style>\n")
+        self.output_stream.write(self.out.getvalue())
+        self.output_stream.write("</svg>\n")
