@@ -104,8 +104,9 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         Print SVG code for keys for all layers (including combos on them) starting at coordinate p,
         into n_cols columns and return the bottom right coordinate.
         """
-        original_x = p.x
         outer_pad_w = self.cfg.outer_pad_w // pad_divisor
+        p += Point(self.cfg.outer_pad_w - outer_pad_w, 0)
+        original_x = p.x
         col_width = layout.width + 2 * outer_pad_w
         max_offset = 0.0
         for ind, (name, layer_keys) in enumerate(layers.items()):
