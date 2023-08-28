@@ -68,20 +68,19 @@ class UtilsMixin(GlyphMixin):
     def _draw_text(self, p: Point, word: str, classes: Sequence[str]) -> None:
         if not word:
             return
+        self.out.write(f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}>')
         self.out.write(
-            f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}{self._get_scaling(len(word))}>'
-            f"{escape(word)}</text>\n"
+            f"<tspan{scale}>{escape(word)}</tspan>" if (scale := self._get_scaling(len(word))) else escape(word)
         )
+        self.out.write("</text>\n")
 
     def _draw_textblock(self, p: Point, words: Sequence[str], classes: Sequence[str], shift: float = 0) -> None:
-        self.out.write(
-            f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}'
-            f"{self._get_scaling(max(len(w) for w in words))}>\n"
-        )
+        self.out.write(f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}>\n')
         dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift) / 2)
-        self.out.write(f'<tspan x="{round(p.x)}" dy="-{dy_0}em">{escape(words[0])}</tspan>')
+        scaling = self._get_scaling(max(len(w) for w in words))
+        self.out.write(f'<tspan x="{round(p.x)}" dy="-{dy_0}em"{scaling}>{escape(words[0])}</tspan>')
         for word in words[1:]:
-            self.out.write(f'<tspan x="{round(p.x)}" dy="{self.cfg.line_spacing}em">{escape(word)}</tspan>\n')
+            self.out.write(f'<tspan x="{round(p.x)}" dy="{self.cfg.line_spacing}em"{scaling}>{escape(word)}</tspan>\n')
         self.out.write("</text>\n")
 
     def _draw_glyph(self, p: Point, name: str, legend_type: LegendType, classes: Sequence[str]) -> None:
