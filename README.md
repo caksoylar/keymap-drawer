@@ -13,6 +13,7 @@ Available as a [command-line tool](#command-line-tool-installation) or a [web ap
 - Draw keymap representations consisting of multiple layers, hold-tap keys and combos
   - Uses a human-editable YAML format for specifying the keymap
   - Non-adjacent or 3+ key combos can be visualized by specifying its positioning relative to the keys, with automatically drawn dendrons to keys
+  - Alternatively, output a separate diagram per combo if you have tricky key position combinations
 - Bootstrap the YAML representation by automatically parsing QMK or ZMK keymap files
 - Arbitrary physical keyboard layouts (with rotated keys!) supported, along with parametrized ortho layouts
 - Both parsing and drawing are customizable with a config file, see ["Customization" section](#customization)

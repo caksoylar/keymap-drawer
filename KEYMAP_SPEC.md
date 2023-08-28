@@ -133,6 +133,8 @@ This is an optional field that contains a list of combo specs, each of which is 
 | `arc_scale`         | `float`                                           | `1.0`         | scale the arcs going left/right for `top`/`bottom` or up/down for `left`/`right` aligned combos                                                                                   |
 | `type`              | `str`                                             | `""`          | the styling of the key that corresponds to the [SVG class](keymap_drawer/config.py#L51), see `LayoutKey` definition above                                                         |
 
+All fields except `key_positions`, `key` and `type` are ignored when `draw_config.separate_combo_diagrams` is used.
+
 [^4]: Key indices start from `0` on the first key position and increase by columns and then rows, corresponding to their ordering in the `layers` field. This matches the `key-positions` property in ZMK combo definitions.
 [^5]: Just like for keys in a layer under the `layers` field, `key` field can be specified with a string value as a shortcut, or a mapping (where the `type` field will be ignored).
 [^6]: The default value of empty list corresponds to all layers in the keymap, similar to the `layers` property in ZMK.

@@ -7,6 +7,9 @@ draw_config:
   combo_h: 22
   combo_w: 24
   arc_radius: 12
+  n_columns: 2
+  #separate_combo_diagrams: true  # try turning this on for separate combo diagrams!
+  combo_diagrams_scale: 2
 layers:
   ARDUX:
   - [{t: S, h: Number}, T, R, {t: A, h: Paren}]
