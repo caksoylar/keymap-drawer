@@ -172,10 +172,11 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         .icon-tabler > path {
             fill: inherit;
             stroke: inherit;
+            stroke-width: 2;
         }
         /* hide tabler's default box */
         .icon-tabler > path[stroke="none"][fill="none"] {
-            visibility: collapse;
+            visibility: hidden;
         }
         /* End Tabler Icons Cleanup */
         """
