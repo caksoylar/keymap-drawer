@@ -4,7 +4,8 @@ keycode converters for parsing.
 """
 
 from textwrap import dedent
-from pydantic import BaseSettings, BaseModel
+
+from pydantic import BaseModel, BaseSettings
 
 
 class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
@@ -181,6 +182,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         /* End Tabler Icons Cleanup */
         """
     )
+    svg_extra_style: str = ""
 
     # shrink font size for legends wider than this many chars, set to 0 to disable
     # ideal value depends on the font size defined in svg_style and width of the boxes

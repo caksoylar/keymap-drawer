@@ -4,16 +4,16 @@ keymap with layers and optionally combo definitions, then can draw an SVG
 representation of the keymap using these two.
 """
 
-from io import StringIO
-from html import escape
 from copy import deepcopy
-from typing import Sequence, Mapping, TextIO
+from html import escape
+from io import StringIO
+from typing import Mapping, Sequence, TextIO
 
-from keymap_drawer.keymap import KeymapData, LayoutKey, ComboSpec
-from keymap_drawer.physical_layout import Point, PhysicalKey, PhysicalLayout
 from keymap_drawer.config import DrawConfig
-from keymap_drawer.draw.utils import UtilsMixin
 from keymap_drawer.draw.combo import ComboDrawerMixin
+from keymap_drawer.draw.utils import UtilsMixin
+from keymap_drawer.keymap import ComboSpec, KeymapData, LayoutKey
+from keymap_drawer.physical_layout import PhysicalKey, PhysicalLayout, Point
 
 
 class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
@@ -197,6 +197,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n'
         )
         self.output_stream.write(self.get_glyph_defs())
-        self.output_stream.write(f"<style>{self.cfg.svg_style}</style>\n")
+        extra_style = f"\n{self.cfg.svg_extra_style}" if self.cfg.svg_extra_style else ""
+        self.output_stream.write(f"<style>{self.cfg.svg_style}{extra_style}</style>\n")
         self.output_stream.write(self.out.getvalue())
         self.output_stream.write("</svg>\n")
