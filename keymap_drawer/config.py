@@ -78,6 +78,8 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # key side parameters
     key_side_pars: KeySidePars = KeySidePars()
 
+    # style CSS to be output in the SVG
+    # if you do not need to remove existing definitions, consider using svg_extra_style instead
     svg_style: str = dedent(
         """\
         /* inherit to force styles through use tags */
@@ -182,6 +184,10 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         /* End Tabler Icons Cleanup */
         """
     )
+
+    # extra CSS to be appended to svg_style
+    # prefer to set this over modifying svg_style since the default value of svg_style can change
+    svg_extra_style: str = ""
 
     # shrink font size for legends wider than this many chars, set to 0 to disable
     # ideal value depends on the font size defined in svg_style and width of the boxes

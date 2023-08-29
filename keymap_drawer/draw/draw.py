@@ -197,6 +197,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n'
         )
         self.output_stream.write(self.get_glyph_defs())
-        self.output_stream.write(f"<style>{self.cfg.svg_style}</style>\n")
+        extra_style = f"\n{self.cfg.svg_extra_style}" if self.cfg.svg_extra_style else ""
+        self.output_stream.write(f"<style>{self.cfg.svg_style}{extra_style}</style>\n")
         self.output_stream.write(self.out.getvalue())
         self.output_stream.write("</svg>\n")
