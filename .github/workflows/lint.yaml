@@ -3,7 +3,7 @@ name: Run lint checks
 on:
   push:
     paths:
-      - keymap_drawer
+      - 'keymap_drawer/**'
       - pyproject.toml
       - poetry.lock
   pull_request:
