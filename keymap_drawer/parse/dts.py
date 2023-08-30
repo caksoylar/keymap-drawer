@@ -9,12 +9,12 @@ C preprocessor using pcpp.
 """
 
 import re
-from itertools import chain
-from io import StringIO
 from collections import defaultdict
+from io import StringIO
+from itertools import chain
 
 import pyparsing as pp
-from pcpp.preprocessor import Preprocessor, OutputDirective, Action  # type: ignore
+from pcpp.preprocessor import Action, OutputDirective, Preprocessor  # type: ignore
 
 
 class DTNode:

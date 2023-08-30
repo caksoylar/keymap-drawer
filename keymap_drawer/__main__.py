@@ -6,14 +6,14 @@ ortho layout), print an SVG representing the keymap to standard output.
 
 import sys
 from argparse import ArgumentParser, FileType, Namespace
-from pathlib import Path
 from importlib.metadata import version
+from pathlib import Path
 
 import yaml
 
 from .config import Config, DrawConfig, ParseConfig
-from .keymap import KeymapData
 from .draw import KeymapDrawer
+from .keymap import KeymapData
 from .parse import QmkJsonParser, ZmkKeymapParser
 
 

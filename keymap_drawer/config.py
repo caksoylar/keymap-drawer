@@ -4,7 +4,8 @@ keycode converters for parsing.
 """
 
 from textwrap import dedent
-from pydantic import BaseSettings, BaseModel
+
+from pydantic import BaseModel, BaseSettings
 
 
 class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):

@@ -4,18 +4,17 @@ and drawing SVG glyphs.
 """
 
 import re
-from pathlib import Path
-from functools import lru_cache, partial
-from urllib.request import urlopen
-from urllib.error import HTTPError
 from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache, partial
+from pathlib import Path
 from typing import Iterable
+from urllib.error import HTTPError
+from urllib.request import urlopen
 
 from platformdirs import user_cache_dir
 
-from keymap_drawer.keymap import KeymapData, LayoutKey
 from keymap_drawer.config import DrawConfig
-
+from keymap_drawer.keymap import KeymapData, LayoutKey
 
 FETCH_WORKERS = 8
 FETCH_TIMEOUT = 10

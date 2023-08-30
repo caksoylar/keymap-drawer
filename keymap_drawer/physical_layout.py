@@ -5,19 +5,18 @@ and rotation.
 """
 
 import json
-from math import sqrt, sin, cos, pi
 from dataclasses import dataclass
-from pathlib import Path
 from functools import cached_property, lru_cache
-from typing import Sequence, Literal
-from urllib.request import urlopen
+from math import cos, pi, sin, sqrt
+from pathlib import Path
+from typing import Literal, Sequence
 from urllib.error import HTTPError
+from urllib.request import urlopen
 
-from pydantic import BaseModel, root_validator
 from platformdirs import user_cache_dir
+from pydantic import BaseModel, root_validator
 
 from .config import DrawConfig
-
 
 QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"

@@ -2,12 +2,11 @@
 
 from html import escape
 from io import StringIO
-from typing import Sequence, Literal
+from typing import Literal, Sequence
 
-from keymap_drawer.physical_layout import Point
 from keymap_drawer.config import DrawConfig
 from keymap_drawer.draw.glyph import GlyphMixin
-
+from keymap_drawer.physical_layout import Point
 
 LegendType = Literal["tap", "hold", "shifted"]
 

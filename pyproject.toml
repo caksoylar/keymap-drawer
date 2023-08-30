@@ -64,3 +64,7 @@ plugins = "pydantic.mypy"
 
 [tool.black]
 line-length = 120
+
+[tool.isort]
+src_paths = ["keymap_drawer"]
+line_length = 120

@@ -3,13 +3,12 @@ Module containing base parser class to parse keymaps into KeymapData and then du
 Do not use directly, use QmkJsonParser or ZmkKeymapParser instead.
 """
 
-from io import TextIOWrapper
 from abc import ABC
+from io import TextIOWrapper
 from typing import Sequence
 
-
-from keymap_drawer.keymap import LayoutKey, KeymapData
 from keymap_drawer.config import ParseConfig
+from keymap_drawer.keymap import KeymapData, LayoutKey
 
 
 class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes

@@ -1,10 +1,10 @@
 """Module containing class to parse json-format QMK keymaps."""
 
-import re
 import json
+import re
 from typing import Sequence
 
-from keymap_drawer.keymap import LayoutKey, KeymapData
+from keymap_drawer.keymap import KeymapData, LayoutKey
 from keymap_drawer.parse.parse import KeymapParser
 
 

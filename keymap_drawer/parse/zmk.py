@@ -1,17 +1,16 @@
 """Module containing class to parse devicetree format ZMK keymaps."""
 
 import re
-from pathlib import Path
 from itertools import chain
+from pathlib import Path
 from typing import Sequence
 
 import yaml
 
-from keymap_drawer.keymap import LayoutKey, ComboSpec, KeymapData
 from keymap_drawer.config import ParseConfig
+from keymap_drawer.keymap import ComboSpec, KeymapData, LayoutKey
 from keymap_drawer.parse.dts import DeviceTree
 from keymap_drawer.parse.parse import KeymapParser
-
 
 ZMK_LAYOUTS_PATH = Path(__file__).parent.parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
 
