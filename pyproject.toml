@@ -32,6 +32,7 @@ black = "^23.3.0"
 pylint-pydantic = "^0.1.8"
 types-pyyaml = "^6.0.12.10"
 deptry = "^0.12.0"
+hjson = "^3.1.0"
 
 [tool.poetry.group.lsp]
 optional = true
