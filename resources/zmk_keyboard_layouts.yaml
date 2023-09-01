@@ -133,13 +133,13 @@ nibble:
 osprette: *pinky_cluster_34
 pancake:
   null: {qmk_keyboard: spaceman/pancake/rev1/promicro, qmk_layout: LAYOUT_ortho_4x12}
-qaz:
+qaz: &qaz
   default_transform: {qmk_keyboard: tominabox1/qaz}
 quefrency:
   default_transform: {qmk_keyboard: keebio/quefrency/rev2, qmk_layout: LAYOUT_65}
 redox:
   default_transform: {qmk_keyboard: redox/rev1/base}
-reviung41:
+reviung41: &reviung41
   default_transform: {qmk_keyboard: reviung/reviung41}
 reviung5:
   default_transform: {qmk_keyboard: reviung/reviung5}
@@ -174,6 +174,10 @@ adv360: &adv360
 adv360pro: *adv360
 ahokore: *generic_3x5_3
 arch36: *generic_3x5_3
+bad_wings: &bad_wings
+  default_transform: {qmk_keyboard: hazel/bad_wings}
+bad_wings_go: *bad_wings
+bad_wings_slim: *bad_wings
 basbousa: *pinky_cluster_34
 battoota: *hummingbird_splay
 berylline: *hummingbird_splay
@@ -181,12 +185,15 @@ ble_chiffre:
   default_transform: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2}}
 breeze:
   default_transform: {qmk_keyboard: afternoonlabs/breeze/rev1}
+chaz: *qaz
 chipper: &corne_5col_default
   five_column_transform: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x5_3}
   default_transform: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
 chippy: *corne_5col_default
 chocofi: &chocofi
   default_transform: {qmk_keyboard: chocofi}
+cut_slope:
+  default_transform: {qmk_keyboard: hazel/cut_slope}
 tenaxxiao: *chocofi
 tenaxoled: *chocofi
 chocv:
@@ -198,6 +205,7 @@ dilemma:
 draculad:
   default_transform: {qmk_keyboard: draculad}
 draculady: *generic_3x5_3
+dust: *ferris
 ergotravel:
   default_transform: {qmk_keyboard: ergotravel/rev1}
 ffkb:
@@ -225,6 +233,8 @@ klor:
   default_transform: {qmk_keyboard: klor, qmk_layout: LAYOUT_polydactyl}
 klotz:
   default_transform: {qmk_keyboard: klotz}
+kurp:
+  default_transform: {qmk_keyboard: hazel/kurp}
 le_chiff_ble:
   default_transform: {qmk_keyboard: tominabox1/le_chiffre/rev2}
 levinson:
@@ -258,6 +268,8 @@ reviung34:
   default_transform: {qmk_keyboard: reviung/reviung34}
 reviung39: &reviung39
   default_transform: {qmk_keyboard: reviung/reviung39}
+rev1350: *reviung41
+rev1353: *reviung41
 revlp: *reviung39
 revxlp: &revxlp
   default_transform: {qmk_keyboard: revxlp}
@@ -267,6 +279,8 @@ rollow: *corne
 rommana: *hummingbird_splay
 rufous:
   default_transform: {qmk_keyboard: rufous}
+satpad:
+  default_transform: {qmk_keyboard: miuni32, qmk_layout: LAYOUT_ortho_3x11}
 skeletyl:
   default_transform: {qmk_keyboard: bastardkb/skeletyl/v2/splinky_3}
 slicemk_ergodox:
