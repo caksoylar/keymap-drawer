@@ -91,7 +91,7 @@ eternal_keypad: &eternal_keypad
 eternal_keypad_lefty: *eternal_keypad
 fourier:
   default_transform: {qmk_keyboard: keebio/fourier}
-helix:
+helix: &helix
   default_transform: {qmk_keyboard: helix/rev3_5rows}
 hummingbird: *hummingbird_ortho
 iris:
@@ -152,7 +152,9 @@ snap:
 sofle: &sofle
   default_transform: {qmk_keyboard: sofle/rev1}
 splitkb_aurora_corne: *corne
+splitkb_aurora_helix: *helix
 splitkb_aurora_lily58: *lily58
+splitkb_aurora_sofle: *sofle
 splitkb_aurora_sweep: *ferris
 splitreus62:
   default_transform: {qmk_keyboard: nacly/splitreus62}
