@@ -29,6 +29,7 @@ class GlyphMixin:
         r'<svg.*viewbox="(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)".*>',
         flags=re.IGNORECASE | re.ASCII,
     )
+    _svg_width_re = re.compile(r'<svg.*width="(\d+)".*>')
     _scrub_dims_re = re.compile(r' (width|height)=".*?"')
 
     # initialized in KeymapDrawer
@@ -126,8 +127,14 @@ class GlyphMixin:
 
         x, y, w, h = (float(v) for v in view_box.groups())
 
-        # calculate width to preserve aspect ratio
-        width = (w - x) * (height / (h - y))
+        # NOTE: sometimes svg do haev width and we can take advantage to calculate the correct size
+        # Failing to do so would render really small image, for example $$material:keyboard_double_arrow_up$$
+        _width = self._svg_width_re.search(self.name_to_svg[name])
+        if _width is not None:
+            width = float(_width.groups()[0])
+        else:
+            # calculate width to preserve aspect ratio
+            width = (w - x) * (height / (h - y))
 
         return width, height, d_y
 
