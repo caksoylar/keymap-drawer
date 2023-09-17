@@ -228,6 +228,20 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     """Configuration settings related to parsing QMK/ZMK keymaps."""
 
+    class ModifierFnMap(BaseModel):
+        """Mapping to replace modifiers in modifier functions with the given string."""
+
+        left_ctrl: str = "C"
+        right_ctrl: str = "C"
+        left_shift: str = "S"
+        right_shift: str = "S"
+        left_alt: str = "A"  # Alt/Opt
+        right_alt: str = "A"  # Alt/Opt/AltGr
+        left_gui: str = "G"  # Cmd/Win
+        right_gui: str = "G"  # Cmd/Win
+        keycode_combiner: str = "{mods}+{key}"  # pattern to join modifier functions with the modified keycode
+        modifier_combiner: str = "{mod_1}{mod_2}"  # string to join multiple modifier function strings
+
     # run C preprocessor on ZMK keymaps
     preprocess: bool = True
 
@@ -252,6 +266,10 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # creates ambiguity: you cannot tell if *all* the marked keys need to be held down while a
     # layer is active (which is the default behavior) or *any* of them (with this option)
     mark_alternate_layer_activators: bool = False
+
+    # convert modifiers in modifier functions (used in keycodes with built-in modifiers like LC(V)
+    # in ZMK or LCTL(KC_V) in QMK) to given symbols -- set to None/null to disable the mapping
+    modifier_fn_map: ModifierFnMap | None = ModifierFnMap()
 
     # remove these prefixes from QMK keycodes before further processing
     # can be augmented with other locale prefixes, e.g. "DE_"

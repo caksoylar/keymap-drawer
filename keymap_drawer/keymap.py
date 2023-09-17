@@ -6,7 +6,7 @@ containing key and combo specifications, paired with the physical keyboard layou
 from collections import defaultdict
 from functools import partial
 from itertools import chain
-from typing import Iterable, Literal
+from typing import Iterable, Literal, Callable
 
 from pydantic import BaseModel, Field, field_validator, model_serializer, model_validator
 
@@ -49,6 +49,15 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
     def full_serializer(self) -> dict[str, str]:
         """Custom serializer that always outputs a dict."""
         return {k: v for k in ("tap", "hold", "shifted", "type") if (v := getattr(self, k))}
+
+    def apply_formatter(self, formatter: Callable[[str], str]) -> None:
+        """Add a formatter function (str -> str) to all non-empty fields."""
+        if self.tap:
+            self.tap = formatter(self.tap)
+        if self.hold:
+            self.hold = formatter(self.hold)
+        if self.shifted:
+            self.shifted = formatter(self.shifted)
 
 
 class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):

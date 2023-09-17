@@ -19,6 +19,16 @@ class ZmkKeymapParser(KeymapParser):
     """Parser for ZMK devicetree keymaps, using C preprocessor and hacky pyparsing-based parsers."""
 
     _numbers_re = re.compile(r"N(UM(BER)?_)?(\d)")
+    _modifier_fn_to_std = {
+        "LC": ["left_ctrl"],
+        "LS": ["left_shift"],
+        "LA": ["left_alt"],
+        "LG": ["left_gui"],
+        "RC": ["right_ctrl"],
+        "RS": ["right_shift"],
+        "RA": ["right_alt"],
+        "RG": ["right_gui"],
+    }
 
     def __init__(
         self,
@@ -59,6 +69,7 @@ class ZmkKeymapParser(KeymapParser):
         assert self.layer_names is not None
 
         def mapped(key: str) -> LayoutKey:
+            key, mods = self.parse_modifier_fns(key)
             if self._prefix_re is not None:
                 key = self._prefix_re.sub("", key)
             mapped = LayoutKey.from_key_spec(
@@ -73,6 +84,8 @@ class ZmkKeymapParser(KeymapParser):
             )
             if no_shifted:
                 mapped.shifted = ""
+            if mods:
+                mapped.apply_formatter(lambda key: self.format_modified_keys(key, mods))
             return mapped
 
         match binding.split():
