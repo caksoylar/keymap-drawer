@@ -114,7 +114,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
 
             # per-layer class group
             self.out.write(
-                f'<g transform="translate({round(p.x + outer_pad_w)}, {round(p.y)})" class="layer-{name}">\n'
+                f'<g transform="translate({round(p.x + outer_pad_w)}, {round(p.y)})" class="layer-{escape(name)}">\n'
             )
 
             # draw layer name
