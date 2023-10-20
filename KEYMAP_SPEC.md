@@ -132,6 +132,8 @@ This is an optional field that contains a list of combo specs, each of which is 
 | `slide (s)`         | `null \| float (-1 <= val <= 1)`                  | `null`        | slide the combo box along an axis between keys -- can be used for moving `top`/`bottom` combo boxes left/right, `left`/`right` boxes up/down, or `mid` combos between two keys    |
 | `arc_scale`         | `float`                                           | `1.0`         | scale the arcs going left/right for `top`/`bottom` or up/down for `left`/`right` aligned combos                                                                                   |
 | `type`              | `str`                                             | `""`          | the styling of the key that corresponds to the [SVG class](keymap_drawer/config.py#L51), see `LayoutKey` definition above                                                         |
+| `width (w)`         | `float`                                           | `null`        | the width of the combo box (in pixels), defaults to `draw_config.combo_w` if null                                                                                                 |
+| `height (w)`        | `float`                                           | `null`        | the height of the combo box (in pixels), defaults to `draw_config.combo_h` if null                                                                                                |
 
 All fields except `key_positions`, `key` and `type` are ignored when `draw_config.separate_combo_diagrams` is used.
 
