@@ -122,8 +122,9 @@ lily58: &lily58
 lotus58:
   default_transform: {qmk_keyboard: tweetydabird/lotus58/elite_c}  # might have a key order mismatch
 m60: *generic_60p
-microdox:
+microdox: &microdox
   default_transform: {qmk_keyboard: boardsource/microdox/v2}
+microdox_v2: *microdox
 murphpad:
   null: {qmk_keyboard: mechwild/murphpad}
 naked60:
@@ -139,10 +140,15 @@ quefrency:
   default_transform: {qmk_keyboard: keebio/quefrency/rev2, qmk_layout: LAYOUT_65}
 redox:
   default_transform: {qmk_keyboard: redox/rev1/base}
+reviung34:
+  dual_1u_transform: {qmk_keyboard: reviung/reviung34, qmk_layout: LAYOUT_reviung34}
+  single_2u_transform: {qmk_keyboard: reviung/reviung34, qmk_layout: LAYOUT_reviung34_2u}
 reviung41: &reviung41
   default_transform: {qmk_keyboard: reviung/reviung41}
 reviung5:
   default_transform: {qmk_keyboard: reviung/reviung5}
+reviung53:
+  default_transform: {qmk_keyboard: reviung/reviung53}
 romac:
   null: {qmk_keyboard: kingly_keys/romac}
 romac_plus:
@@ -160,8 +166,8 @@ splitreus62:
   default_transform: {qmk_keyboard: nacly/splitreus62}
 #tg4x:  # this weird layout variation doesn't exist
 #  default_transform: {qmk_keyboard: tg4x}
-#tidbit:  # the QMK one includes fake keys for encoder turns
-#  default_transform: {qmk_keyboard: nullbitsco/tidbit}
+tidbit:
+  default_transform: {qmk_keyboard: nullbitsco/tidbit}
 two_percent_milk:
   null: {ortho_layout: {split: false, rows: 2, columns: 1}}
 waterfowl:
@@ -266,8 +272,6 @@ rae_dux: *generic_3x5_3
 rebound: &rebound
   default_transform: {qmk_keyboard: montsinger/rebound/rev4}
 rebound_v4: *rebound
-reviung34:
-  default_transform: {qmk_keyboard: reviung/reviung34}
 reviung39: &reviung39
   default_transform: {qmk_keyboard: reviung/reviung39}
 rev1350: *reviung41
