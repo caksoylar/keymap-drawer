@@ -64,6 +64,7 @@ class ComboDrawerMixin(UtilsMixin):
         specified, along with whether dendrons are drawn going to each key position from the combo.
         """
         p_keys = [self.layout.keys[p] for p in combo.key_positions]
+        width, height = combo.width or self.cfg.combo_w, combo.height or self.cfg.combo_h
 
         # find center of combo box
         p_mid = (1 / len(p_keys)) * sum((k.pos for k in p_keys), start=Point(0, 0))
@@ -114,8 +115,7 @@ class ComboDrawerMixin(UtilsMixin):
                     for k in p_keys:
                         offset = (
                             k.height / 5
-                            if abs((k.pos - p).x) < self.cfg.combo_w / 2
-                            and abs((k.pos - p).y) <= k.height / 3 + self.cfg.combo_h / 2
+                            if abs((k.pos - p).x) < width / 2 and abs((k.pos - p).y) <= k.height / 3 + height / 2
                             else k.height / 3
                         )
                         self._draw_arc_dendron(p, k.pos, True, offset, combo.arc_scale)
@@ -123,8 +123,7 @@ class ComboDrawerMixin(UtilsMixin):
                     for k in p_keys:
                         offset = (
                             k.width / 5
-                            if abs((k.pos - p).y) < self.cfg.combo_h / 2
-                            and abs((k.pos - p).x) <= k.width / 3 + self.cfg.combo_w / 2
+                            if abs((k.pos - p).y) < height / 2 and abs((k.pos - p).x) <= k.width / 3 + width / 2
                             else k.width / 3
                         )
                         self._draw_arc_dendron(p, k.pos, False, offset, combo.arc_scale)
@@ -136,7 +135,7 @@ class ComboDrawerMixin(UtilsMixin):
         # draw combo box with text
         self._draw_rect(
             p,
-            Point(self.cfg.combo_w, self.cfg.combo_h),
+            Point(width, height),
             Point(self.cfg.key_rx, self.cfg.key_ry),
             classes=["combo", combo.type],
         )

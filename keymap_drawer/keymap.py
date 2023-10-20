@@ -60,6 +60,8 @@ class ComboSpec(BaseModel, allow_population_by_field_name=True):
     slide: float | None = Field(alias="s", default=None)
     arc_scale: float = 1.0
     type: str = ""
+    width: float | None = Field(alias="w", default=None)
+    height: float | None = Field(alias="h", default=None)
 
     @classmethod
     def normalize_fields(cls, spec_dict: dict) -> dict:
