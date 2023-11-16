@@ -1,7 +1,7 @@
 {
     "url": "https://github.com/Bastardkb/Dilemma",
     "layouts": {
-        "LAYOUT": {
+        "LAYOUT_split_3x5_3": {
             "layout": [
                 { "x":   0, "y":  0.8 },
                 { "x":   1, "y":  0.4 },
