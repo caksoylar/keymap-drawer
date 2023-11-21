@@ -77,10 +77,13 @@ class ZmkKeymapParser(KeymapParser):
                 tap_key = self._str_to_key(self.mod_morphs[ref][0], current_layer, key_positions)
                 shifted_key = self._str_to_key(self.mod_morphs[ref][1], current_layer, key_positions)
                 return LayoutKey(tap=tap_key.tap, hold=tap_key.hold, shifted=shifted_key.tap)
-            case ["&kp", par]:
-                return mapped(par)
-            case [ref, par] if ref in self.sticky_keys:
-                l_key = self._str_to_key(f"{self.sticky_keys[ref][0]} {par}", current_layer, key_positions)
+            case ["&kp", *pars]:
+                return mapped(" ".join(pars))
+            case ["&kt", *pars]:
+                l_key = mapped(" ".join(pars))
+                return LayoutKey(tap=l_key.tap, hold=self.cfg.toggle_label, shifted=l_key.shifted)
+            case [ref, *pars] if ref in self.sticky_keys:
+                l_key = self._str_to_key(f"{self.sticky_keys[ref][0]} {' '.join(pars)}", current_layer, key_positions)
                 return LayoutKey(tap=l_key.tap, hold=self.cfg.sticky_label, shifted=l_key.shifted)
             case ["&bt", *pars]:
                 mapped_action = mapped(pars[0])
@@ -94,7 +97,8 @@ class ZmkKeymapParser(KeymapParser):
                     self.update_layer_activated_from(
                         [current_layer] if current_layer is not None else [], int(par), key_positions
                     )
-                return LayoutKey(tap=self.layer_names[int(par)])
+                    return LayoutKey(tap=self.layer_names[int(par)])
+                return LayoutKey(tap=self.layer_names[int(par)], hold=self.cfg.toggle_label)
             case [ref, hold_par, tap_par] if ref in self.hold_taps:
                 hold_key = self._str_to_key(f"{self.hold_taps[ref][0]} {hold_par}", current_layer, key_positions)
                 tap_key = self._str_to_key(f"{self.hold_taps[ref][1]} {tap_par}", current_layer, key_positions)

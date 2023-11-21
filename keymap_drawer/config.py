@@ -230,6 +230,9 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # display text to place in hold field for sticky/one-shot keys
     sticky_label: str = "sticky"
 
+    # display text to place in hold field for toggled keys
+    toggle_label: str = "toggle"
+
     # legend to output for transparent keys
     trans_legend: str | dict = {"t": "▽", "type": "trans"}
 

@@ -14,6 +14,7 @@ class QmkJsonParser(KeymapParser):
     _prefix_re = re.compile(r"\bKC_")
     _trans_re = re.compile(r"TRANSPARENT|TRNS|_______")
     _mo_re = re.compile(r"MO\((\d+)\)")
+    _tog_re = re.compile(r"(TG|TO|DF)\((\d+)\)")
     _mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
     _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
     _lt_re = re.compile(r"LT\((\d+), *(\S+)\)")
@@ -41,6 +42,9 @@ class QmkJsonParser(KeymapParser):
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from([current_layer], to_layer, key_positions)
             return LayoutKey(tap=self.layer_names[to_layer])
+        if m := self._tog_re.fullmatch(key_str):  # toggled layer
+            to_layer = int(m.group(2).strip())
+            return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.toggle_label)
         if m := self._mts_re.fullmatch(key_str):  # short mod-tap syntax
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=m.group(1), shifted=tap_key.shifted)
