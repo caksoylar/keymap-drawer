@@ -258,7 +258,7 @@ lpgalaxy_war_driver:
   southpaw_arrows_transform: {qmk_keyboard: thevankeyboards/minivan, qmk_layout: LAYOUT_arrow_command}
 luakeeb:
   default_transform: {qmk_keyboard: fingerpunch/luakeeb}
-luna: *hummingbird_ortho
+luna: *hummingbird_splay
 naked48:
   null: {qmk_keyboard: salicylic_acid3/naked48/rev1}
 osprey: &osprey
