@@ -229,18 +229,26 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     """Configuration settings related to parsing QMK/ZMK keymaps."""
 
     class ModifierFnMap(BaseModel):
-        """Mapping to replace modifiers in modifier functions with the given string."""
+        """
+        Mapping to replace modifiers in modifier functions with the given string. Includes `combiner`
+        patterns to determine how to format the result. Mod combinations in `mod_combinations` take
+        precedence over individual mod lookups.
+        """
 
-        left_ctrl: str = "C"
-        right_ctrl: str = "C"
-        left_shift: str = "S"
-        right_shift: str = "S"
-        left_alt: str = "A"  # Alt/Opt
-        right_alt: str = "A"  # Alt/Opt/AltGr
-        left_gui: str = "G"  # Cmd/Win
-        right_gui: str = "G"  # Cmd/Win
-        keycode_combiner: str = "{mods}+{key}"  # pattern to join modifier functions with the modified keycode
-        modifier_combiner: str = "{mod_1}{mod_2}"  # string to join multiple modifier function strings
+        left_ctrl: str = "Ctrl"
+        right_ctrl: str = "Ctrl"
+        left_shift: str = "Shift"
+        right_shift: str = "Shift"
+        left_alt: str = "Alt"  # Alt/Opt
+        right_alt: str = "AltGr"  # Alt/Opt/AltGr
+        left_gui: str = "Gui"  # Cmd/Win
+        right_gui: str = "Gui"  # Cmd/Win
+        keycode_combiner: str = "{mods}+ {key}"  # pattern to join modifier functions with the modified keycode
+        mod_combiner: str = "{mod_1}+{mod_2}"  # pattern to join multiple modifier function strings
+        special_combinations: dict[str, str] = {  # special look-up for combinations of mods (mod order is ignored)
+            "left_ctrl+left_alt+left_gui+left_shift": "Hyper",
+            "left_ctrl+left_alt+left_shift": "Meh",
+        }
 
     # run C preprocessor on ZMK keymaps
     preprocess: bool = True

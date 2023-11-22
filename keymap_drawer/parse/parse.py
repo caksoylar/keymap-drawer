@@ -36,9 +36,13 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         self.conditional_layers: dict[int, list[int]] = {}  # then-layer to if-layers mapping
         self.trans_key = LayoutKey.from_key_spec(self.cfg.trans_legend)
         self.raw_binding_map = self.cfg.raw_binding_map.copy()
-        self.modifier_fn_re = re.compile(
+        self._modifier_fn_re = re.compile(
             "(" + "|".join(re.escape(mod) for mod in self._modifier_fn_to_std) + r") *\( *(.*) *\)"
         )
+        if (mod_map := self.cfg.modifier_fn_map) is not None:
+            self._mod_combs_lookup = {
+                frozenset(mods.split("+")): val for mods, val in mod_map.special_combinations.items()
+            }
 
     def parse_modifier_fns(self, keycode: str) -> tuple[str, list[str]]:
         """
@@ -50,7 +54,7 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         def strip_modifiers(keycode: str, current_mods: list[str] | None = None) -> tuple[str, list[str]]:
             if current_mods is None:
                 current_mods = []
-            if not (m := self.modifier_fn_re.fullmatch(keycode)):
+            if not (m := self._modifier_fn_re.fullmatch(keycode)):
                 return keycode, current_mods
             return strip_modifiers(m.group(2), current_mods + self._modifier_fn_to_std[m.group(1)])
 
@@ -64,13 +68,16 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         if self.cfg.modifier_fn_map is None or not modifiers:
             return key_str
 
-        fn_map = self.cfg.modifier_fn_map.dict()
-        assert all(
-            mod in fn_map for mod in modifiers
-        ), f"Not all modifier functions in {modifiers} have a corresponding mapping in parse_config.modifier_fn_map"
-        fns_str = fn_map[modifiers[0]]
-        for mod in modifiers[1:]:
-            fns_str = self.cfg.modifier_fn_map.modifier_combiner.format(mod_1=fns_str, mod_2=fn_map[mod])
+        if (combo_str := self._mod_combs_lookup.get(frozenset(modifiers))) is not None:
+            fns_str = combo_str
+        else:
+            fn_map = self.cfg.modifier_fn_map.dict()
+            assert all(
+                mod in fn_map for mod in modifiers
+            ), f"Not all modifier functions in {modifiers} have a corresponding mapping in parse_config.modifier_fn_map"
+            fns_str = fn_map[modifiers[0]]
+            for mod in modifiers[1:]:
+                fns_str = self.cfg.modifier_fn_map.mod_combiner.format(mod_1=fns_str, mod_2=fn_map[mod])
         return self.cfg.modifier_fn_map.keycode_combiner.format(mods=fns_str, key=key_str)
 
     def update_layer_activated_from(
