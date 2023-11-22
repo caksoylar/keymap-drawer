@@ -4,6 +4,7 @@ import json
 import re
 from typing import Sequence
 
+from keymap_drawer.config import ParseConfig
 from keymap_drawer.keymap import KeymapData, LayoutKey
 from keymap_drawer.parse.parse import KeymapParser
 
@@ -11,7 +12,6 @@ from keymap_drawer.parse.parse import KeymapParser
 class QmkJsonParser(KeymapParser):
     """Parser for json-format QMK keymaps, like Configurator exports or `qmk c2json` outputs."""
 
-    _prefix_re = re.compile(r"\bKC_")
     _trans_re = re.compile(r"TRANSPARENT|TRNS|_______")
     _mo_re = re.compile(r"MO\((\d+)\)")
     _tog_re = re.compile(r"(TG|TO|DF)\((\d+)\)")
@@ -20,6 +20,20 @@ class QmkJsonParser(KeymapParser):
     _lt_re = re.compile(r"LT\((\d+), *(\S+)\)")
     _osm_re = re.compile(r"OSM\(MOD_(\S+)\)")
     _osl_re = re.compile(r"OSL\((\d+)\)")
+
+    def __init__(
+        self,
+        config: ParseConfig,
+        columns: int | None,
+        base_keymap: KeymapData | None = None,
+        layer_names: list[str] | None = None,
+    ):
+        super().__init__(config, columns, base_keymap, layer_names)
+        self._prefix_re: re.Pattern | None
+        if prefixes := self.cfg.qmk_remove_keycode_prefix:
+            self._prefix_re = re.compile(r"\b(" + "|".join(re.escape(prefix) for prefix in set(prefixes)) + ")")
+        else:
+            self._prefix_re = None
 
     def _str_to_key(  # pylint: disable=too-many-return-statements
         self, key_str: str, current_layer: int, key_positions: Sequence[int]
@@ -32,9 +46,9 @@ class QmkJsonParser(KeymapParser):
         assert self.layer_names is not None
 
         def mapped(key: str) -> LayoutKey:
+            if self._prefix_re is not None:
+                key = self._prefix_re.sub("", key)
             return LayoutKey.from_key_spec(self.cfg.qmk_keycode_map.get(key, key.replace("_", " ")))
-
-        key_str = self._prefix_re.sub("", key_str)
 
         if m := self._trans_re.fullmatch(key_str):  # transparent
             return self.trans_key

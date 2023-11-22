@@ -31,6 +31,11 @@ class ZmkKeymapParser(KeymapParser):
         self.hold_taps = {"&mt": ["&kp", "&kp"], "&lt": ["&mo", "&kp"]}
         self.mod_morphs = {"&gresc": ["&kp ESC", "&kp GRAVE"]}
         self.sticky_keys = {"&sk": ["&kp"], "&sl": ["&mo"]}
+        self._prefix_re: re.Pattern | None
+        if prefixes := self.cfg.zmk_remove_keycode_prefix:
+            self._prefix_re = re.compile(r"\b(" + "|".join(re.escape(prefix) for prefix in set(prefixes)) + ")")
+        else:
+            self._prefix_re = None
 
     def _update_raw_binding_map(self, dts: DeviceTree) -> None:
         raw_keys = list(self.raw_binding_map.keys())
@@ -54,6 +59,8 @@ class ZmkKeymapParser(KeymapParser):
         assert self.layer_names is not None
 
         def mapped(key: str) -> LayoutKey:
+            if self._prefix_re is not None:
+                key = self._prefix_re.sub("", key)
             mapped = LayoutKey.from_key_spec(
                 self.cfg.zmk_keycode_map.get(
                     key,

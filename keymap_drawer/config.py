@@ -242,7 +242,11 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # layer is active (which is the default behavior) or *any* of them (with this option)
     mark_alternate_layer_activators: bool = False
 
-    # convert QMK keycodes to their display forms, omitting "KC_" prefix on the keys
+    # remove these prefixes from QMK keycodes before further processing
+    # can be augmented with other locale prefixes, e.g. "DE_"
+    qmk_remove_keycode_prefix: list[str] = ["KC_"]
+
+    # convert QMK keycodes to their display forms, after removing prefixes in `qmk_remove_keycode_prefix`
     qmk_keycode_map: dict[str, str | dict] = {
         # QMK keycodes
         "XXXXXXX": "",
@@ -312,6 +316,10 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         "QUESTION": "?",
         "QUES": "?",
     }
+
+    # remove these prefixes from ZMK keycodes before further processing
+    # can be augmented with locale prefixes for zmk-locale-generator headers, e.g. "DE_"
+    zmk_remove_keycode_prefix: list[str] = []
 
     # convert ZMK keycodes to their display forms, applied to parameters of behaviors like "&kp"
     zmk_keycode_map: dict[str, str | dict] = {
