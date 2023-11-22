@@ -89,15 +89,19 @@ class DeviceTree:
     _compatible_re = re.compile(r'compatible = "(.*?)"')
     _custom_data_header = "__keymap_drawer_data__"
 
-    def __init__(self, in_str: str, file_name: str | None = None, preprocess: bool = True):
+    def __init__(
+        self, in_str: str, file_name: str | None = None, preprocess: bool = True, add_define: str | None = None
+    ):
         """
         Given an input DTS string `in_str` and `file_name` it is read from, parse it into an internap
         tree representation and track what "compatible" value each node has.
+
+        If `add_define` is set to a string, #define it for the preprocessor.
         """
         self.raw_buffer = in_str
         self.file_name = file_name
 
-        prepped = self._preprocess(in_str, file_name) if preprocess else in_str
+        prepped = self._preprocess(in_str, file_name, add_define) if preprocess else in_str
 
         # make sure node labels and names are glued together and comments are removed,
         # then parse with nested curly braces
@@ -128,9 +132,12 @@ class DeviceTree:
                     self.chosen.content += " " + node.content
 
     @staticmethod
-    def _preprocess(in_str: str, file_name: str | None = None) -> str:
+    def _preprocess(in_str: str, file_name: str | None = None, add_define: str | None = None) -> str:
         def include_handler(*args):  # type: ignore
             raise OutputDirective(Action.IgnoreAndPassThrough)
+
+        if add_define is not None:
+            in_str = f"#define {add_define}\n" + in_str
 
         preprocessor = Preprocessor()
         preprocessor.line_directive = None
