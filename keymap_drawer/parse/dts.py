@@ -100,8 +100,10 @@ class DeviceTree:
         """
         self.raw_buffer = in_str
         self.file_name = file_name
+        if add_define:
+            self.raw_buffer = f"#define {add_define}\n" + self.raw_buffer
 
-        prepped = self._preprocess(in_str, file_name, add_define) if preprocess else in_str
+        prepped = self._preprocess(self.raw_buffer, file_name) if preprocess else in_str
 
         # make sure node labels and names are glued together and comments are removed,
         # then parse with nested curly braces
@@ -132,12 +134,9 @@ class DeviceTree:
                     self.chosen.content += " " + node.content
 
     @staticmethod
-    def _preprocess(in_str: str, file_name: str | None = None, add_define: str | None = None) -> str:
+    def _preprocess(in_str: str, file_name: str | None = None) -> str:
         def include_handler(*args):  # type: ignore
             raise OutputDirective(Action.IgnoreAndPassThrough)
-
-        if add_define is not None:
-            in_str = f"#define {add_define}\n" + in_str
 
         preprocessor = Preprocessor()
         preprocessor.line_directive = None
