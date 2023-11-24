@@ -308,6 +308,7 @@ untitled:
 urchin: *ferris
 viterbi:
   default_transform: {qmk_keyboard: keebio/viterbi/rev2}
+wizza: *hummingbird_splay
 yasui:
   default_transform: {qmk_keyboard: rainkeebs/yasui}
 zaphod: *ferris
