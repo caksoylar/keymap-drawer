@@ -134,6 +134,7 @@ This is an optional field that contains a list of combo specs, each of which is 
 | `type`              | `str`                                             | `""`          | the styling of the key that corresponds to the [SVG class](keymap_drawer/config.py#L51), see `LayoutKey` definition above                                                         |
 | `width (w)`         | `float`                                           | `null`        | the width of the combo box (in pixels), defaults to `draw_config.combo_w` if null                                                                                                 |
 | `height (h)`        | `float`                                           | `null`        | the height of the combo box (in pixels), defaults to `draw_config.combo_h` if null                                                                                                |
+| `rotation (r)`      | `float`                                           | `0.0`         | the rotation of the combo box in degrees -- only applies to the box itself and not any dendrons                                                                                   |
 
 All fields except `key_positions`, `key` and `type` are ignored when `draw_config.separate_combo_diagrams` is used.
 

@@ -133,6 +133,8 @@ class ComboDrawerMixin(UtilsMixin):
                             self._draw_line_dendron(p, k.pos, k.width / 3)
 
         # draw combo box with text
+        if combo.rotation != 0.0:
+            self.out.write(f'<g transform="rotate({combo.rotation}, {p.x}, {p.y})">\n')
         self._draw_rect(
             p,
             Point(width, height),
@@ -153,6 +155,8 @@ class ComboDrawerMixin(UtilsMixin):
             classes=["combo", combo.type],
             legend_type="shifted",
         )
+        if combo.rotation != 0.0:
+            self.out.write("</g>\n")
 
         self.out.write("</g>\n")
 
