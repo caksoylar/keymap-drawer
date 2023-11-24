@@ -21,8 +21,8 @@ class ComboDrawerMixin(UtilsMixin):
     def get_combo_offsets(self, combos: Sequence[ComboSpec]) -> tuple[float, float]:
         """Return the minimum and maximum y-coordinates that can be caused by the given combos."""
         return (
-            max((c.offset * self.layout.min_height for c in combos if c.align == "top"), default=0.0),
-            max((c.offset * self.layout.min_height for c in combos if c.align == "bottom"), default=0.0),
+            max((max(0.0, c.offset) * self.layout.min_height for c in combos if c.align == "top"), default=0.0),
+            max((max(0.0, c.offset) * self.layout.min_height for c in combos if c.align == "bottom"), default=0.0),
         )
 
     def _draw_arc_dendron(  # pylint: disable=too-many-arguments
