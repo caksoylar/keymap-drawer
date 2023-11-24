@@ -17,14 +17,6 @@ class ComboDrawerMixin(UtilsMixin):
     out: StringIO
     layout: PhysicalLayout
 
-    # actual methods
-    def get_combo_offsets(self, combos: Sequence[ComboSpec]) -> tuple[float, float]:
-        """Return the minimum and maximum y-coordinates that can be caused by the given combos."""
-        return (
-            max((max(0.0, c.offset) * self.layout.min_height for c in combos if c.align == "top"), default=0.0),
-            max((max(0.0, c.offset) * self.layout.min_height for c in combos if c.align == "bottom"), default=0.0),
-        )
-
     def _draw_arc_dendron(  # pylint: disable=too-many-arguments
         self, p_1: Point, p_2: Point, x_first: bool, shorten: float, arc_scale: float
     ) -> None:
@@ -57,11 +49,13 @@ class ComboDrawerMixin(UtilsMixin):
         line = f"l{round(diff.x)},{round(diff.y)}"
         self.out.write(f'<path d="{start} {line}" class="combo"/>\n')
 
-    def print_combo(self, combo: ComboSpec, combo_ind: int) -> None:
+    def print_combo(self, combo: ComboSpec, combo_ind: int) -> Point:
         """
         Print SVG code for a rectangle with text representing a combo specification, which contains the key positions
         that trigger it and what it does when triggered. The position of the rectangle depends on the alignment
         specified, along with whether dendrons are drawn going to each key position from the combo.
+
+        Returns the midpoint of the combo box, for bounding box calculations.
         """
         p_keys = [self.layout.keys[p] for p in combo.key_positions]
         width, height = combo.width or self.cfg.combo_w, combo.height or self.cfg.combo_h
@@ -159,11 +153,17 @@ class ComboDrawerMixin(UtilsMixin):
             self.out.write("</g>\n")
 
         self.out.write("</g>\n")
+        return p
 
-    def print_combos_for_layer(self, combos: Sequence[ComboSpec]) -> None:
-        """Print SVG for all given combos, relative to that point."""
+    def print_combos_for_layer(self, combos: Sequence[ComboSpec]) -> tuple[float | None, float | None]:
+        """
+        Print SVG for all given combos, relative to that point.
+        Return min and max y-coordinates of combo boxes, for bounding box calculations.
+        """
+        combo_pts = []
         for combo_ind, combo_spec in enumerate(combos):
-            self.print_combo(combo_spec, combo_ind)
+            combo_pts.append(self.print_combo(combo_spec, combo_ind))
+        return min((p.y for p in combo_pts), default=0.0), max((p.y for p in combo_pts), default=0.0)
 
     def create_combo_diagrams(
         self, scale_factor: int, ghost_keys: Sequence[int] | None = None

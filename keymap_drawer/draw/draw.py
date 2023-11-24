@@ -108,7 +108,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         p += Point(self.cfg.outer_pad_w - outer_pad_w, 0)
         original_x = p.x
         col_width = layout.width + 2 * outer_pad_w
-        max_offset = 0.0
+        max_height = 0.0
         for ind, (name, layer_keys) in enumerate(layers.items()):
             outer_pad_h = self.cfg.outer_pad_h // pad_divisor if ind > n_cols - 1 else self.cfg.outer_pad_h
 
@@ -121,22 +121,32 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             if draw_header:
                 self.print_layer_header(Point(0, outer_pad_h / 2), name)
 
-            # get offsets added by combo alignments, draw keys and combos
-            top_offset, bot_offset = self.get_combo_offsets(combos_per_layer.get(name, []))
-            self.out.write(f'<g transform="translate(0, {round(outer_pad_h + top_offset)})">\n')
+            # back up main buffer, create and start writing to a temp output buffer
+            with StringIO() as temp_buffer:
+                writer = self.out
+                self.out = temp_buffer
 
-            for key_ind, (p_key, l_key) in enumerate(zip(layout.keys, layer_keys)):
-                self.print_key(p_key, l_key, key_ind)
+                # draw keys to temp buffer
+                for key_ind, (p_key, l_key) in enumerate(zip(layout.keys, layer_keys)):
+                    self.print_key(p_key, l_key, key_ind)
 
-            self.print_combos_for_layer(combos_per_layer.get(name, []))
-            self.out.write("</g>\n")
-            self.out.write("</g>\n")
+                # draw combos to temp buffer and calculate top/bottom y coordinates
+                min_y, max_y = self.print_combos_for_layer(combos_per_layer.get(name, []))
+                top_y = 0.0 if min_y is None else min(0.0, min_y)
+                bottom_y = layout.height if max_y is None else max(layout.height, max_y)
 
-            max_offset = max(max_offset, top_offset + bot_offset)
+                # shift by the top y coordinate, then dump the temp buffer
+                writer.write(f'<g transform="translate(0, {round(outer_pad_h - top_y)})">\n')
+                writer.write(temp_buffer.getvalue())
+                writer.write("</g>\n")
+                writer.write("</g>\n")
+            self.out = writer
+
+            max_height = max(max_height, bottom_y - top_y)
 
             if ind % n_cols == n_cols - 1 or ind == len(layers) - 1:
-                p = Point(original_x, p.y + outer_pad_h + layout.height + max_offset)
-                max_offset = 0.0
+                p = Point(original_x, p.y + outer_pad_h + max_height)
+                max_height = 0.0
             else:
                 p += Point(col_width, 0)
 
