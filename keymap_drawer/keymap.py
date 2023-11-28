@@ -63,6 +63,7 @@ class ComboSpec(BaseModel, allow_population_by_field_name=True):
     width: float | None = Field(alias="w", default=None)
     height: float | None = Field(alias="h", default=None)
     rotation: float = Field(alias="r", default=0.0)
+    draw_separate: bool | None = None
 
     @classmethod
     def normalize_fields(cls, spec_dict: dict) -> dict:
@@ -104,16 +105,28 @@ class KeymapData(BaseModel):
     config: DrawConfig | None
 
     def get_combos_per_layer(self, layers: Iterable[str] | None = None) -> dict[str, list[ComboSpec]]:
-        """Return a mapping of layer names to combos that are present on that layer."""
+        """Return a mapping of layer names to combos that are present on that layer, if they aren't drawn separately."""
+        assert self.config is not None
         if layers is None:
             layers = self.layers
 
         out: dict[str, list[ComboSpec]] = {layer_name: [] for layer_name in layers}
         for combo in self.combos:
+            if combo.draw_separate or (combo.draw_separate is None and self.config.separate_combo_diagrams):
+                continue
             for layer_name in combo.layers if combo.layers else layers:
                 if layer_name in layers:
                     out[layer_name].append(combo)
         return out
+
+    def get_separate_combos(self) -> list[ComboSpec]:
+        """Return a list of combos that are meant to be drawn separately."""
+        assert self.config is not None
+        return [
+            combo
+            for combo in self.combos
+            if combo.draw_separate or (combo.draw_separate is None and self.config.separate_combo_diagrams)
+        ]
 
     def dump(self, num_cols: int = 0) -> dict:
         """Returns a dict-valued dump of the keymap representation."""

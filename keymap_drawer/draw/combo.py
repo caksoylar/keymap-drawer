@@ -167,11 +167,15 @@ class ComboDrawerMixin(UtilsMixin):
 
     def create_combo_diagrams(
         self, scale_factor: int, ghost_keys: Sequence[int] | None = None
-    ) -> tuple[PhysicalLayout, dict[str, list[LayoutKey]]]:
+    ) -> tuple[PhysicalLayout | None, dict[str, list[LayoutKey]]]:
         """
         Create and return both a shrunk down physical layout and layers representing combo
         locations with held key highlighting.
         """
+        combos = self.keymap.get_separate_combos()
+        if not combos:
+            return None, {}
+
         w, h = self.layout.min_width, self.layout.min_height
         header_p_key = PhysicalKey(Point(w / 2, h / 2), w, h)
 
@@ -179,7 +183,7 @@ class ComboDrawerMixin(UtilsMixin):
         layout.keys = [header_p_key, *layout.keys]
 
         layers = {}
-        for ind, combo in enumerate(self.keymap.combos):
+        for ind, combo in enumerate(combos):
             empty_layer = [LayoutKey() for _ in range(len(self.layout))]
             if ghost_keys:
                 for key_position in ghost_keys:

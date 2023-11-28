@@ -42,7 +42,8 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # number of columns in the output drawing
     n_columns: int = 1
 
-    # draw separate combo diagrams instead of drawing them on layers
+    # draw separate combo diagrams instead of drawing them on layers. `draw_separate` field in
+    # the combo spec overrides this if it is explicitly set to true or false
     separate_combo_diagrams: bool = False
 
     # if drawing separate combo diagrams, shrink physical layout by this factor

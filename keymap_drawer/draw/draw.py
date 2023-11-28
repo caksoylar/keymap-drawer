@@ -165,11 +165,17 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             assert all(l in layers for l in draw_layers), "Some layer names selected for drawing are not in the keymap"
             layers = {name: layer for name, layer in layers.items() if name in draw_layers}
 
+        if keys_only:
+            combos_per_layer: dict[str, list[ComboSpec]] = {}
+        else:
+            combos_per_layer = self.keymap.get_combos_per_layer(layers)
+
         if combos_only:
-            if not self.cfg.separate_combo_diagrams:
-                layers = {name: [LayoutKey() for _ in range(len(self.layout))] for name, layer in layers.items()}
-            else:
-                layers = {}
+            layers = {
+                name: [LayoutKey() for _ in range(len(self.layout))]
+                for name, combos in combos_per_layer.items()
+                if combos
+            }
 
         if ghost_keys:
             for key_position in ghost_keys:
@@ -179,26 +185,22 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
                 for layer in layers.values():
                     layer[key_position].type = "ghost"
 
-        if keys_only or self.cfg.separate_combo_diagrams:
-            combos_per_layer: dict[str, list[ComboSpec]] = {}
-        else:
-            combos_per_layer = self.keymap.get_combos_per_layer(layers)
-
         # write to internal output stream self.out
         p = self.print_layers(Point(0, 0), self.layout, layers, combos_per_layer, self.cfg.n_columns)
 
-        if self.cfg.separate_combo_diagrams:
-            self.print_layer_header(Point(self.cfg.outer_pad_w, p.y + self.cfg.outer_pad_h / 2), "Combos")
-            layout, layers = self.create_combo_diagrams(self.cfg.combo_diagrams_scale, ghost_keys)
-            p = self.print_layers(
-                Point(0, p.y),
-                layout,
-                layers,
-                combos_per_layer,
-                self.cfg.n_columns * self.cfg.combo_diagrams_scale,
-                draw_header=False,
-                pad_divisor=self.cfg.combo_diagrams_scale,
-            )
+        if not keys_only:
+            layout, combo_layers = self.create_combo_diagrams(self.cfg.combo_diagrams_scale, ghost_keys)
+            if layout is not None and combo_layers:
+                self.print_layer_header(Point(self.cfg.outer_pad_w, p.y + self.cfg.outer_pad_h / 2), "Combos")
+                p = self.print_layers(
+                    Point(0, p.y),
+                    layout,
+                    combo_layers,
+                    combos_per_layer,
+                    self.cfg.n_columns * self.cfg.combo_diagrams_scale,
+                    draw_header=False,
+                    pad_divisor=self.cfg.combo_diagrams_scale,
+                )
 
         # write to final output stream self.output_stream
         board_w, board_h = round(p.x), round(p.y + self.cfg.outer_pad_h)
