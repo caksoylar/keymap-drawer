@@ -163,7 +163,7 @@ class ComboDrawerMixin(UtilsMixin):
         combo_pts = []
         for combo_ind, combo_spec in enumerate(combos):
             combo_pts.append(self.print_combo(combo_spec, combo_ind))
-        return min((p.y for p in combo_pts), default=0.0), max((p.y for p in combo_pts), default=0.0)
+        return min((p.y for p in combo_pts), default=None), max((p.y for p in combo_pts), default=None)
 
     def create_combo_diagrams(
         self, scale_factor: int, ghost_keys: Sequence[int] | None = None
