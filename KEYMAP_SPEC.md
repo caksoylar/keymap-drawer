@@ -137,7 +137,7 @@ This is an optional field that contains a list of combo specs, each of which is 
 | `rotation (r)`      | `float`                                           | `0.0`         | the rotation of the combo box in degrees -- only applies to the box itself and not any dendrons                                                                                   |
 | `draw_separate`     | `null \| bool`                                    | `null`        | whether to draw the combo separate from layers, using a dedicated diagram. defaults to `draw_config.separate_combo_diagrams` if null                                              |
 
-All fields except `key_positions`, `key` and `type` are ignored when combo is drawn with a separate diagram using `draw_separate` or `draw_config.separate_combo_diagrams` is used.
+All fields except `key_positions`, `key` and `type` are ignored when combo is drawn in a separate diagram using `draw_separate` or `draw_config.separate_combo_diagrams`.
 
 [^4]: Key indices start from `0` on the first key position and increase by columns and then rows, corresponding to their ordering in the `layers` field. This matches the `key-positions` property in ZMK combo definitions.
 [^5]: Just like for keys in a layer under the `layers` field, `key` field can be specified with a string value as a shortcut, or a mapping (where the `type` field will be ignored).
