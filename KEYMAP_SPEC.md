@@ -88,12 +88,12 @@ Following physical layout parameters can be specified either in the command line
 This field is an ordered mapping of layer names to a list of `LayoutKey` specs that represent the keys on that layer.
 A `LayoutKey` can be defined with either a string value or with a mapping with the following fields:
 
-| field name (alias) | type  | default value | description                                                                                                                                                                                                                                                                  |
-| ------------------ | ----- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tap (t)`          | `str` | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks[^2]                                                                                                                                                                         |
-| `hold (h)`         | `str` | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                                                                                                                                                     |
-| `shifted (s)`      | `str` | `""`          | the "shifted" action of a key, drawn on the top of the key                                                                                                                                                                                                                   |
-| `type`             | `str` | `""`          | the styling of the key that corresponds to the [SVG class](keymap_drawer/config.py#L51)[^3]. predefined types are `held` (a red shading to denote held down keys), `ghost` (dashed outline to denote optional keys in a layout), `trans` (lighter text for transparent keys) |
+| field name (alias) | type  | default value | description                                                                                                                                                                                                                                                                 |
+| ------------------ | ----- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tap (t)`          | `str` | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks[^2]                                                                                                                                                                        |
+| `hold (h)`         | `str` | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                                                                                                                                                    |
+| `shifted (s)`      | `str` | `""`          | the "shifted" action of a key, drawn on the top of the key                                                                                                                                                                                                                  |
+| `type`             | `str` | `""`          | the styling of the key that corresponds to the [SVG class](CONFIGURATION.md#svg_style)[^3]. predefined types are `held` (a red shading to denote held down keys), `ghost` (dashed outline to denote optional keys in a layout), `trans` (lighter text for transparent keys) |
 
 [^2]: You can prevent line breaks by using double spaces `"  "` to denote a single non-breaking space.
 [^3]: Text styling can be overridden in the SVG config using the `"tap"`, `"hold"` and `"shifted"` classes if desired.
@@ -119,7 +119,7 @@ layers:
 
 ## `combos`
 
-This is an optional field that contains a list of combo specs, each of which is a mapping that can have the following fields:
+This is an optional field that contains a list of `ComboSpec`s, each of which is a mapping that can have the following fields:
 
 | field name (alias)  | type                                              | default value | description                                                                                                                                                                       |
 | ------------------- | ------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -131,7 +131,7 @@ This is an optional field that contains a list of combo specs, each of which is 
 | `dendron (d)`       | `null \| bool`                                    | `null`        | whether to draw dendrons going from combo to triggering key coordinates, default is to draw for non-`mid` alignments and draw for `mid` if key coordinates are far from the combo |
 | `slide (s)`         | `null \| float (-1 <= val <= 1)`                  | `null`        | slide the combo box along an axis between keys -- can be used for moving `top`/`bottom` combo boxes left/right, `left`/`right` boxes up/down, or `mid` combos between two keys    |
 | `arc_scale`         | `float`                                           | `1.0`         | scale the arcs going left/right for `top`/`bottom` or up/down for `left`/`right` aligned combos                                                                                   |
-| `type`              | `str`                                             | `""`          | the styling of the key that corresponds to the [SVG class](keymap_drawer/config.py#L51), see `LayoutKey` definition above                                                         |
+| `type`              | `str`                                             | `""`          | the styling of the key that corresponds to the [SVG class](CONFIGURATION.md#svg_style), see `LayoutKey` definition above                                                         |
 | `width (w)`         | `float`                                           | `null`        | the width of the combo box (in pixels), defaults to `draw_config.combo_w` if null                                                                                                 |
 | `height (h)`        | `float`                                           | `null`        | the height of the combo box (in pixels), defaults to `draw_config.combo_h` if null                                                                                                |
 | `rotation (r)`      | `float`                                           | `0.0`         | the rotation of the combo box in degrees -- only applies to the box itself and not any dendrons                                                                                   |
@@ -154,7 +154,7 @@ combos:
 
 This optional field lets you override [config parameters](README.md#customization) for SVG drawing.
 This way you can specify drawing configuration for a specific layout and store in the keymap specification.
-It is a mapping from field names in [`DrawConfig` class](keymap_drawer/config.py) to values.
+It is a mapping from field names in [`DrawConfig` class](CONFIGURATION.md#draw-configuration) to values.
 
 _Example:_
 ```yaml

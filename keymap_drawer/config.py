@@ -17,7 +17,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         # position of internal key rectangle relative to the center of the key
         rel_x: float = 0
         rel_y: float = 4
-        # delta dimension between extenal key rectangle and internal key rectangle
+        # delta dimension between external key rectangle and internal key rectangle
         rel_w: float = 12
         rel_h: float = 12
         # curvature of rounded internal key rectangle

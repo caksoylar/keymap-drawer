@@ -123,7 +123,7 @@ Start by dumping the default configuration settings to a file:
 keymap dump-config >my_config.yaml
 ```
 
-Then, edit the file to change the settings, referring to comments in [config.py](keymap_drawer/config.py).
+Then, edit the file to change the settings, referring to [CONFIGURATION.md](CONFIGURATION.md).
 You can then pass this file to either `draw` and `parse` subcommands with the `-c`/`--config` argument (note the location before the subcommand):
 
 ```sh
@@ -167,7 +167,7 @@ layers:
 ...
 ```
 
-You can also use the `$$source:id$$` notation for [certain sources](keymap_drawer/config.py#L158) to automatically fetch
+You can also use the `$$source:id$$` notation for [certain sources](CONFIGURATION.md#glyph_urls) to automatically fetch
 the SVGs without having to define them manually in the `glyphs` field, e.g. [`$$tabler:volume$$`](https://tabler-icons.io/i/volume).
 The following `source` values are currently supported:
 - `tabler`: [Tabler Icons](https://tabler-icons.io/) (icon name as `id`)
@@ -175,7 +175,7 @@ The following `source` values are currently supported:
 - `mdil`: [Pictogrammers Material Design Icons Light](https://pictogrammers.com/library/mdil/) (icon name as `id`)
 - `material`: [Google Material Symbols](https://fonts.google.com/icons) (use value in "Android" tab as `id`)
 
-Fetched SVGs will be [cached by default](keymap_drawer/config.py#L166) to speed up future runs.
+Fetched SVGs will be [cached by default](CONFIGURATION.md#use_local_cache) to speed up future runs.
 
 ## Setting up an automated drawing workflow
 
