@@ -133,6 +133,7 @@ _Default:_ `false`
 #### `key_side_pars`
 
 A mapping of certain field names to their values, characterizing key side drawing. Valid fields:
+
 - **`rel_x`**, **`rel_y`** (type: `float`): Position of internal key rectangle relative to the center of the key. _Default:_ `0`, `4`
 - **`rel_w`**, **`rel_y`** (type: `float`): Delta dimension between external key rectangle and internal key rectangle. _Default:_ `12`, `12`
 - **`rx`**, **`ry`** (type: `float`): Curvature of the rounded internal key rectangle. _Default:_ `4`, `4`
@@ -196,7 +197,6 @@ _Type:_ `bool`
 
 _Default:_ `true`
 
-
 ## Parse configuration
 
 These settings are nested under the `parse_config` field and applies to `keymap parse` subcommand in the CLI, as well as the conversion from "Parse from..." input forms to the keymap YAML text area in the web app.
@@ -258,8 +258,8 @@ _Default:_ `{"t": "▽", "type": "trans"}`
 
 Rather than only marking the first sequence of key positions to reach a layer as "held",
 mark all of the sequences to reach a given layer. this is disabled by default because it
-creates ambiguity: you cannot tell if *all* the marked keys need to be held down while a
-layer is active (which is the default behavior) or *any* of them (with this option).
+creates ambiguity: you cannot tell if _all_ the marked keys need to be held down while a
+layer is active (which is the default behavior) or _any_ of them (with this option).
 
 _Type:_ `bool`
 

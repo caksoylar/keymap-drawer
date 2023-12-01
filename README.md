@@ -90,6 +90,7 @@ Please refer to [the keymap schema specification](KEYMAP_SPEC.md) while making c
 It might be beneficial to start by `draw`'ing the current representation and iterate over these changes, especially for tweaking combo positioning.
 
 > #### ℹ️ Preserving manual modifications
+>
 > If you need to re-parse a firmware file after it was changed, you can provide the previous parse output that you tweaked to the
 > parse command via `keymap parse -b old_keymap.yaml ... >new_keymap.yaml` and the tool will try to preserve your manual tweaks.
 
@@ -108,6 +109,7 @@ keymap draw sweep_keymap.yaml >sweep_keymap.ortho.svg
 And you are done! You can render the SVG on your browser or use a tool like [CairoSVG](https://cairosvg.org/) or [Inkscape](https://inkscape.org/) to export to a different format.
 
 > #### ℹ️ Specifying layouts in the CLI
+>
 > If you like you can override the layout specification on the command line.
 > For instance you can provide a QMK keyboard name with `-q`/`--qmk-keyboard` and layout with `-l`/`--qmk-layout`,
 > or an ortho layout with `-o`/`--ortho-layout` (using YAML syntax for the value). See `keymap draw --help` for details.
@@ -148,13 +150,14 @@ The height of the svg is bound by the config properties `glyph_{tap,hold,shifted
 To allow for customization, glyphs are assigned CSS classes `glyph` and `<glyph_name>`.
 
 Example:
+
 ```yaml
 draw_config:
   # specify the size to bound the vertical dimension of your glyph, below are defaults
   glyph_tap_size: 14
   glyph_hold_size: 12
   glyph_shifted_size: 10
-  glyphs:  # mapping of glyph name to be used to svg definition
+  glyphs: # mapping of glyph name to be used to svg definition
     vol_up: |
       <svg viewBox="2 3 34 33">
         <path style="stroke: black; fill: black;" d="M23.41,25.25a1,1,0,0,1-.54-1.85,6.21,6.21,0,0,0-.19-10.65,1,1,0,1,1,1-1.73,8.21,8.21,0,0,1,.24,14.06A1,1,0,0,1,23.41,25.25Z"/>
@@ -164,12 +167,12 @@ draw_config:
 layers:
   Media:
     - ["", "$$vol_up$$", "", "", ""]
-...
 ```
 
 You can also use the `$$source:id$$` notation for [certain sources](CONFIGURATION.md#glyph_urls) to automatically fetch
 the SVGs without having to define them manually in the `glyphs` field, e.g. [`$$tabler:volume$$`](https://tabler-icons.io/i/volume).
 The following `source` values are currently supported:
+
 - `tabler`: [Tabler Icons](https://tabler-icons.io/) (icon name as `id`)
 - `mdi`: [Pictogrammers Material Design Icons](https://pictogrammers.com/library/mdi/) (icon name as `id`)
 - `mdil`: [Pictogrammers Material Design Icons Light](https://pictogrammers.com/library/mdil/) (icon name as `id`)
@@ -182,6 +185,7 @@ Fetched SVGs will be [cached by default](CONFIGURATION.md#use_local_cache) to sp
 If you use a [ZMK config repo](https://zmk.dev/docs/user-setup), you can set up an automated workflow that parses and draws your keymaps, then commits the YAML parse outputs and produced SVGs to your repo.
 To do that you can add a new workflow to your repo at `.github/workflows/draw-keymaps.yml` that refers to the reusable `keymap-drawer` [workflow](.github/workflows/draw-zmk.yml):
 
+<!-- prettier-ignore -->
 ```yaml
 # Example for using the keymap-drawer ZMK user config workflow
 name: Draw ZMK keymaps
@@ -233,11 +237,13 @@ jobs:
 ```
 
 > #### ⚠️ Rewriting history
+>
 > You should understand the implications of rewriting history if you amend a commit that has already been published. See [remarks](https://git-scm.com/docs/git-rebase#_recovering_from_upstream_rebase) in `git-rebase` documentation.
 
 ## Community
 
 Below are a few example usages from the community that might be inspirational, whether they are doing unique things with styling, configuration or legends used, or integrate `keymap-drawer` into other workflows.
+
 - [minusfive's ZMK config](https://github.com/minusfive/zmk-config): Uses an [extensive config file](https://github.com/minusfive/zmk-config/blob/main/keymap_drawer.config.yaml) for great results out of the automated drawing workflow, with plenty of SVG glyphs
 - [SethMilliken's Swept Corne config](https://github.com/SethMilliken/swept-corne-zmk/tree/seth): Another config using the automated workflow with a [nice configuration](https://github.com/SethMilliken/swept-corne-zmk/blob/seth/keymap_drawer.config.yaml) and SVG glyphs
 - [jbarr21's `keymap-display`](https://github.com/jbarr21/keymap-display): Uses a [converter script](https://github.com/jbarr21/keymap-display/blob/main/scripts/json2yaml) to convert QMK `keymap.c` to a keymap YAML
