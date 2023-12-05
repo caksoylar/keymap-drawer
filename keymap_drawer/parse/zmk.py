@@ -146,7 +146,7 @@ class ZmkKeymapParser(KeymapParser):
         layer_nodes = [node for parent in layer_parents for node in parent.children]
         if self.layer_names is None:
             self.layer_names = [
-                node.get_string("label") or node.name.removeprefix("layer_").removesuffix("_layer")
+                node.get_string("label|display-name") or node.name.removeprefix("layer_").removesuffix("_layer")
                 for node in layer_nodes
             ]
         else:
