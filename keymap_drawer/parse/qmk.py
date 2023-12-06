@@ -12,7 +12,7 @@ from keymap_drawer.parse.parse import KeymapParser
 class QmkJsonParser(KeymapParser):
     """Parser for json-format QMK keymaps, like Configurator exports or `qmk c2json` outputs."""
 
-    _trans_re = re.compile(r"TRANSPARENT|TRNS|_______")
+    _trans_re = re.compile(r"KC_TRANSPARENT|KC_TRNS|_______")
     _mo_re = re.compile(r"MO\((\d+)\)")
     _tog_re = re.compile(r"(TG|TO|DF)\((\d+)\)")
     _mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
