@@ -162,26 +162,27 @@ class PhysicalLayout(BaseModel, keep_untouched=(cached_property,)):
         return PhysicalLayout(keys=[other * k for k in self.keys])
 
 
-def layout_factory(
+def layout_factory(     # pylint: disable=too-many-arguments
     config: DrawConfig,
     qmk_keyboard: str | None = None,
     qmk_info_json: Path | None = None,
+    qmk_info: dict | None = None,
     qmk_layout: str | None = None,
     ortho_layout: dict | None = None,
 ) -> PhysicalLayout:
     """Create and return a physical layout, as determined by the combination of arguments passed."""
-    if len([arg for arg in (qmk_keyboard, qmk_info_json, ortho_layout) if arg is not None]) != 1:
+    if len([arg for arg in (qmk_keyboard, qmk_info_json, qmk_info, ortho_layout) if arg is not None]) != 1:
         raise ValueError(
             'Please provide exactly one of "qmk_keyboard", "qmk_info_json" or "ortho_layout" specs for physical layout'
         )
 
-    if qmk_keyboard or qmk_info_json:
+    if qmk_keyboard or qmk_info_json or qmk_info:
         if qmk_keyboard:
             qmk_info = _get_qmk_info(qmk_keyboard, config.use_local_cache)
-        else:  # qmk_info_json
-            assert qmk_info_json is not None
+        elif qmk_info_json:
             with open(qmk_info_json, "rb") as f:
                 qmk_info = json.load(f)
+        assert qmk_info is not None
 
         if isinstance(qmk_info, list):
             assert qmk_layout is None, "Cannot use qmk_layout with a list-format QMK spec"
