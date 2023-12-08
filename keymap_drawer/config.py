@@ -125,6 +125,11 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
             stroke-width: 2;
         }
 
+        rect.encoder {
+            rx: 50%;
+            ry: 50%;
+        }
+
         text {
             text-anchor: middle;
             dominant-baseline: middle;
