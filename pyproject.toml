@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "keymap-drawer"
-version = "0.13.1"
+version = "0.13.2"
 description = "A module and CLI tool to help parse and draw keyboard layouts."
 authors = ["Cem Aksoylar <caksoylar@gmail.com>"]
 readme = ["README.md", "KEYMAP_SPEC.md"]
