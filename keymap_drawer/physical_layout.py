@@ -162,7 +162,7 @@ class PhysicalLayout(BaseModel, keep_untouched=(cached_property,)):
         return PhysicalLayout(keys=[other * k for k in self.keys])
 
 
-def layout_factory(     # pylint: disable=too-many-arguments
+def layout_factory(  # pylint: disable=too-many-arguments
     config: DrawConfig,
     qmk_keyboard: str | None = None,
     qmk_info_json: Path | None = None,
