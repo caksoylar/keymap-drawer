@@ -222,6 +222,8 @@ gatoraid40:
   default_transform: {ortho_layout: {split: true, rows: 3, columns: 6, thumbs: 3, drop_pinky: true}}
 glove80:
   default_transform: {qmk_keyboard: glove80}
+grumpy:
+  default_transform: {qmk_keyboard: grumpy}
 hakea: *sofle
 hhkb:
   default_transform: {qmk_keyboard: hhkb/ansi/32u4}
