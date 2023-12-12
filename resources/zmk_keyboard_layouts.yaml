@@ -315,3 +315,5 @@ yasui:
   default_transform: {qmk_keyboard: rainkeebs/yasui}
 zaphod: *ferris
 zaphod_lite: *ferris
+zilpzalp:
+  default_transform: {qmk_keyboard: zilpzalp}
