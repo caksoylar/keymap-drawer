@@ -17,7 +17,7 @@ class QmkJsonParser(KeymapParser):
     _tog_re = re.compile(r"(TG|TO|DF)\((\d+)\)")
     _mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
     _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
-    _lt_re = re.compile(r"LT\((\d+), *(\S+)\)")
+    _lt_re = re.compile(r"LT\((\S+), *(\S+)\)")
     _osm_re = re.compile(r"OSM\(MOD_(\S+)\)")
     _osl_re = re.compile(r"OSL\((\d+)\)")
 
@@ -49,24 +49,32 @@ class QmkJsonParser(KeymapParser):
             if self._prefix_re is not None:
                 key = self._prefix_re.sub("", key)
             return LayoutKey.from_key_spec(self.cfg.qmk_keycode_map.get(key, key.replace("_", " ")))
+        
+        def parse_layer(layer: str) -> int:
+            if layer.isdigit():
+                return int(layer)
+            else:
+                return self.layer_names.index(layer)
 
         if m := self._trans_re.fullmatch(key_str):  # transparent
             return self.trans_key
         if m := self._mo_re.fullmatch(key_str):  # momentary layer
-            to_layer = int(m.group(1).strip())
+            to_layer = parse_layer(m.group(1).strip())
             self.update_layer_activated_from([current_layer], to_layer, key_positions)
             return LayoutKey(tap=self.layer_names[to_layer])
         if m := self._tog_re.fullmatch(key_str):  # toggled layer
-            to_layer = int(m.group(2).strip())
+            to_layer = parse_layer(m.group(2).strip())
             return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.toggle_label)
         if m := self._mts_re.fullmatch(key_str):  # short mod-tap syntax
             tap_key = mapped(m.group(2).strip())
-            return LayoutKey(tap=tap_key.tap, hold=m.group(1), shifted=tap_key.shifted)
+            hold_key = mapped(m.group(1).strip())
+            return LayoutKey(tap=tap_key.tap, hold=hold_key.tap, shifted=tap_key.shifted)
         if m := self._mtl_re.fullmatch(key_str):  # long mod-tap syntax
             tap_key = mapped(m.group(2).strip())
-            return LayoutKey(tap=tap_key.tap, hold=m.group(1).strip(), shifted=tap_key.shifted)
+            hold_key = mapped(m.group(1).strip())
+            return LayoutKey(tap=tap_key.tap, hold=hold_key.tap, shifted=tap_key.shifted)
         if m := self._lt_re.fullmatch(key_str):  # layer-tap
-            to_layer = int(m.group(1).strip())
+            to_layer = parse_layer(m.group(1).strip())
             self.update_layer_activated_from([current_layer], to_layer, key_positions)
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=self.layer_names[to_layer], shifted=tap_key.shifted)
