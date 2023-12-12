@@ -43,7 +43,7 @@ class LayoutKey(BaseModel, allow_population_by_field_name=True):
         if no_tapstr or not set(dict_repr.keys()).issubset({"t", "tap"}):
             return dict_repr
         return dict_repr.get("t") or dict_repr.get("tap", "")
-    
+
     def __hash__(self):
         return hash((self.tap, self.hold, self.shifted, self.type))
 

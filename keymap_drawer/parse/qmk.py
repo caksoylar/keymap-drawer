@@ -49,12 +49,13 @@ class QmkJsonParser(KeymapParser):
             if self._prefix_re is not None:
                 key = self._prefix_re.sub("", key)
             return LayoutKey.from_key_spec(self.cfg.qmk_keycode_map.get(key, key.replace("_", " ")))
-        
+
         def parse_layer(layer: str) -> int:
+            assert self.layer_names is not None
+
             if layer.isdigit():
                 return int(layer)
-            else:
-                return self.layer_names.index(layer)
+            return self.layer_names.index(layer)
 
         if m := self._trans_re.fullmatch(key_str):  # transparent
             return self.trans_key
@@ -117,7 +118,7 @@ class QmkJsonParser(KeymapParser):
         }
 
         layers = self.add_held_keys(layers)
-        
+
         if self.cfg.trans_show_lower_key:
             layers = self.fill_trans_keys(layers)
 

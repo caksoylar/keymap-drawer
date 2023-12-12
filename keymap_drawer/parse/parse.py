@@ -25,7 +25,9 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         self.columns = columns if columns is not None else 0
         self.layer_names: list[str] | None = layer_names
         self.base_keymap = base_keymap
-        self.layer_activated_from: dict[int, set[tuple[int, int]]] = {}  # layer to [layer index, key position] from keys
+        self.layer_activated_from: dict[
+            int, set[tuple[int, int]]
+        ] = {}  # layer to [layer index, key position] from keys
         self.conditional_layers: dict[int, list[int]] = {}  # then-layer to if-layers mapping
         self.trans_key = LayoutKey.from_key_spec(self.cfg.trans_legend)
         self.raw_binding_map = self.cfg.raw_binding_map.copy()
@@ -53,7 +55,7 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
 
         if to_layer not in self.layer_activated_from:
             self.layer_activated_from[to_layer] = set()
-            
+
         for from_layer in from_layers:
             self.layer_activated_from[to_layer] |= set((from_layer, key_pos) for key_pos in key_positions)
 
@@ -71,7 +73,7 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
 
         # assign held keys
         for layer_index, activating_keys in self.layer_activated_from.items():
-            for (_, key_idx) in activating_keys:
+            for _, key_idx in activating_keys:
                 key = layers[self.layer_names[layer_index]][key_idx]
                 if key == self.trans_key:  # clear legend if it is a transparent key
                     layers[self.layer_names[layer_index]][key_idx] = LayoutKey(type="held")
@@ -79,31 +81,34 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
                     key.type = "held"
 
         return layers
-    
+
     def fill_trans_keys(self, layers: dict[str, list[LayoutKey]]) -> dict[str, list[LayoutKey]]:
         """Fill in transparent keys with the legend of the key that is underneath."""
-        
+        assert self.layer_names is not None
+
         for layer_name, keys in layers.items():
             layer_idx = self.layer_names.index(layer_name)
             for key_idx, key in enumerate(keys):
                 if key == self.trans_key:
                     lower_keys = self._find_lower_keys(layer_idx, key_idx, layers)
-                    # usually there should only be one lower key, but if you can get to this layer from multiple different layers
-                    # that have this key defined, show all of them
+                    # usually there should only be one lower key, but if you can get to this layer
+                    # that have this key defined, show all of them from multiple different layers
                     if len(lower_keys) > 0:
                         layers[layer_name][key_idx] = LayoutKey(
                             tap="|".join(key.tap for key in lower_keys),
                             hold="|".join(key.hold for key in lower_keys),
                             shifted="|".join(key.shifted for key in lower_keys),
-                            type=self.trans_key.type
+                            type=self.trans_key.type,
                         )
         return layers
 
-    def _find_lower_keys(self, layer, key, layers: dict[str, list[LayoutKey]]) -> set[LayoutKey]:
+    def _find_lower_keys(self, layer: int, key: int, layers: dict[str, list[LayoutKey]]) -> set[LayoutKey]:
+        assert self.layer_names is not None
+
         lower_keys = set()
         activated_from_keys = self.layer_activated_from.get(layer, set())
 
-        for (layer_idx, _) in activated_from_keys:
+        for layer_idx, _ in activated_from_keys:
             layer_name = self.layer_names[layer_idx]
             from_layer = layers[layer_name]
             lower_key = from_layer[key]
@@ -111,10 +116,9 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
                 lower_keys |= self._find_lower_keys(layer_idx, key, layers)
             else:
                 lower_keys.add(lower_key)
-                
-        
+
         return lower_keys
-        
+
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
         raise NotImplementedError
 

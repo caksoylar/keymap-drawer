@@ -221,7 +221,7 @@ class ZmkKeymapParser(KeymapParser):
         layers = self._get_layers(dts)
         combos = self._get_combos(dts)
         layers = self.add_held_keys(layers)
-        
+
         if self.cfg.trans_show_lower_key:
             layers = self.fill_trans_keys(layers)
 
