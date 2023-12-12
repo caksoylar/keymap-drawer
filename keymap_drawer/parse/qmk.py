@@ -109,6 +109,10 @@ class QmkJsonParser(KeymapParser):
         }
 
         layers = self.add_held_keys(layers)
+        
+        if self.cfg.trans_show_lower_key:
+            layers = self.fill_trans_keys(layers)
+
         keymap_data = KeymapData(layers=layers, layout=None, config=None)
 
         return layout, keymap_data
