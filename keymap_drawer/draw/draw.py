@@ -52,6 +52,16 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         self.out.write(f"<g{transform_attr}{class_str}>\n")
 
         self._draw_key(Point(w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h), classes=["key", l_key.type])
+        if p_key.is_iso_enter:
+            self.out.write(
+                f'<g transform="translate({round(-w / 10)}, {round(-h / 4)})" '
+                'style="clip-path: polygon(-5% -5%, 58.34% -5%, 16.67% 105%, 0% 105%)">\n'
+            )
+            self._draw_key(
+                Point(w * 6 / 5 - 2 * self.cfg.inner_pad_w, h / 2 - 2 * self.cfg.inner_pad_h),
+                classes=["key", l_key.type],
+            )
+            self.out.write("</g>\n")
 
         tap_words = self._split_text(l_key.tap)
 

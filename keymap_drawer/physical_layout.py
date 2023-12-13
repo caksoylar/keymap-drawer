@@ -62,6 +62,7 @@ class PhysicalKey:
     rotation: float = 0  # CW if positive
     bounding_width: float = 0.0
     bounding_height: float = 0.0
+    is_iso_enter: bool = False
 
     @classmethod
     def from_qmk_spec(  # pylint: disable=too-many-arguments
@@ -77,7 +78,9 @@ class PhysicalKey:
         if rotation:
             center = cls._rotate_point(rotation_pos, center, rotation)
 
-        return cls(scale * center, scale * width, scale * height, rotation)
+        is_iso_enter = width == 1.25 and height == 2.0
+
+        return cls(scale * center, scale * width, scale * height, rotation, is_iso_enter=is_iso_enter)
 
     def __post_init__(self) -> None:
         if self.rotation:
