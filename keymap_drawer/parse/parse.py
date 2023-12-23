@@ -11,6 +11,10 @@ from keymap_drawer.config import ParseConfig
 from keymap_drawer.keymap import KeymapData, LayoutKey
 
 
+class ParseError(Exception):
+    """Error type for exceptions that happen during keymap parsing."""
+
+
 class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
     """Abstract base class for parsing firmware keymap representations."""
 

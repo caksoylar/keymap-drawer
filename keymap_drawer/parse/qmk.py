@@ -6,7 +6,7 @@ from typing import Sequence
 
 from keymap_drawer.config import ParseConfig
 from keymap_drawer.keymap import KeymapData, LayoutKey
-from keymap_drawer.parse.parse import KeymapParser
+from keymap_drawer.parse.parse import KeymapParser, ParseError
 
 
 class QmkJsonParser(KeymapParser):
@@ -103,10 +103,17 @@ class QmkJsonParser(KeymapParser):
                 f"Length of provided layer name list ({l_u}) does not match the number of parsed layers ({num_layers})"
             )
 
-        layers = {
-            self.layer_names[ind]: [self._str_to_key(key, ind, [i]) for i, key in enumerate(layer)]
-            for ind, layer in enumerate(raw["layers"])
-        }
+        layers: dict[str, list[LayoutKey]] = {}
+        for layer_ind, layer in enumerate(raw["layers"]):
+            layer_name = self.layer_names[layer_ind]
+            layers[layer_name] = []
+            for ind, key in enumerate(layer):
+                try:
+                    layers[layer_name].append(self._str_to_key(key, ind, [ind]))
+                except Exception as err:
+                    raise ParseError(
+                        f'Could not parse keycode "{key}" in layer "{layer_name}" with exception "{err}"'
+                    ) from err
 
         layers = self.add_held_keys(layers)
         keymap_data = KeymapData(layers=layers, layout=None, config=None)
