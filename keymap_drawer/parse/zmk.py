@@ -214,7 +214,11 @@ class ZmkKeymapParser(KeymapParser):
             return {}
 
         # if no chosen set, use first transform as the default
-        if (transform := dts.get_chosen_property("zmk,matrix_transform")) is None:
+        if (
+            transform := (
+                dts.get_chosen_property("zmk,matrix-transform") or dts.get_chosen_property("zmk,matrix_transform")
+            )
+        ) is None:
             return next(iter(keyboard_layouts.values()))
 
         return keyboard_layouts.get(transform, {})
