@@ -109,7 +109,7 @@ class QmkJsonParser(KeymapParser):
             layers[layer_name] = []
             for ind, key in enumerate(layer):
                 try:
-                    layers[layer_name].append(self._str_to_key(key, ind, [ind]))
+                    layers[layer_name].append(self._str_to_key(key, layer_ind, [ind]))
                 except Exception as err:
                     raise ParseError(
                         f'Could not parse keycode "{key}" in layer "{layer_name}" with exception "{err}"'
