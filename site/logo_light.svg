@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="240" height="140" viewBox="6 10 180 161" class="keymap" preserveAspectRatio="xMidYMid slice">
+<defs>/* start glyphs */
+<svg id="mdi:keyboard">
+<svg xmlns="http://www.w3.org/2000/svg" id="mdi-keyboard" viewBox="0 0 24 24"><path d="M19,10H17V8H19M19,13H17V11H19M16,10H14V8H16M16,13H14V11H16M16,17H8V15H16M7,10H5V8H7M7,13H5V11H7M8,11H10V13H8M8,8H10V10H8M11,11H13V13H11M11,8H13V10H11M20,5H4C2.89,5 2,5.89 2,7V17A2,2 0 0,0 4,19H20A2,2 0 0,0 22,17V7C22,5.89 21.1,5 20,5Z" /></svg>
+</svg>
+<svg id="mdi:pencil-ruler">
+<svg xmlns="http://www.w3.org/2000/svg" id="mdi-pencil-ruler" viewBox="0 0 24 24"><path d="M3 17.25V21H6.75L17.81 9.93L14.06 6.18L3 17.25M22.61 18.36L18.36 22.61L13.16 17.41L14.93 15.64L15.93 16.64L18.4 14.16L19.82 15.58L18.36 17L19.42 18L20.84 16.6L22.61 18.36M6.61 10.83L1.39 5.64L5.64 1.39L7.4 3.16L4.93 5.64L6 6.7L8.46 4.22L9.88 5.64L8.46 7.05L9.46 8.05L6.61 10.83M20.71 7C21.1 6.61 21.1 6 20.71 5.59L18.37 3.29C18 2.9 17.35 2.9 16.96 3.29L15.12 5.12L18.87 8.87L20.71 7Z" /></svg>
+</svg>
+</defs>/* end glyphs */
+<style>/* inherit to force styles through use tags */
+svg path {
+    fill: inherit;
+}
+
+/* font and background color specifications */
+svg.keymap {
+    font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
+    font-size: 14px;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    fill: #24292e;
+}
+
+/* default key styling */
+rect.key {
+    fill: #f6f8fa;
+    stroke: #c9cccf;
+    stroke-width: 1;
+}
+
+/* default key side styling, only used is draw_key_sides is set */
+rect.side {
+    filter: brightness(90%);
+}
+
+/* color accent for combo boxes */
+rect.combo, rect.combo-separate {
+    fill: #cdf;
+}
+
+/* color accent for held keys */
+rect.held, rect.combo.held {
+    fill: #fdd;
+}
+
+/* color accent for ghost (optional) keys */
+rect.ghost, rect.combo.ghost {
+    stroke-dasharray: 4, 4;
+    stroke-width: 2;
+}
+
+text {
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+/* styling for layer labels */
+text.label {
+    font-weight: bold;
+    text-anchor: start;
+    stroke: white;
+    stroke-width: 2;
+    paint-order: stroke;
+}
+
+/* styling for combo tap, and key hold/shifted label text */
+text.combo, text.hold, text.shifted {
+    font-size: 11px;
+}
+
+text.hold {
+    text-anchor: middle;
+    dominant-baseline: auto;
+}
+
+text.shifted {
+    text-anchor: middle;
+    dominant-baseline: hanging;
+}
+
+/* styling for hold/shifted label text in combo box */
+text.combo.hold, text.combo.shifted {
+    font-size: 8px;
+}
+
+/* lighter symbol for transparent keys */
+text.trans {
+    fill: #7b7e81;
+}
+
+/* styling for combo dendrons */
+path.combo {
+    stroke-width: 1;
+    stroke: gray;
+    fill: none;
+}
+
+/* Start Tabler Icons Cleanup */
+/* cannot use height/width with glyphs */
+.icon-tabler > path {
+    fill: inherit;
+    stroke: inherit;
+    stroke-width: 2;
+}
+/* hide tabler's default box */
+.icon-tabler > path[stroke="none"][fill="none"] {
+    visibility: hidden;
+}
+/* End Tabler Icons Cleanup */
+
+text.key { font-weight: bold; font-size: 16px; }
+rect.combo { stroke: #c9cccf; }
+</style>
+<g transform="translate(30, 0)" class="layer- ">
+<text x="0" y="28" class="label"> </text>
+<g transform="translate(0, 57)">
+<g transform="translate(26, 24) rotate(15.0)" class="key keypos-0">
+<rect rx="6" ry="6" x="-32" y="-32" width="63" height="63" class="key"/>
+<text x="0" y="0" class="key tap">keymap</text>
+</g>
+<g transform="translate(108, 24) rotate(-15.0)" class="key keypos-1">
+<rect rx="6" ry="6" x="-32" y="-32" width="63" height="63" class="key"/>
+<text x="0" y="0" class="key tap">drawer</text>
+</g>
+<g class="combo combopos-0">
+<path d="M67,68 h-43 a6.0,6.0 0 0 1 -6.0,-6.0 v-16" class="combo"/>
+<path d="M67,68 h43 a6.0,6.0 0 0 0 6.0,-6.0 v-16" class="combo"/>
+<rect rx="6" ry="6" x="53" y="55" width="28" height="26" class="combo"/>
+<use href="#mdi:keyboard" xlink:href="#mdi:keyboard" x="59" y="60" height="16" width="16.0" class="combo tap glyph mdi:keyboard"/>
+</g>
+<g class="combo combopos-1">
+<rect rx="6" ry="6" x="53" y="-14" width="28" height="26" class="combo"/>
+<use href="#mdi:pencil-ruler" xlink:href="#mdi:pencil-ruler" x="59" y="-9" height="16" width="16.0" class="combo tap glyph mdi:pencil-ruler"/>
+</g>
+</g>
+</g>
+</svg>
