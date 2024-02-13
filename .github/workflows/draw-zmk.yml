@@ -103,10 +103,9 @@ jobs:
               echo "INFO:   got extra draw args: $draw_args"
 
               json_path="${{ inputs.json_path }}"
-              [ -e "$json_path" ] && json_dir="$json_path"
-              if [ -f "${json_dir:-config}/${keyboard}.json" ]; then
-                  echo "INFO:   found ${json_dir:-config}/${keyboard}.json";
-                  draw_args+=" -j ${json_dir:-config}/${keyboard}.json"
+              if [ -f "$json_path/${keyboard}.json" ]; then
+                  echo "INFO:   found $json_path/${keyboard}.json";
+                  draw_args+=" -j $json_path/${keyboard}.json"
               fi
 
               keymap "${config_arg[@]}" parse -z "$keymap_file" $parse_args >"${{ inputs.output_folder }}/$keyboard.yaml" \
