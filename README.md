@@ -1,4 +1,4 @@
-# `keymap-drawer`
+# ![keymap-drawer](/site/logo_light.svg)
 
 [![PyPI version](https://img.shields.io/pypi/v/keymap-drawer.svg)](https://pypi.org/project/keymap-drawer/)
 
