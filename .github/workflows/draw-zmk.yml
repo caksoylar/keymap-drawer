@@ -121,7 +121,7 @@ jobs:
               if [[ ${FIRST} -ne 1 ]]; then
                 OUTPUTS="${OUTPUTS},"
               fi
-              OUTPUTS="${OUTPUTS}\"$keyboard.yaml\",\"$keyboard.svg\""
+              OUTPUTS="${OUTPUTS}\"${{ inputs.output_folder }}/$keyboard.yaml\",\"${{ inputs.output_folder }}/$keyboard.svg\""
           done
           echo "OUTPUTS=[${OUTPUTS}]" >> $GITHUB_OUTPUT
 
@@ -151,6 +151,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: drawings
-          path: |-
+          path: |
             ${{ join(fromJSON(steps.draw.outputs.OUTPUTS), '
             ') }}
