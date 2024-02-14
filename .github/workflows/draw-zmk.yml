@@ -49,6 +49,11 @@ on:
         default: ''
         required: false
         type: string
+      destination:
+        description: 'Add the output files to a commit, as artifacts or both, values: `commit`, `artifact`, `both`'
+        default: 'commit'
+        required: false
+        type: string
 
 jobs:
   draw:
@@ -75,6 +80,7 @@ jobs:
         run: python3 -m pip install "git+https://github.com/caksoylar/keymap-drawer.git@${{ inputs.install_branch }}"
 
       - name: Draw keymaps
+        id: draw
         run: |
           get_args() {
               local keyboard=$2
@@ -93,6 +99,7 @@ jobs:
 
           config_path="${{ inputs.config_path }}"
           [ -e "$config_path" ] && config_arg=(-c "$config_path") || config_arg=()
+          FIRST=1
           for keymap_file in ${{ inputs.keymap_patterns }}; do
               keyboard=$(basename -s .keymap "$keymap_file")
               echo "INFO: drawing for $keyboard"
@@ -111,15 +118,21 @@ jobs:
               keymap "${config_arg[@]}" parse -z "$keymap_file" $parse_args >"${{ inputs.output_folder }}/$keyboard.yaml" \
               && keymap "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" $draw_args >"${{ inputs.output_folder }}/$keyboard.svg" \
               || echo "ERROR: parsing or drawing failed for $keyboard!"
+              if [[ ${FIRST} -ne 1 ]]; then
+                OUTPUTS="${OUTPUTS},"
+              fi
+              OUTPUTS="${OUTPUTS}\"$keyboard.yaml\",\"$keyboard.svg\""
           done
+          echo "OUTPUTS=[${OUTPUTS}]" >> $GITHUB_OUTPUT
 
       - name: Get last commit message
         id: last_commit_message
-        if: inputs.amend_commit == true
+        if: inputs.amend_commit == true && (inputs.destination == 'commit || inputs.destination == 'both')
         run: |
           echo "msg=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
 
       - name: Commit updated images
+        if: inputs.destination == 'commit || inputs.destination == 'both'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           file_pattern: '${{ inputs.output_folder }}/*.svg ${{ inputs.output_folder }}/*.yaml'
@@ -132,3 +145,10 @@ jobs:
           commit_options: "${{ (inputs.amend_commit == true && '--amend --no-edit') || '' }}"
           push_options: "${{ (inputs.amend_commit == true && '--force-with-lease') || '' }}"
           skip_fetch: ${{ inputs.amend_commit == true }}
+
+      - name: Artifact upload
+        id: artifact-upload-step
+        uses: actions/upload-artifact@v4
+        with:
+          name: drawings
+          path: ${{ fromJSON(steps.draw.outputs.OUTPUTS) }}
