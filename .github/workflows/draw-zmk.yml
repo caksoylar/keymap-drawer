@@ -132,7 +132,7 @@ jobs:
           echo "msg=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
 
       - name: Commit updated images
-        if: inputs.destination == 'commit || inputs.destination == 'both'
+        if: ( inputs.destination == 'commit || inputs.destination == 'both' )
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           file_pattern: '${{ inputs.output_folder }}/*.svg ${{ inputs.output_folder }}/*.yaml'
