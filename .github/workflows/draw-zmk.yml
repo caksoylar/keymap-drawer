@@ -54,6 +54,11 @@ on:
         default: 'commit'
         required: false
         type: string
+      artifactname:
+        description: 'Define the name the drawings are stored as an artifact'
+        default: 'drawings'
+        required: false
+        type: string
     outputs:
       drawings-id:
         description: 'Archive with keymap in yaml and drawing in svg formats'
@@ -155,7 +160,7 @@ jobs:
         id: artifact-upload-step
         uses: actions/upload-artifact@v4
         with:
-          name: drawings
+          name: '${{ inputs.artifactname }}'
           path: |
             ${{ join(fromJSON(steps.draw.outputs.OUTPUTS), '
             ') }}
