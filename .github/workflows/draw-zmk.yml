@@ -54,6 +54,8 @@ on:
         default: 'commit'
         required: false
         type: string
+    outputs:
+      drawings-id: ${{ jobs.draw.outputs.drawings-id }}
 
 jobs:
   draw:
