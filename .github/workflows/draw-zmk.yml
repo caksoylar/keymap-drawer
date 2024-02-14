@@ -5,43 +5,48 @@ on:
   workflow_call:
     inputs:
       keymap_patterns:
-        description: "Path specification for keymaps to be parsed"
-        default: "config/*.keymap"
+        description: 'Path specification for keymaps to be parsed'
+        default: 'config/*.keymap'
         required: false
         type: string
       config_path:
-        description: "Path to the keymap-drawer configuration file, ignored if non-existent"
-        default: "keymap_drawer.config.yaml"
+        description: 'Path to the keymap-drawer configuration file, ignored if non-existent'
+        default: 'keymap_drawer.config.yaml'
         required: false
         type: string
       output_folder:
-        description: "Output folder for SVG and YAML files"
-        default: "keymap-drawer"
+        description: 'Output folder for SVG and YAML files'
+        default: 'keymap-drawer'
+        required: false
+        type: string
+      json_path:
+        description: 'Path containing <keymap>.json physical layout description files, ignored if non-existent'
+        default: 'config'
         required: false
         type: string
       parse_args:
         description: "Map of keyboard names to extra `keymap parse` args, e.g. `corne:'--layer-names Def Lwr Rse Fun'`"
-        default: ""
+        default: ''
         required: false
         type: string
       draw_args:
         description: "Map of keyboard names to extra `keymap draw` args, e.g. `corne:'-k corne_rotated -l LAYOUT_split_3x5_3'`"
-        default: ""
+        default: ''
         required: false
         type: string
       commit_message:
-        description: "Commit message for updated images. Ignored if `amend_commit` is `true`."
-        default: "keymap-drawer render"
+        description: 'Commit message for updated images. Ignored if `amend_commit` is `true`.'
+        default: 'keymap-drawer render'
         required: false
         type: string
       amend_commit:
-        description: "Whether to amend the last commit instead of creating a new one. Make sure you understand the implications of rewriting the branch history if you use this option!"
+        description: 'Whether to amend the last commit instead of creating a new one. Make sure you understand the implications of rewriting the branch history if you use this option!'
         default: false
         required: false
         type: boolean
       install_branch:
-        description: "Install keymap-drawer from a git branch, use empty for pypi release (default)"
-        default: ""
+        description: 'Install keymap-drawer from a git branch, use empty for pypi release (default)'
+        default: ''
         required: false
         type: string
 
@@ -97,9 +102,10 @@ jobs:
               draw_args=$(get_args "${{ inputs.draw_args }}" "$keyboard")
               echo "INFO:   got extra draw args: $draw_args"
 
-              if [ -f "config/${keyboard}.json" ]; then
-                  echo "INFO:   found config/${keyboard}.json";
-                  draw_args+=" -j config/${keyboard}.json"
+              json_path="${{ inputs.json_path }}"
+              if [ -f "$json_path/${keyboard}.json" ]; then
+                  echo "INFO:   found $json_path/${keyboard}.json";
+                  draw_args+=" -j $json_path/${keyboard}.json"
               fi
 
               keymap "${config_arg[@]}" parse -z "$keymap_file" $parse_args >"${{ inputs.output_folder }}/$keyboard.yaml" \
@@ -116,13 +122,13 @@ jobs:
       - name: Commit updated images
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          file_pattern: "${{ inputs.output_folder }}/*.svg ${{ inputs.output_folder }}/*.yaml"
+          file_pattern: '${{ inputs.output_folder }}/*.svg ${{ inputs.output_folder }}/*.yaml'
           # So the previous commit is amended instead of creating a new one when desired
           # See:
           # - https://github.com/stefanzweifel/git-auto-commit-action#using---amend-and---no-edit-as-commit-options
           # - https://github.com/stefanzweifel/git-auto-commit-action/issues/159#issuecomment-845347950
           # - https://github.com/actions/checkout
-          commit_message: "${{ (inputs.amend_commit == true && steps.last_commit_message.outputs.msg) || inputs.commit_message }}"
+          commit_message: '${{ (inputs.amend_commit == true && steps.last_commit_message.outputs.msg) || inputs.commit_message }}'
           commit_options: "${{ (inputs.amend_commit == true && '--amend --no-edit') || '' }}"
           push_options: "${{ (inputs.amend_commit == true && '--force-with-lease') || '' }}"
           skip_fetch: ${{ inputs.amend_commit == true }}
