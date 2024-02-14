@@ -58,7 +58,8 @@ on:
 jobs:
   draw:
     runs-on: ubuntu-latest
-
+    outputs:
+      drawings-id: ${{ steps.artifact-upload-step.outputs.artifact-id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
