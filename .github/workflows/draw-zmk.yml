@@ -151,5 +151,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: drawings
-          path: |
-            ${{ fromJSON(steps.draw.outputs.OUTPUTS) }}
+          path: |-
+            ${{ join(fromJSON(steps.draw.outputs.OUTPUTS), '
+            ') }}
