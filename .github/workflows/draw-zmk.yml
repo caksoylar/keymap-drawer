@@ -20,7 +20,7 @@ on:
         required: false
         type: string
       json_path:
-        description: 'Path to the <keymap>.json layout configuration file, ignored if non-existent'
+        description: 'Path containing <keymap>.json physical layout description files, ignored if non-existent'
         default: 'config'
         required: false
         type: string
