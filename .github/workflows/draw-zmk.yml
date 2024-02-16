@@ -54,14 +54,14 @@ on:
         default: 'commit'
         required: false
         type: string
-      artifactname:
-        description: 'Define the name the drawings are stored as an artifact'
+      artifact_name:
+        description: 'Name of the produced artifact containing SVG and YAML outputs. Ignored if `destination` is `commit`.'
         default: 'drawings'
         required: false
         type: string
     outputs:
       drawings-id:
-        description: 'Archive with keymap in yaml and drawing in svg formats'
+        description: 'Archive with keymap in YAML and drawing in SVG formats'
         value: ${{ jobs.draw.outputs.drawings-id }}
 
 jobs:
@@ -158,6 +158,7 @@ jobs:
 
       - name: Artifact upload
         id: artifact-upload-step
+        if: ( inputs.destination == 'artifact' || inputs.destination == 'both' )
         uses: actions/upload-artifact@v4
         with:
           name: '${{ inputs.artifactname }}'
