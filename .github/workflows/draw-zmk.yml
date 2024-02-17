@@ -160,7 +160,7 @@ jobs:
         if: ( inputs.destination == 'artifact' || inputs.destination == 'both' )
         uses: actions/upload-artifact@v4
         with:
-          name: '${{ inputs.artifactname }}'
+          name: '${{ inputs.artifact_name }}'
           path: |
             ${{ join(fromJSON(steps.draw.outputs.DRAWINGS), '
             ') }}
