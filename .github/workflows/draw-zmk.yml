@@ -60,15 +60,15 @@ on:
         required: false
         type: string
     outputs:
-      drawings-id:
+      drawings:
         description: 'Archive with keymap in YAML and drawing in SVG formats'
-        value: ${{ jobs.draw.outputs.drawings-id }}
+        value: ${{ jobs.draw.outputs.drawings }}
 
 jobs:
   draw:
     runs-on: ubuntu-latest
     outputs:
-      drawings-id: ${{ steps.artifact-upload-step.outputs.artifact-id }}
+      drawings: ${{ steps.artifact-upload-step.outputs.artifact-id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -105,11 +105,12 @@ jobs:
               done
           }
 
+          IFS=','
+          declare -a DRAWINGS
           mkdir -p "${{ inputs.output_folder }}"
 
           config_path="${{ inputs.config_path }}"
           [ -e "$config_path" ] && config_arg=(-c "$config_path") || config_arg=()
-          FIRST=1
           for keymap_file in ${{ inputs.keymap_patterns }}; do
               keyboard=$(basename -s .keymap "$keymap_file")
               echo "INFO: drawing for $keyboard"
@@ -128,12 +129,9 @@ jobs:
               keymap "${config_arg[@]}" parse -z "$keymap_file" $parse_args >"${{ inputs.output_folder }}/$keyboard.yaml" \
               && keymap "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" $draw_args >"${{ inputs.output_folder }}/$keyboard.svg" \
               || echo "ERROR: parsing or drawing failed for $keyboard!"
-              if [[ ${FIRST} -ne 1 ]]; then
-                OUTPUTS="${OUTPUTS},"
-              fi
-              OUTPUTS="${OUTPUTS}\"${{ inputs.output_folder }}/$keyboard.yaml\",\"${{ inputs.output_folder }}/$keyboard.svg\""
+              DRAWINGS+=(\"${{ inputs.output_folder }}/$keyboard.yaml\" \"${{ inputs.output_folder }}/$keyboard.svg\")
           done
-          echo "OUTPUTS=[${OUTPUTS}]" >> $GITHUB_OUTPUT
+          echo "DRAWINGS=[${DRAWINGS[*]}]" >> $GITHUB_OUTPUT
 
       - name: Get last commit message
         id: last_commit_message
@@ -163,5 +161,5 @@ jobs:
         with:
           name: '${{ inputs.artifactname }}'
           path: |
-            ${{ join(fromJSON(steps.draw.outputs.OUTPUTS), '
+            ${{ join(fromJSON(steps.draw.outputs.DRAWINGS), '
             ') }}
