@@ -105,7 +105,6 @@ jobs:
               done
           }
 
-          IFS=','
           declare -a DRAWINGS
           mkdir -p "${{ inputs.output_folder }}"
 
@@ -131,8 +130,10 @@ jobs:
               || echo "ERROR: parsing or drawing failed for $keyboard!"
               DRAWINGS+=(\"${{ inputs.output_folder }}/$keyboard.yaml\" \"${{ inputs.output_folder }}/$keyboard.svg\")
           done
+          IFS=','
           echo "DRAWINGS=[${DRAWINGS[*]}]" >> $GITHUB_OUTPUT
-
+          unset IFS
+          
       - name: Get last commit message
         id: last_commit_message
         if: inputs.amend_commit == true && (inputs.destination == 'commit' || inputs.destination == 'both')
