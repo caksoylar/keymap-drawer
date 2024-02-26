@@ -1,4 +1,5 @@
 """Module containing class and methods to draw combo representations."""
+
 from io import StringIO
 from math import copysign
 from typing import Sequence
@@ -136,7 +137,9 @@ class ComboDrawerMixin(UtilsMixin):
             classes=["combo", combo.type, combo.key.type],
         )
 
-        self._draw_legend(p, self._split_text(combo.key.tap), classes=["combo", combo.type, combo.key.type], legend_type="tap")
+        self._draw_legend(
+            p, self._split_text(combo.key.tap), classes=["combo", combo.type, combo.key.type], legend_type="tap"
+        )
         self._draw_legend(
             p + Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
             [combo.key.hold],

@@ -2,6 +2,7 @@
 Module with classes that define the keymap representation, with multiple layers
 containing key and combo specifications, paired with the physical keyboard layout.
 """
+
 from collections import defaultdict
 from functools import partial
 from itertools import chain
