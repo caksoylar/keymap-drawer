@@ -133,7 +133,7 @@ jobs:
           IFS=','
           echo "DRAWINGS=[${DRAWINGS[*]}]" >> $GITHUB_OUTPUT
           unset IFS
-          
+
       - name: Get last commit message
         id: last_commit_message
         if: inputs.amend_commit == true && (inputs.destination == 'commit' || inputs.destination == 'both')
