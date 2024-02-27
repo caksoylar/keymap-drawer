@@ -1,4 +1,5 @@
 """Redirect users to the canonical URL pointing to the new app."""
+
 import streamlit as st
 
 APP_URL = "https://caksoylar.github.io/keymap-drawer"
