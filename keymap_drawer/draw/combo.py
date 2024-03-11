@@ -50,13 +50,13 @@ class ComboDrawerMixin(UtilsMixin):
         line = f"l{round(diff.x)},{round(diff.y)}"
         self.out.write(f'<path d="{start} {line}" class="combo"/>\n')
 
-    def print_combo(self, combo: ComboSpec, combo_ind: int) -> Point:
+    def print_combo(self, combo: ComboSpec, combo_ind: int) -> tuple[Point, Point]:  # pylint: disable=too-many-locals
         """
         Print SVG code for a rectangle with text representing a combo specification, which contains the key positions
         that trigger it and what it does when triggered. The position of the rectangle depends on the alignment
         specified, along with whether dendrons are drawn going to each key position from the combo.
 
-        Returns the midpoint of the combo box, for bounding box calculations.
+        Returns top-left/bottom-right coordinates of bounding box that contains the combo.
         """
         p_keys = [self.layout.keys[p] for p in combo.key_positions]
         width, height = combo.width or self.cfg.combo_w, combo.height or self.cfg.combo_h
@@ -156,7 +156,11 @@ class ComboDrawerMixin(UtilsMixin):
             self.out.write("</g>\n")
 
         self.out.write("</g>\n")
-        return p
+
+        # calculate bounding box coordinates by creating a temporary PhysicalKey
+        combo_key = PhysicalKey(p, width, height, combo.rotation)
+        dims = 0.5 * Point(combo_key.bounding_width, combo_key.bounding_height)
+        return p - dims, p + dims
 
     def print_combos_for_layer(self, combos: Sequence[ComboSpec]) -> tuple[float | None, float | None]:
         """
@@ -166,7 +170,7 @@ class ComboDrawerMixin(UtilsMixin):
         combo_pts = []
         for combo_ind, combo_spec in enumerate(combos):
             combo_pts.append(self.print_combo(combo_spec, combo_ind))
-        return min((p.y for p in combo_pts), default=None), max((p.y for p in combo_pts), default=None)
+        return min((p.y for p, _ in combo_pts), default=None), max((p.y for _, p in combo_pts), default=None)
 
     def create_combo_diagrams(
         self, scale_factor: int, ghost_keys: Sequence[int] | None = None
