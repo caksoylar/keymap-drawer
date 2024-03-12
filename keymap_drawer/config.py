@@ -100,6 +100,9 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         /* default key styling */
         rect.key {
             fill: #f6f8fa;
+        }
+
+        rect.key, rect.combo {
             stroke: #c9cccf;
             stroke-width: 1;
         }
