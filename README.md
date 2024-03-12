@@ -17,7 +17,7 @@ Available as a [command-line tool](#command-line-tool-installation) or a [web ap
 - Bootstrap the YAML representation by automatically parsing QMK or ZMK keymap files
 - Arbitrary physical keyboard layouts (with rotated keys!) supported, along with parametrized ortho layouts
 - Both parsing and drawing are customizable with a config file, see ["Customization" section](#customization)
-- Custom glyph support: render custom svg icons and not just unicode text
+- Custom glyph support: render custom SVG icons and not just unicode text
 
 See examples in [the live web demo](https://caksoylar.github.io/keymap-drawer) for example inputs and outputs.
 
@@ -73,7 +73,7 @@ See [the development section](#development) for instructions to install from sou
   ```
 
   Currently combos, hold-taps, mod-morphs, sticky keys and layer names can be determined via parsing.
-  For layer names, the value of the `label` property will take precedence over the layer's node name if provided.
+  For layer names, the value of the `display-name` property will take precedence over the layer's node name if provided.
 
 As an alternative to parsing, you can also check out the [examples](examples/) to find a layout similar to yours to use as a starting point.
 
@@ -97,7 +97,7 @@ It might be beneficial to start by `draw`'ing the current representation and ite
 ### Producing the SVG
 
 Final step is to produce the SVG representation using the **`keymap draw`** command.
-However to do that, we need to specify the physical layout of the keyboard, i.e., how many keys there are, where each key is positioned etc.
+However to do that, we need to specify the *physical* layout of the keyboard, i.e., how many keys there are, where each key is positioned etc.
 
 If you produced your keymap YAML through `keymap parse`, it will have tried to guess the proper layout in the `layout` field of your keymap.
 If you like you can tweak the field value according to the [spec](KEYMAP_SPEC.md#layout), then finally call the draw command:
@@ -106,7 +106,7 @@ If you like you can tweak the field value according to the [spec](KEYMAP_SPEC.md
 keymap draw sweep_keymap.yaml >sweep_keymap.ortho.svg
 ```
 
-And you are done! You can render the SVG on your browser or use a tool like [CairoSVG](https://cairosvg.org/) or [Inkscape](https://inkscape.org/) to export to a different format.
+And you are done! You can view the output SVG on your browser or use a tool like [CairoSVG](https://cairosvg.org/) or [Inkscape](https://inkscape.org/) to convert to a different format.
 
 > #### ℹ️ Specifying layouts in the CLI
 >
@@ -125,7 +125,8 @@ Start by dumping the default configuration settings to a file:
 keymap dump-config >my_config.yaml
 ```
 
-Then, edit the file to change the settings, referring to [CONFIGURATION.md](CONFIGURATION.md).
+Then, edit the file to change the settings, referring to [CONFIGURATION.md](CONFIGURATION.md). You can delete from the file the settings you don't want to change.
+
 You can then pass this file to either `draw` and `parse` subcommands with the `-c`/`--config` argument (note the location before the subcommand):
 
 ```sh
@@ -140,16 +141,29 @@ KEYMAP_raw_binding_map='{"&bootloader": "BOOT"}' keymap parse -z zmk-config/conf
 ```
 
 Drawing parameters that are specified in the `draw_config` field can also be overridden in [the keymap YAML](KEYMAP_SPEC.md#draw_config).
+Using this you can preserve your style customizations along with your keymap in a single file.
 
-## Custom Glyphs
+## Custom SVG Glyphs
 
-Custom glyphs can be defined in the `draw_config` block of the keymap config.
-After a glyph is defined it can be used in key fields via the glyph name surrounded by `$$`, e.g. `$$vol_up$$`.
-The provided svg must specify a `viewBox`, positional or dimensional properties will be calculated by `keymap-drawer`.
-The height of the svg is bound by the config properties `glyph_{tap,hold,shifted}_size` and width will maintain the aspect ratio.
+`keymap-drawer` can also use SVG glyphs for legends, in addition to plain or unicode text. The easiest way to do this is
+to use the `$$source:id$$` notation [certain `source`s](CONFIGURATION.md#glyph_urls), which will automatically fetch
+the SVGs from a given remote `source`, e.g. using `$$tabler:volume$$` will insert the [volume icon from Tabler](https://tabler-icons.io/i/volume).
+The following `source` values are currently supported:
+
+- `tabler`: [Tabler Icons](https://tabler-icons.io/) (use icon name as `id`)
+- `mdi`: [Pictogrammers Material Design Icons](https://pictogrammers.com/library/mdi/) (use icon name as `id`)
+- `mdil`: [Pictogrammers Material Design Icons Light](https://pictogrammers.com/library/mdil/) (use icon name as `id`)
+- `material`: [Google Material Symbols](https://fonts.google.com/icons) (use value in "Android" tab as `id`)
+
+Fetched SVGs will be [cached by default](CONFIGURATION.md#use_local_cache) to speed up future runs.
+
+The height of the SVG is bound by the config properties `glyph_{tap,hold,shifted}_size` and width will maintain the aspect ratio.
 To allow for customization, glyphs are assigned CSS classes `glyph` and `<glyph_name>`.
+SVG glyphs currently cannot be used alongside other text in the same legend field.
 
-Example:
+Instead of automatically fetching them from remote sources, you can also define custom SVG blocks under `draw_config`.
+After a glyph is defined this way it can be used in key fields via the glyph name surrounded by `$$`, e.g. `$$vol_up$$`.
+The provided SVG must specify a `viewBox`, given that positional or dimensional properties will be calculated by `keymap-drawer`:
 
 ```yaml
 draw_config:
@@ -169,17 +183,6 @@ layers:
     - ["", "$$vol_up$$", "", "", ""]
 ```
 
-You can also use the `$$source:id$$` notation for [certain sources](CONFIGURATION.md#glyph_urls) to automatically fetch
-the SVGs without having to define them manually in the `glyphs` field, e.g. [`$$tabler:volume$$`](https://tabler-icons.io/i/volume).
-The following `source` values are currently supported:
-
-- `tabler`: [Tabler Icons](https://tabler-icons.io/) (icon name as `id`)
-- `mdi`: [Pictogrammers Material Design Icons](https://pictogrammers.com/library/mdi/) (icon name as `id`)
-- `mdil`: [Pictogrammers Material Design Icons Light](https://pictogrammers.com/library/mdil/) (icon name as `id`)
-- `material`: [Google Material Symbols](https://fonts.google.com/icons) (use value in "Android" tab as `id`)
-
-Fetched SVGs will be [cached by default](CONFIGURATION.md#use_local_cache) to speed up future runs.
-
 ## Setting up an automated drawing workflow
 
 If you use a [ZMK config repo](https://zmk.dev/docs/user-setup), you can set up an automated workflow that parses and draws your keymaps, then commits the YAML parse outputs and produced SVGs to your repo.
@@ -196,7 +199,7 @@ on:
       - "config/*.keymap"
       - "config/*.dtsi"
       - "keymap_drawer.config.yaml"
-      # - 'config/boards/*/*/*.keymap'
+      # - 'boards/*/*/*.keymap'
 
 jobs:
   draw:
@@ -242,10 +245,12 @@ jobs:
 
 ## Community
 
-Below are a few example usages from the community that might be inspirational, whether they are doing unique things with styling, configuration or legends used, or integrate `keymap-drawer` into other workflows.
+Below are a few tools and example usages from the community that might be inspirational, whether they are doing unique things with styling, configuration or legends used, or integrate `keymap-drawer` into other workflows.
 
+- [YellowAfterlife's Vial To Keymap Drawer](https://yal-tools.github.io/vial-to-keymap-drawer/): Parser to convert Vial .vil files to keymap YAMLs
 - [minusfive's ZMK config](https://github.com/minusfive/zmk-config): Uses an [extensive config file](https://github.com/minusfive/zmk-config/blob/main/keymap_drawer.config.yaml) for great results out of the automated drawing workflow, with plenty of SVG glyphs
 - [SethMilliken's Swept Corne config](https://github.com/SethMilliken/swept-corne-zmk/tree/seth): Another config using the automated workflow with a [nice configuration](https://github.com/SethMilliken/swept-corne-zmk/blob/seth/keymap_drawer.config.yaml) and SVG glyphs
+- [englmaxi's ZMK config](https://github.com/englmaxi/zmk-config): Using key sides setting and CSS tricks to position multiple SVG glyphs in one key
 - [jbarr21's `keymap-display`](https://github.com/jbarr21/keymap-display): Uses a [converter script](https://github.com/jbarr21/keymap-display/blob/main/scripts/json2yaml) to convert QMK `keymap.c` to a keymap YAML
 - [casuanoob's keymap](https://github.com/casuanoob/zmk-config-bkb): Many useful unicode and SVG glyphs in the [keymap YAML](https://github.com/casuanoob/zmk-config-bkb/blob/master/assets/split34_keymap_zmk.yaml)
 - [possumvibes's keymap](https://github.com/possumvibes/keyboard-layout): Separate layer and combo diagrams
