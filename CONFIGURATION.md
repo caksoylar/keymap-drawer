@@ -18,6 +18,8 @@ _Default:_ `60`, `56`
 
 #### `split_gap`
 
+The gap between two halves of a split keyboard, only used for physical layouts specified via `ortho_layout`.
+
 _Type:_ `float`
 
 _Default:_ `30`
