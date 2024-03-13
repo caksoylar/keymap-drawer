@@ -3,7 +3,7 @@
 This folder contains resource/"data" files used by `keymap-drawer`. In particular:
 
 - [`zmk_keyboard_layouts.yaml`](zmk_keyboard_layouts.yaml): Contains a mapping of ZMK keyboard names (the part of the filename `<keyboard>.keymap`) to a mapping
-  of `matrix_transform` to [physical layout specs](../KEYMAP_SPEC.md#layout). For example:
+  of `matrix-transform` to [physical layout specs](../KEYMAP_SPEC.md#layout). For example:
   ```yaml
   planck:
     layout_grid_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_ortho_4x12}
@@ -16,7 +16,7 @@ This folder contains resource/"data" files used by `keymap-drawer`. In particula
   ```dts
   / {
       chosen {
-          zmk,matrix_transform = &layout_2x2u_transform;
+          zmk,matrix-transform = &layout_2x2u_transform;
       };
       ...
   };

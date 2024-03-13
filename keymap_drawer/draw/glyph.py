@@ -124,10 +124,9 @@ class GlyphMixin:
             case _:
                 raise ValueError("Unsupported legend_type for glyph")
 
-        x, y, w, h = (float(v) for v in view_box.groups())
-
-        # calculate width to preserve aspect ratio
-        width = (w - x) * (height / (h - y))
+        # calculate final width to preserve aspect ratio
+        _, _, w, h = (float(v) for v in view_box.groups())
+        width = w * height / h
 
         return width, height, d_y
 

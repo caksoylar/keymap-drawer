@@ -4,21 +4,36 @@ import json
 import re
 from typing import Sequence
 
+from keymap_drawer.config import ParseConfig
 from keymap_drawer.keymap import KeymapData, LayoutKey
-from keymap_drawer.parse.parse import KeymapParser
+from keymap_drawer.parse.parse import KeymapParser, ParseError
 
 
 class QmkJsonParser(KeymapParser):
     """Parser for json-format QMK keymaps, like Configurator exports or `qmk c2json` outputs."""
 
-    _prefix_re = re.compile(r"\bKC_")
-    _trans_re = re.compile(r"TRANSPARENT|TRNS|_______")
+    _trans_re = re.compile(r"KC_TRANSPARENT|KC_TRNS|_______")
     _mo_re = re.compile(r"MO\((\d+)\)")
+    _tog_re = re.compile(r"(TG|TO|DF)\((\d+)\)")
     _mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
     _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
     _lt_re = re.compile(r"LT\((\d+), *(\S+)\)")
     _osm_re = re.compile(r"OSM\(MOD_(\S+)\)")
     _osl_re = re.compile(r"OSL\((\d+)\)")
+
+    def __init__(
+        self,
+        config: ParseConfig,
+        columns: int | None,
+        base_keymap: KeymapData | None = None,
+        layer_names: list[str] | None = None,
+    ):
+        super().__init__(config, columns, base_keymap, layer_names)
+        self._prefix_re: re.Pattern | None
+        if prefixes := self.cfg.qmk_remove_keycode_prefix:
+            self._prefix_re = re.compile(r"\b(" + "|".join(re.escape(prefix) for prefix in set(prefixes)) + ")")
+        else:
+            self._prefix_re = None
 
     def _str_to_key(  # pylint: disable=too-many-return-statements
         self, key_str: str, current_layer: int, key_positions: Sequence[int]
@@ -31,9 +46,9 @@ class QmkJsonParser(KeymapParser):
         assert self.layer_names is not None
 
         def mapped(key: str) -> LayoutKey:
+            if self._prefix_re is not None:
+                key = self._prefix_re.sub("", key)
             return LayoutKey.from_key_spec(self.cfg.qmk_keycode_map.get(key, key.replace("_", " ")))
-
-        key_str = self._prefix_re.sub("", key_str)
 
         if m := self._trans_re.fullmatch(key_str):  # transparent
             return self.trans_key
@@ -41,6 +56,9 @@ class QmkJsonParser(KeymapParser):
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from([current_layer], to_layer, key_positions)
             return LayoutKey(tap=self.layer_names[to_layer])
+        if m := self._tog_re.fullmatch(key_str):  # toggled layer
+            to_layer = int(m.group(2).strip())
+            return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.toggle_label)
         if m := self._mts_re.fullmatch(key_str):  # short mod-tap syntax
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=m.group(1), shifted=tap_key.shifted)
@@ -85,10 +103,17 @@ class QmkJsonParser(KeymapParser):
                 f"Length of provided layer name list ({l_u}) does not match the number of parsed layers ({num_layers})"
             )
 
-        layers = {
-            self.layer_names[ind]: [self._str_to_key(key, ind, [i]) for i, key in enumerate(layer)]
-            for ind, layer in enumerate(raw["layers"])
-        }
+        layers: dict[str, list[LayoutKey]] = {}
+        for layer_ind, layer in enumerate(raw["layers"]):
+            layer_name = self.layer_names[layer_ind]
+            layers[layer_name] = []
+            for ind, key in enumerate(layer):
+                try:
+                    layers[layer_name].append(self._str_to_key(key, layer_ind, [ind]))
+                except Exception as err:
+                    raise ParseError(
+                        f'Could not parse keycode "{key}" in layer "{layer_name}" with exception "{err}"'
+                    ) from err
 
         layers = self.add_held_keys(layers)
         keymap_data = KeymapData(layers=layers, layout=None, config=None)
