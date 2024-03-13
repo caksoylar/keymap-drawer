@@ -26,7 +26,10 @@ This field provides information about the physical layout of the keyboard, i.e.,
 
 1. **QMK `info.json` `layout` specification**:
    This is the [official QMK format](https://docs.qmk.fm/#/reference_info_json?id=layout-format) for physical key descriptions
-   that every `info.json` file in the QMK firmware repository uses. `keymap-drawer` only uses the `x`, `y`, `r`, `rx` and `ry` fields.
+   that every `info.json` file in the QMK firmware repository uses.
+   `keymap-drawer` only uses the `x`, `y`, `w`, `h`, `r`, `rx` and `ry` fields.
+   The `x, y, w, h` specifies the key location and size (width, height) in `1u` units,
+   with `r` indicating the key rotation in degrees, centered at `rx, ry`.
    Note that `keymap-editor` utilizes [the same format](https://github.com/nickcoutsos/keymap-editor/wiki/Defining-keyboard-layouts) for `info.json`.
 
    QMK spec also lets you specify multiple "layouts" per keyboard corresponding to different layout macros to support physical variations.
@@ -37,10 +40,22 @@ This field provides information about the physical layout of the keyboard, i.e.,
    visualize a given JSON definition, re-order keys using the "Re-order" tool and generate one from scratch from various formats such as KLE or Kicad
    PCBs using the "Import" tool.
 
+   Alternatively you can write QMK layout inline with the `qmk_info` parameter
+   according to the official schema or a simple of key specs. For example:
+
+```yaml
+layout:
+  qmk_info: [
+                    {x: 1, y: 0}, {x: 2, y: 0}, {x: 3, y: 0},
+      {x: 0, y: 1}, {x: 1, y: 1}, {x: 2, y: 1}, {x: 3, y: 1, h: 2},
+      ...
+  ]
+```
+
    Note that the behavior of the layout helper and `keymap-drawer` differs for rotated keys when omitting `rx`, `ry` parameters --
    `keymap-drawer` assumes rotation around the key center and layout helper assumes rotation around the top left of the key.
    For this reason it is recommended to explicitly specify `rx`, `ry` fields if `r` is specified. You might also want to omit the fields
-   besides `x`, `y`, `r`, `rx` and `ry` in your final JSON since they won't be used by `keymap-drawer`.
+   besides `x`, `y`, `w`, `h`, `r`, `rx` and `ry` in your final JSON since they won't be used by `keymap-drawer`.
 
 2. **Parametrized ortholinear layouts**:
    This lets you specify parameters to automatically generate a split or non-split ortholinear layout.
