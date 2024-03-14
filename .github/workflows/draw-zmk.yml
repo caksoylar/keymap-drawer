@@ -59,6 +59,11 @@ on:
         default: 'drawings'
         required: false
         type: string
+      fail_on_error:
+        description: 'Fail the action if an error occurs during parse/draw'
+        default: false
+        required: false
+        type: boolean
     outputs:
       drawings:
         description: 'Archive with keymap in YAML and drawing in SVG formats'
@@ -106,6 +111,7 @@ jobs:
           }
 
           declare -a DRAWINGS
+          error_occurred=0
           mkdir -p "${{ inputs.output_folder }}"
 
           config_path="${{ inputs.config_path }}"
@@ -127,12 +133,19 @@ jobs:
 
               keymap "${config_arg[@]}" parse -z "$keymap_file" $parse_args >"${{ inputs.output_folder }}/$keyboard.yaml" \
               && keymap "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" $draw_args >"${{ inputs.output_folder }}/$keyboard.svg" \
-              || echo "ERROR: parsing or drawing failed for $keyboard!"
+              || {
+                  echo "ERROR: parsing or drawing failed for $keyboard!"
+                  error_occurred=1
+              }
               DRAWINGS+=(\"${{ inputs.output_folder }}/$keyboard.yaml\" \"${{ inputs.output_folder }}/$keyboard.svg\")
           done
           IFS=','
           echo "DRAWINGS=[${DRAWINGS[*]}]" >> $GITHUB_OUTPUT
           unset IFS
+
+          if [ "${{ inputs.fail_on_error }}" == "true" ] && [ $error_occurred -eq 1 ]; then
+              exit 1
+          fi
 
       - name: Get last commit message
         id: last_commit_message
