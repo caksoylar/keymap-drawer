@@ -16,11 +16,12 @@ repository = "https://github.com/caksoylar/keymap-drawer"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pydantic = "^1.10.7"
+pydantic = "^2.0.0"
 pcpp = "^1.30"
 pyparsing = "^3.0.9"
 pyyaml = "^6.0"
 platformdirs = "^3.5.1"
+pydantic-settings = "^2.2.1"
 
 [tool.poetry.group.dev]
 optional = true
@@ -29,7 +30,7 @@ optional = true
 mypy = "^1.3.0"
 pylint = "^2.17.4"
 black = "^23.3.0"
-pylint-pydantic = "^0.1.8"
+pylint-pydantic = "^0.3.0"
 types-pyyaml = "^6.0.12.10"
 deptry = "^0.12.0"
 hjson = "^3.1.0"
@@ -57,7 +58,7 @@ disable = """
 """
 
 [tool.pylint.BASIC]
-good-names = "x,y,w,h,r,f,k,p,m,c"
+good-names = "x,y,w,h,r,f,k,v,p,m,c"
 max-line-length = 120
 
 [tool.mypy]

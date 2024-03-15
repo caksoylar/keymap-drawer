@@ -6,15 +6,15 @@ containing key and combo specifications, paired with the physical keyboard layou
 from collections import defaultdict
 from functools import partial
 from itertools import chain
-from typing import Iterable, Literal, Mapping, Sequence
+from typing import Iterable, Literal
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import field_validator, model_serializer, model_validator, BaseModel, Field
 
 from .config import DrawConfig
 from .physical_layout import PhysicalLayout, layout_factory
 
 
-class LayoutKey(BaseModel, allow_population_by_field_name=True):
+class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True):
     """
     Represents a binding in the keymap, which has a tap property by default and
     can optionally have hold or shifted properties, or be "held" or be a "ghost" key.
@@ -39,26 +39,31 @@ class LayoutKey(BaseModel, allow_population_by_field_name=True):
                 return cls()
         raise ValueError(f'Invalid key specification "{key_spec}", provide a dict, string or null')
 
-    def dict(self, *args, no_tapstr: bool = False, **kwargs):
-        dict_repr = super().dict(*args, **kwargs)
-        if no_tapstr or not set(dict_repr.keys()).issubset({"t", "tap"}):
-            return dict_repr
-        return dict_repr.get("t") or dict_repr.get("tap", "")
+    @model_serializer
+    def serialize_model(self) -> str | dict[str, str]:
+        """Custom serializer to output string-only for simple legends."""
+        if self.hold or self.shifted or self.type:
+            return {k: v for k, v in (("t", self.tap), ("h", self.hold), ("s", self.shifted), ("type", self.type)) if v}
+        return self.tap
+
+    def full_serializer(self) -> dict[str, str]:
+        """Custom serializer that always outputs a dict."""
+        return {k: v for k in ("tap", "hold", "shifted", "type") if (v := getattr(self, k))}
 
 
-class ComboSpec(BaseModel, allow_population_by_field_name=True):
+class ComboSpec(BaseModel, populate_by_name=True):
     """
     Represents a combo in the keymap, with the trigger positions, activated binding (key)
     and layers that it is present on.
     """
 
-    key_positions: Sequence[int] = Field(alias="p")
+    key_positions: list[int] = Field(alias="p")
     key: LayoutKey = Field(alias="k")
-    layers: Sequence[str] = Field(alias="l", default=[])
+    layers: list[str] = Field(alias="l", default=[])
     align: Literal["mid", "top", "bottom", "left", "right"] = Field(alias="a", default="mid")
     offset: float = Field(alias="o", default=0.0)
     dendron: bool | None = Field(alias="d", default=None)
-    slide: float | None = Field(alias="s", default=None)
+    slide: float | None = Field(alias="s", default=None, ge=-1.0, le=1.0)
     arc_scale: float = 1.0
     type: str = ""
     width: float | None = Field(alias="w", default=None)
@@ -69,41 +74,36 @@ class ComboSpec(BaseModel, allow_population_by_field_name=True):
     @classmethod
     def normalize_fields(cls, spec_dict: dict) -> dict:
         """Normalize spec_dict so that each field uses its alias and key is parsed to LayoutKey."""
-        for name, field in cls.__fields__.items():
+        for name, field in cls.model_fields.items():
             if name in spec_dict:
                 spec_dict[field.alias] = spec_dict.pop(name)
         if key_spec := spec_dict.get("k"):
             spec_dict["k"] = LayoutKey.from_key_spec(key_spec)
         return spec_dict
 
-    @validator("key", pre=True)
+    @field_validator("key", mode="before")
+    @classmethod
     def get_key(cls, val) -> LayoutKey:
         """Parse each key from its key spec."""
         return val if isinstance(val, LayoutKey) else LayoutKey.from_key_spec(val)
 
-    @validator("key_positions")
-    def validate_positions(cls, val) -> Sequence[str]:
+    @field_validator("key_positions")
+    @classmethod
+    def validate_positions(cls, val) -> list[str]:
         """Make sure each combo has at least two positions."""
         assert len(val) >= 2, f"Need at least two key positions for combo but got {val}"
-        return val
-
-    @validator("slide")
-    def validate_slide(cls, val) -> float:
-        """Ensure slide is between -1 and 1."""
-        if val is not None:
-            assert -1.0 <= val <= 1.0, f"Slide value needs to be in [-1, 1] but got {val}"
         return val
 
 
 class KeymapData(BaseModel):
     """Represents all data pertaining to a keymap, including layers, combos and physical layout."""
 
-    layers: Mapping[str, Sequence[LayoutKey]]
-    combos: Sequence[ComboSpec] = []
+    layers: dict[str, list[LayoutKey]]
+    combos: list[ComboSpec] = []
 
     # None-values only for use while parsing, i.e. no-layout mode
-    layout: PhysicalLayout | None
-    config: DrawConfig | None
+    layout: PhysicalLayout | None = None
+    config: DrawConfig | None = None
 
     def get_combos_per_layer(self, layers: Iterable[str] | None = None) -> dict[str, list[ComboSpec]]:
         """Return a mapping of layer names to combos that are present on that layer, if they aren't drawn separately."""
@@ -131,7 +131,7 @@ class KeymapData(BaseModel):
 
     def dump(self, num_cols: int = 0) -> dict:
         """Returns a dict-valued dump of the keymap representation."""
-        dump = self.dict(exclude_defaults=True, exclude_unset=True, by_alias=True)
+        dump = self.model_dump(exclude_defaults=True, exclude_unset=True, by_alias=True)
         if num_cols > 0:
             dump["layers"] = {
                 name: [layer_keys[i : i + num_cols] for i in range(0, len(layer_keys), num_cols)]
@@ -155,10 +155,7 @@ class KeymapData(BaseModel):
                 assert len(base_layer) == len(
                     layer
                 ), f'Cannot update from base keymap because layer lengths for "{name}" do not match'
-                layer = [
-                    base_key.copy(update=key.dict(exclude_unset=True, exclude_defaults=True, no_tapstr=True))
-                    for base_key, key in zip(base_layer, layer)
-                ]
+                layer = [base_key.model_copy(update=key.full_serializer()) for base_key, key in zip(base_layer, layer)]
             new_layers[name] = layer
         self.layers = new_layers
 
@@ -179,27 +176,31 @@ class KeymapData(BaseModel):
 
                 # need to handle key separately because update doesn't support nested models
                 # https://github.com/pydantic/pydantic/issues/4177
-                key = combo.key.copy(deep=True)
-                combo = best_match.copy(update=combo.dict(exclude={"key"}, exclude_unset=True, exclude_defaults=True))
+                key = combo.key.model_copy(deep=True)
+                combo = best_match.model_copy(
+                    update=combo.model_dump(exclude={"key"}, exclude_unset=True, exclude_defaults=True)
+                )
                 combo.key = key
 
             new_combos.append(combo)
         self.combos = new_combos
 
-    @validator("layers", pre=True)
-    def parse_layers(cls, val) -> Mapping[str, Sequence[LayoutKey]]:
+    @field_validator("layers", mode="before")
+    @classmethod
+    def parse_layers(cls, val) -> dict[str, list[LayoutKey]]:
         """Parse each key on layer from its key spec, flattening the spec if it contains sublists."""
         return {
             layer_name: [
                 val if isinstance(val, LayoutKey) else LayoutKey.from_key_spec(val)
                 for val in chain.from_iterable(
-                    v if isinstance(v, Sequence) and not isinstance(v, str) else [v] for v in keys
+                    v if isinstance(v, list) and not isinstance(v, str) else [v] for v in keys
                 )
             ]
             for layer_name, keys in val.items()
         }
 
-    @root_validator(pre=True, skip_on_failure=True)
+    @model_validator(mode="before")
+    @classmethod
     def create_layout(cls, vals):
         """Create layout with type given by ltype."""
         if vals["layout"] is None:  # ignore for no-layout mode
@@ -207,26 +208,26 @@ class KeymapData(BaseModel):
         vals["layout"] = layout_factory(config=vals["config"], **vals["layout"])
         return vals
 
-    @root_validator(skip_on_failure=True)
-    def check_combos(cls, vals):
+    @model_validator(mode="after")
+    def check_combos(self):
         """Validate combo positions are legitimate ones we can draw."""
-        for combo in vals["combos"]:
-            assert vals["layout"] is None or all(
-                pos < len(vals["layout"]) for pos in combo.key_positions
+        for combo in self.combos:
+            assert self.layout is None or all(
+                pos < len(self.layout) for pos in combo.key_positions
             ), f"Combo positions exceed number of keys for combo '{combo}'"
             assert not combo.layers or all(
-                l in vals["layers"] for l in combo.layers
+                l in self.layers for l in combo.layers
             ), f"One of the layer names for combo '{combo}' is not found in the layer definitions"
-        return vals
+        return self
 
-    @root_validator(skip_on_failure=True)
-    def check_dimensions(cls, vals):
+    @model_validator(mode="after")
+    def check_dimensions(self):
         """Validate that physical layout and layers have the same number of keys."""
-        if vals["layout"] is None:  # ignore for no-layout mode
-            return vals
-        for name, layer in vals["layers"].items():
-            assert len(layer) == len(vals["layout"]), (
+        if self.layout is None:  # ignore for no-layout mode
+            return self
+        for name, layer in self.layers.items():
+            assert len(layer) == len(self.layout), (
                 f'Number of keys on layer "{name}" ({len(layer)}) does not match physical layout '
-                f'specification ({len(vals["layout"])})'
+                f"specification ({len(self.layout)})"
             )
-        return vals
+        return self

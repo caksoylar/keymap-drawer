@@ -37,7 +37,7 @@ def draw(args: Namespace, config: DrawConfig) -> None:
         layout = yaml_data["layout"]
 
     if custom_config := yaml_data.get("draw_config"):
-        config = config.copy(update=custom_config)
+        config = config.model_copy(update=custom_config)
 
     drawer = KeymapDrawer(
         config=config,
@@ -83,7 +83,7 @@ def dump_config(config: Config) -> None:
         return dumper.represent_scalar("tag:yaml.org,2002:str", in_str)
 
     yaml.representer.SafeRepresenter.add_representer(str, cfg_str_representer)
-    yaml.safe_dump(config.dict(), sys.stdout, sort_keys=False, allow_unicode=True)
+    yaml.safe_dump(config.model_dump(), sys.stdout, sort_keys=False, allow_unicode=True)
 
 
 def main() -> None:

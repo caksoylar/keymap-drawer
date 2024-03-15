@@ -9,12 +9,12 @@ from dataclasses import dataclass
 from functools import cached_property, lru_cache
 from math import cos, pi, sin, sqrt
 from pathlib import Path
-from typing import Literal, Sequence
+from typing import Literal
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from platformdirs import user_cache_dir
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 
 from .config import DrawConfig
 
@@ -23,7 +23,7 @@ QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
 CACHE_LAYOUTS_PATH = Path(user_cache_dir("keymap-drawer", False)) / "qmk_layouts"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Point:
     """Simple class representing a 2d point."""
 
@@ -49,7 +49,7 @@ class Point:
         return Point(self.x, self.y)
 
 
-@dataclass
+@dataclass(slots=True)
 class PhysicalKey:
     """
     Represents a physical key, in terms of its center coordinates, width, height and
@@ -130,10 +130,10 @@ class PhysicalKey:
         )
 
 
-class PhysicalLayout(BaseModel, keep_untouched=(cached_property,)):
+class PhysicalLayout(BaseModel):
     """Represents the physical layout of keys on the keyboard, as a sequence of keys."""
 
-    keys: Sequence[PhysicalKey]
+    keys: list[PhysicalKey]
 
     def __len__(self) -> int:
         return len(self.keys)
@@ -219,31 +219,30 @@ class OrthoLayout(BaseModel):
     drop_pinky: bool = False
     drop_inner: bool = False
 
-    @root_validator
-    def check_thumbs(cls, vals):
+    @model_validator(mode="after")
+    def check_thumbs(self):
         """Check that the number of thumb keys is specified correctly."""
-        thumbs = vals["thumbs"]
-        if thumbs:
-            if isinstance(thumbs, int):
-                assert thumbs <= vals["columns"], "Number of thumbs should not be greater than columns"
-                assert vals["split"], "Cannot process non-split layout with thumb keys"
+        if self.thumbs:
+            if isinstance(self.thumbs, int):
+                assert self.thumbs <= self.columns, "Number of thumbs should not be greater than columns"
+                assert self.split, "Cannot process non-split layout with thumb keys"
             else:
-                assert not vals["split"], "Non-integer thumb specs (MIT/2x2u) can only be used with non-split layout"
-                assert thumbs in (
+                assert not self.split, "Non-integer thumb specs (MIT/2x2u) can only be used with non-split layout"
+                assert self.thumbs in (
                     "MIT",
                     "2x2u",
                 ), 'Only "MIT" or "2x2u" supported for "thumbs" for non-splits'
-                assert vals["columns"] % 2 == 0, "Cannot use MIT or 2x2u bottom row layout with odd number of columns"
-        return vals
+                assert self.columns % 2 == 0, "Cannot use MIT or 2x2u bottom row layout with odd number of columns"
+        return self
 
-    @root_validator
-    def check_drops(cls, vals):
+    @model_validator(mode="after")
+    def check_drops(self):
         """Check that drop_pinky or drop_index are only used with split layouts."""
-        if vals["drop_pinky"] or vals["drop_inner"]:
-            assert vals["split"], '"drop_*" properties can only be used with split layouts'
-        return vals
+        if self.drop_pinky or self.drop_inner:
+            assert self.split, '"drop_*" properties can only be used with split layouts'
+        return self
 
-    def generate(self, key_w: float, key_h: float, split_gap: float) -> Sequence[PhysicalKey]:
+    def generate(self, key_w: float, key_h: float, split_gap: float) -> list[PhysicalKey]:
         """Generate a list of PhysicalKeys from given ortho specifications."""
         nrows = self.rows
         if not isinstance(self.thumbs, int):
@@ -318,9 +317,9 @@ class QmkLayout(BaseModel):
         rx: float | None = None
         ry: float | None = None
 
-    layout: Sequence[QmkKey]
+    layout: list[QmkKey]
 
-    def generate(self, key_size: float) -> Sequence[PhysicalKey]:
+    def generate(self, key_size: float) -> list[PhysicalKey]:
         """Generate a sequence of PhysicalKeys from QmkKeys."""
         min_pt = Point(min(k.x for k in self.layout), min(k.y for k in self.layout))
         return [
