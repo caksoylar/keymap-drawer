@@ -76,7 +76,7 @@ class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
         """Normalize spec_dict so that each field uses its alias and key is parsed to LayoutKey."""
         for name, field in cls.model_fields.items():
             if name in spec_dict:
-                spec_dict[field.alias] = spec_dict.pop(name)
+                spec_dict[field.alias or name] = spec_dict.pop(name)
         if key_spec := spec_dict.get("k"):
             spec_dict["k"] = LayoutKey.from_key_spec(key_spec)
         return spec_dict
