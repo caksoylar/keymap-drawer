@@ -14,7 +14,7 @@ from .config import DrawConfig
 from .physical_layout import PhysicalLayout, layout_factory
 
 
-class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True):
+class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, extra="forbid"):
     """
     Represents a binding in the keymap, which has a tap property by default and
     can optionally have hold or shifted properties, or be "held" or be a "ghost" key.
@@ -51,7 +51,7 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True):
         return {k: v for k in ("tap", "hold", "shifted", "type") if (v := getattr(self, k))}
 
 
-class ComboSpec(BaseModel, populate_by_name=True):
+class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
     """
     Represents a combo in the keymap, with the trigger positions, activated binding (key)
     and layers that it is present on.
