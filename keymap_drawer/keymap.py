@@ -202,7 +202,7 @@ class KeymapData(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def create_layout(cls, vals):
-        """Create layout with type given by ltype."""
+        """Create layout with type given by layout param."""
         if vals["layout"] is None:  # ignore for no-layout mode
             return vals
         vals["layout"] = layout_factory(config=vals["config"], **vals["layout"])

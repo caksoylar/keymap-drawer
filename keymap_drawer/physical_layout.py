@@ -5,16 +5,17 @@ and rotation.
 """
 
 import json
+import re
 from dataclasses import dataclass
 from functools import cached_property, lru_cache
 from math import cos, pi, sin, sqrt
 from pathlib import Path
-from typing import Literal
+from typing import ClassVar, Literal
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from platformdirs import user_cache_dir
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from .config import DrawConfig
 
@@ -165,17 +166,19 @@ class PhysicalLayout(BaseModel):
         return PhysicalLayout(keys=[other * k for k in self.keys])
 
 
-def layout_factory(
+def layout_factory(  # pylint: disable=too-many-arguments
     config: DrawConfig,
     qmk_keyboard: str | None = None,
     qmk_info_json: Path | None = None,
     qmk_layout: str | None = None,
     ortho_layout: dict | None = None,
+    cols_thumbs_notation: str | None = None,
 ) -> PhysicalLayout:
     """Create and return a physical layout, as determined by the combination of arguments passed."""
-    if len([arg for arg in (qmk_keyboard, qmk_info_json, ortho_layout) if arg is not None]) != 1:
+    if len([arg for arg in (qmk_keyboard, qmk_info_json, ortho_layout, cols_thumbs_notation) if arg is not None]) != 1:
         raise ValueError(
-            'Please provide exactly one of "qmk_keyboard", "qmk_info_json" or "ortho_layout" specs for physical layout'
+            'Please provide exactly one of "qmk_keyboard", "qmk_info_json", "ortho_layout" '
+            'or "cpt_spec" specs for physical layout'
         )
 
     if qmk_keyboard or qmk_info_json:
@@ -199,9 +202,11 @@ def layout_factory(
             layout = qmk_info["layouts"][qmk_layout]["layout"]
 
         keys = QmkLayout(layout=layout).generate(config.key_h)
-    else:  # ortho_layout
-        assert ortho_layout is not None
+    elif ortho_layout is not None:
         keys = OrthoLayout(**ortho_layout).generate(config.key_w, config.key_h, config.split_gap)
+    else:  # cols_thumbs_notation
+        assert cols_thumbs_notation is not None
+        keys = CPTLayout(spec=cols_thumbs_notation).generate(config.key_w, config.key_h, config.split_gap)
     return PhysicalLayout(keys=keys)
 
 
@@ -301,6 +306,78 @@ class OrthoLayout(BaseModel):
                 raise ValueError("Unknown thumbs value in ortho layout")
 
         return keys
+
+
+class CPTLayout(BaseModel):
+    """
+    Generator for a physical layout representing an ortholinear keyboard, as specified by
+    its CPT (cols+thumbs) notation. Can do splits and non-splits, but doesn't support special
+    thumb notation of OrthoLayout.
+    """
+
+    spec: str
+
+    col_pattern: ClassVar[str] = r"\d[v^ud]*"
+    alphas_pattern: ClassVar[str] = rf"({col_pattern}){{2,}}"
+    thumbs_pattern: ClassVar[str] = r"\d[><lr]*"
+    part_pattern: ClassVar[re.Pattern] = re.compile(
+        rf"(?P<a_l>{alphas_pattern})(\+(?P<t_l>{thumbs_pattern}))?|"
+        rf"((?P<t_r>{thumbs_pattern})\+)?(?P<a_r>{alphas_pattern})"
+    )
+
+    @field_validator("spec")
+    @classmethod
+    def spec_validator(cls, val: str) -> str:
+        """Split spec string by spaces then validate each part."""
+        assert all(
+            cls.part_pattern.match(part) for part in val.split()
+        ), "Cols+thumbs `spec` value does not match the expected syntax, please double check"
+        return val
+
+    @classmethod
+    def _get_part_keys(cls, part_dict: dict[str, str | None], max_rows: int) -> tuple[list[Point], float]:
+        part_keys = []
+        alpha_spec = part_dict["a_l"] or part_dict["a_r"]
+        assert alpha_spec is not None
+        col_specs = re.findall(cls.col_pattern, alpha_spec)
+        for x, c_spec in enumerate(col_specs):
+            n_keys = int(c_spec[0])
+            n_shift = c_spec.count("v", 1) + c_spec.count("d", 1) - c_spec.count("^", 1) - c_spec.count("u", 1)
+            y_top = (max_rows - n_keys + n_shift) / 2
+            part_keys += [Point(x, y_top + i) for i in range(n_keys)]
+
+        t_spec = part_dict["t_l"] or part_dict["t_r"]
+        if t_spec:
+            n_keys = int(t_spec[0])
+            n_shift = t_spec.count(">", 1) + t_spec.count("r", 1) - t_spec.count("<", 1) - t_spec.count("l", 1)
+            x_left = (len(col_specs) - n_keys if part_dict["t_l"] is not None else 0) + n_shift / 2
+            part_keys += [Point(x_left + i, max_rows) for i in range(n_keys)]
+
+        min_pt = Point(min(p.x for p in part_keys), min(p.y for p in part_keys))
+
+        return [key - min_pt for key in part_keys], max(p.x for p in part_keys) - min_pt.x
+
+    def generate(self, key_w: float, key_h: float, split_gap: float) -> list[PhysicalKey]:
+        """Generate a list of PhysicalKeys from given CPT specification."""
+        parts = [match.groupdict() for part in self.spec.split() if (match := self.part_pattern.match(part))]
+        max_rows = max(int(char) for part in parts for char in (part["a_l"] or part["a_r"]) if char.isdigit())
+
+        x_offsets = [0.0]
+        all_keys = []
+        for part_ind, part in enumerate(parts):
+            part_keys, max_x = self._get_part_keys(part, max_rows)
+            all_keys += [(key, part_ind) for key in part_keys]
+            x_offsets.append(x_offsets[-1] + max_x + 1)
+
+        sorted_keys = sorted(all_keys, key=lambda item: (int(item[0].y), item[1], int(item[0].x)))
+        return [
+            PhysicalKey(
+                Point((key.x + 0.5 + x_offsets[part_ind]) * key_w + part_ind * split_gap, (key.y + 0.5) * key_h),
+                key_w,
+                key_h,
+            )
+            for key, part_ind in sorted_keys
+        ]
 
 
 class QmkLayout(BaseModel):

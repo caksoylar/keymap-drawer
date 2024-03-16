@@ -22,12 +22,13 @@ def draw(args: Namespace, config: DrawConfig) -> None:
     yaml_data = yaml.safe_load(args.keymap_yaml)
     assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
 
-    if args.qmk_keyboard or args.qmk_info_json or args.ortho_layout:
+    if args.qmk_keyboard or args.qmk_info_json or args.ortho_layout or args.cols_thumbs_notation:
         layout = {
             "qmk_keyboard": args.qmk_keyboard,
             "qmk_info_json": args.qmk_info_json,
             "qmk_layout": args.qmk_layout,
             "ortho_layout": args.ortho_layout,
+            "cols_thumbs_notation": args.cols_thumbs_notation,
         }
     else:
         assert "layout" in yaml_data, (
@@ -125,6 +126,12 @@ def main() -> None:
         help="Parametrized ortholinear layout definition in a YAML format, "
         "for example '{split: false, rows: 4, columns: 12}'",
         type=yaml.safe_load,
+    )
+    draw_p.add_argument(
+        "-n",
+        "--cols-thumbs-notation",
+        help='Parametrized ortholinear layout definition in "cols+thumbs notation", '
+        "for example '23332+2 2+33331' for an asymmetric 30 key split keyboard",
     )
     draw_p.add_argument("-s", "--select-layers", help="A list of layer names to draw, draw all by default", nargs="+")
     draw_p.add_argument("--keys-only", help="Only draw keys, not combos on layers", action="store_true")
