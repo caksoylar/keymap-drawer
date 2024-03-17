@@ -10,7 +10,7 @@ In addition to the configuration file, this field can also be set in the [keymap
 
 #### `key_w`, `key_h`
 
-Key dimensions. Non-ortho layouts (e.g. via `qmk_keyboard`) use `key_h` for both width and height, whereas `ortho_layout` uses both.
+Key dimensions. Non-ortho layouts (e.g. via `qmk_keyboard`) use `key_h` for both width and height, whereas `ortho_layout` and `cols_thumbs_notation` use both.
 
 _Type:_ `float`
 
@@ -18,7 +18,7 @@ _Default:_ `60`, `56`
 
 #### `split_gap`
 
-The gap between two halves of a split keyboard, only used for physical layouts specified via `ortho_layout`.
+The gap between two halves of a split keyboard, only used for physical layouts specified via `ortho_layout` and `cols_thumbs_notation`.
 
 _Type:_ `float`
 

@@ -130,7 +130,7 @@ def main() -> None:
     draw_p.add_argument(
         "-n",
         "--cols-thumbs-notation",
-        help='Parametrized ortholinear layout definition in "cols+thumbs notation", '
+        help='Parametrized ortholinear layout definition in "cols+thumbs" notation, '
         "for example '23332+2 2+33331' for an asymmetric 30 key split keyboard",
     )
     draw_p.add_argument("-s", "--select-layers", help="A list of layer names to draw, draw all by default", nargs="+")

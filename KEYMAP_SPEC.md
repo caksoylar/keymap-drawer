@@ -22,7 +22,7 @@ draw_config: # config overrides for drawing, optional
 ## `layout`
 
 This field provides information about the physical layout of the keyboard, i.e., the location and sizes of individual keys.
-`keymap-drawer` understands two types of physical layout descriptions, with corresponding sub-fields under the `layout` field.
+`keymap-drawer` understands three types of physical layout descriptions, with corresponding sub-fields under the `layout` field.
 
 ### QMK `info.json` specification
 
@@ -66,11 +66,11 @@ PCBs using the "Import" tool.[^1]
     For this reason it is recommended to explicitly specify `rx`, `ry` fields if `r` is specified. You might also want to omit the fields
     besides `x`, `y`, `r`, `rx` and `ry` in your final JSON since they won't be used by `keymap-drawer`.
 
-### Parametrized ortholinear layouts
+### Parametrized ortholinear layout specification
 
 This option lets you specify a set of parameters to automatically generate a split or non-split ortholinear layout.
 
-Following physical layout parameters can be specified either in the command line or under this field definition as key-value pairs:
+Following physical layout parameter can be specified either in the command line or under this field definition as a key-value pair:
 
 - **`ortho_layout`** (equivalent to `-o`/`--ortho-layout` on the command line):
   Specifies a mapping of parameters to values to generate an ortholinear physical layout, with schema:
@@ -87,6 +87,38 @@ Following physical layout parameters can be specified either in the command line
   _Example:_ `layout: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 3}}`
 
 [^2]: Corresponding to bottom row arrangements of a single `2u` key, or two neighboring `2u` keys, respectively.
+
+### Cols+Thumbs notation specification
+
+Using the "cols+thumbs" notation is another way to generate a layout parametrically, but via a special syntax string that describes the
+key counts in each column and thumb cluster of the keyboard. This is more flexible than the `ortho_layout` option
+if special MIT/2x2u thumbs aren't needed.
+
+Following physical layout parameter can be specified either in the command line or under this field definition as a key-value pair:
+
+- **`cols_thumbs_notation`** (equivalent to `-n`/`--cols-thumbs-notation` on the command line):
+  Specifies a specially formatted string to describe an ortholinear keyboard layout. This string is composed of a number of digits
+  corresponding to each column in the keyboard, optionally augmented by a count of thumb keys. This can be repeated to specify
+  split keyboards with two or more halves, separated by a space.
+
+  _Example:_ `layout: {cols_thumbs_notation: 33333+1 2+33332}`
+
+Above example specifies an asymmetric 32 key split keyboard with 3 rows and 5 columns on the left side, and a right-aligned thumb cluster with a single key.
+The right half has a left-aligned thumb cluster with two keys, 5 columns with 3 rows but has a key dropped on the last column.
+
+Normally each column will be centered vertically, but you can also add modifier characters after each column count to tweak this:
+`v` or `d` (for ↓/"down") pushes the column down by half a key height, and `^` or `u` (for ↑/"up") pushes it up by the same amount.
+These modifiers can be repeated to push further.
+Similarly, you can use `>` to push a thumb row right by half a key width, or `<` to push it left.
+
+As an advanced example, notation `2v333+2> 3<<+13332^ 33` will result in a physical layout that looks like below:
+
+```
+  x x x       x x x x   x x
+x x x x     x x x x x   x x
+x x x x       x x x     x x
+     x x    x x x
+```
 
 > #### ℹ️ CLI+keymap YAML specification
 >

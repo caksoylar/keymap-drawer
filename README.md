@@ -112,7 +112,8 @@ And you are done! You can view the output SVG on your browser or use a tool like
 >
 > If you like you can override the layout specification on the command line.
 > For instance you can provide a QMK keyboard name with `-q`/`--qmk-keyboard` and layout with `-l`/`--qmk-layout`,
-> or an ortho layout with `-o`/`--ortho-layout` (using YAML syntax for the value). See `keymap draw --help` for details.
+> or an ortho layout with `-o`/`--ortho-layout` (using YAML syntax for the value) or `-n`/`--cols-thumbs-notation`.
+> See `keymap draw --help` for details.
 
 ## Customization
 
