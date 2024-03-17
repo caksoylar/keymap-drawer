@@ -97,7 +97,7 @@ It might be beneficial to start by `draw`'ing the current representation and ite
 ### Producing the SVG
 
 Final step is to produce the SVG representation using the **`keymap draw`** command.
-However to do that, we need to specify the *physical* layout of the keyboard, i.e., how many keys there are, where each key is positioned etc.
+However to do that, we need to specify the _physical_ layout of the keyboard, i.e., how many keys there are, where each key is positioned etc.
 
 If you produced your keymap YAML through `keymap parse`, it will have tried to guess the proper layout in the `layout` field of your keymap.
 If you like you can tweak the field value according to the [spec](KEYMAP_SPEC.md#layout), then finally call the draw command:
