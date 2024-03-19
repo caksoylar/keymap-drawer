@@ -148,10 +148,10 @@ Using this you can preserve your style customizations along with your keymap in 
 
 `keymap-drawer` can also use SVG glyphs for legends, in addition to plain or unicode text. The easiest way to do this is
 to use the `$$source:id$$` notation [certain `source`s](CONFIGURATION.md#glyph_urls), which will automatically fetch
-the SVGs from a given remote `source`, e.g. using `$$tabler:volume$$` will insert the [volume icon from Tabler](https://tabler-icons.io/i/volume).
+the SVGs from a given remote `source`, e.g. using `$$tabler:volume$$` will insert the [volume icon from Tabler](https://tabler.io/icons/icon/volume).
 The following `source` values are currently supported:
 
-- `tabler`: [Tabler Icons](https://tabler-icons.io/) (use icon name as `id`)
+- `tabler`: [Tabler Icons](https://tabler.io/icons) ("Outline" style, use icon name as `id`)
 - `mdi`: [Pictogrammers Material Design Icons](https://pictogrammers.com/library/mdi/) (use icon name as `id`)
 - `mdil`: [Pictogrammers Material Design Icons Light](https://pictogrammers.com/library/mdil/) (use icon name as `id`)
 - `material`: [Google Material Symbols](https://fonts.google.com/icons) (use value in "Android" tab as `id`)
