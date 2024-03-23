@@ -8,7 +8,7 @@ from functools import partial
 from itertools import chain
 from typing import Iterable, Literal
 
-from pydantic import field_validator, model_serializer, model_validator, BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_serializer, model_validator
 
 from .config import DrawConfig
 from .physical_layout import PhysicalLayout, layout_factory
