@@ -24,6 +24,7 @@ class DTNode:
     label: str | None
     content: str
     children: list["DTNode"]
+    label_refs: dict[str, "DTNode"]
 
     def __init__(self, name: str, parse: pp.ParseResults):
         """
@@ -42,6 +43,12 @@ class DTNode:
             for elt_p, elt_n in zip(parse[:-1], parse[1:])
             if isinstance(elt_p, str) and isinstance(elt_n, pp.ParseResults)
         ]
+
+        # keep track of labeled nodes
+        self.label_refs = {self.label: self} if self.label else {}
+        for child in self.children:
+            self.label_refs |= child.label_refs
+            child.label_refs = {}
 
     def get_string(self, property_re: str) -> str | None:
         """Extract last defined value for a `string` type property matching the `property_re` regex."""
@@ -77,6 +84,12 @@ class DTNode:
         for m in re.finditer(rf"{property_re} = &(.*?);", self.content):
             out = m.group(1)
         return out
+
+    def __repr__(self):
+        return (
+            f"DTNode(name={self.name!r}, label={self.label!r}, content={self.content!r}, "
+            f"children={[node.name for node in self.children]})\n"
+        )
 
 
 class DeviceTree:
@@ -114,6 +127,14 @@ class DeviceTree:
             .ignore(pp.c_style_comment)
             .parse_string("{ " + self._nodelabel_re.sub(r"\1:\2 {", prepped) + " };")[0],
         )
+
+        # handle all node label-based overrides by appending their contents to the referred node's
+        override_nodes = [node for node in self.root.children if node.name.startswith("&")]
+        regular_nodes = [node for node in self.root.children if not node.name.startswith("&")]
+        for node in override_nodes:
+            if (label := node.name.removeprefix("&")) in self.root.label_refs:
+                self.root.label_refs[label].content += " " + node.content
+        self.root.children = regular_nodes
 
         # parse through all nodes and hash according to "compatible" values
         self.compatibles: defaultdict[str, list[DTNode]] = defaultdict(list)
@@ -172,3 +193,9 @@ class DeviceTree:
             "does not get modified by #define's"
         )
         return out[data_pos + len(self._custom_data_header) + 2 :]
+
+    def __repr__(self):
+        def recursive_repr(node):
+            return repr(node) + "".join(recursive_repr(child) for child in node.children)
+
+        return recursive_repr(self.root)
