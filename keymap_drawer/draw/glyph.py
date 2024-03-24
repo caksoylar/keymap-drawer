@@ -27,7 +27,7 @@ class GlyphMixin:
     _glyph_name_re = re.compile(r"\$\$(?P<glyph>.*)\$\$")
     _view_box_dimensions_re = re.compile(
         r'<svg.*viewbox="(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)".*>',
-        flags=re.IGNORECASE | re.ASCII,
+        flags=re.IGNORECASE | re.ASCII | re.DOTALL,
     )
     _scrub_dims_re = re.compile(r' (width|height)=".*?"')
 
