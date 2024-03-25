@@ -49,6 +49,11 @@ on:
         default: ''
         required: false
         type: string
+      install_repo:
+        description: 'Install keymap-drawer from a different git remote, primarily for testing changes using a keymap-drawer fork. Ignored if `install_branch` is unset/empty.'
+        default: 'https://github.com/caksoylar/keymap-drawer.git'
+        required: false
+        type: string
       destination:
         description: 'Add the output files to a commit, as artifacts or both, values: `commit`, `artifact`, `both`'
         default: 'commit'
@@ -92,7 +97,7 @@ jobs:
 
       - name: Install keymap-drawer (git)
         if: inputs.install_branch != ''
-        run: python3 -m pip install "git+https://github.com/caksoylar/keymap-drawer.git@${{ inputs.install_branch }}"
+        run: python3 -m pip install "git+${{ inputs.install_repo }}@${{ inputs.install_branch }}"
 
       - name: Draw keymaps
         id: draw
