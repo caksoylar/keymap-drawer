@@ -238,6 +238,9 @@ class ZmkKeymapParser(KeymapParser):
         combos = self._get_combos(dts)
         layers = self.add_held_keys(layers)
 
+        if self.cfg.trans_show_lower_key:
+            layers = self.fill_trans_keys(layers)
+
         keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
 
         return self._get_physical_layout(file_name, dts), keymap_data

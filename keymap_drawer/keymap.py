@@ -50,6 +50,9 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
         """Custom serializer that always outputs a dict."""
         return {k: v for k in ("tap", "hold", "shifted", "type") if (v := getattr(self, k))}
 
+    def __hash__(self):
+        return hash((self.tap, self.hold, self.shifted, self.type))
+
 
 class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
     """
