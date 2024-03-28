@@ -121,6 +121,7 @@ jobs:
 
           config_path="${{ inputs.config_path }}"
           [ -e "$config_path" ] && config_arg=(-c "$config_path") || config_arg=()
+          echo "INFO: using config args: ${config_arg[@]}"
           for keymap_file in ${{ inputs.keymap_patterns }}; do
               keyboard=$(basename -s .keymap "$keymap_file")
               echo "INFO: drawing for $keyboard"
