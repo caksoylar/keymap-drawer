@@ -210,7 +210,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # e.g. `$$material:settings$$` will use the value for `material` and replace `{}` with `settings`
     glyph_urls: dict[str, str] = {
         "tabler": "https://unpkg.com/@tabler/icons/icons/outline/{}.svg",
-        "mdi": "https://raw.githubusercontent.com/Templarian/MaterialDesign-SVG/master/svg/{}.svg",
+        "mdi": "https://unpkg.com/@mdi/svg/svg/{}.svg",
         "mdil": "https://raw.githubusercontent.com/Pictogrammers/MaterialDesignLight/master/svg/{}.svg",
         "material": "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/{}/default/48px.svg",
     }
