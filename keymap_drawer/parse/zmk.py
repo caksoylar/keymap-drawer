@@ -194,7 +194,7 @@ class ZmkKeymapParser(KeymapParser):
                 ) from err
 
             combo = {"k": parsed_key, "p": key_pos}
-            if layers := node.get_array("layers"):
+            if (layers := node.get_array("layers")) and layers[0].lower() != "0xff":
                 combo["l"] = [self.layer_names[int(layer)] for layer in layers]
 
             # see if combo had additional properties specified in the config, if so merge them in
