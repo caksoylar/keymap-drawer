@@ -7,13 +7,14 @@ and rotation.
 import json
 import re
 from dataclasses import dataclass
-from functools import cached_property, lru_cache
+from functools import cache, cached_property, lru_cache
 from math import cos, pi, sin, sqrt
 from pathlib import Path
 from typing import ClassVar, Literal
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
+import yaml
 from platformdirs import user_cache_dir
 from pydantic import BaseModel, field_validator, model_validator
 
@@ -22,6 +23,7 @@ from .config import DrawConfig
 QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
 CACHE_LAYOUTS_PATH = Path(user_cache_dir("keymap-drawer", False)) / "qmk_layouts"
+QMK_MAPPINGS_PATH = Path(__file__).parent.parent / "resources" / "qmk_keyboard_mappings.yaml"
 
 
 @dataclass(frozen=True, slots=True)
@@ -412,12 +414,26 @@ class QmkLayout(BaseModel):
         ]
 
 
+def _map_qmk_keyboard(qmk_keyboard: str) -> str:
+    @cache
+    def get_qmk_mappings() -> dict[str, str]:
+        with open(QMK_MAPPINGS_PATH, "rb") as f:
+            return yaml.safe_load(f)
+
+    for from_prefix, to_keyboard in get_qmk_mappings().items():
+        if qmk_keyboard.startswith(from_prefix):
+            return to_keyboard
+
+    return qmk_keyboard
+
+
 @lru_cache(maxsize=128)
 def _get_qmk_info(qmk_keyboard: str, use_local_cache: bool = False):
     """
     Get a QMK info.json file from either self-maintained folder of layouts,
     local file cache if enabled, or from QMK keyboards metadata API.
     """
+    qmk_keyboard = _map_qmk_keyboard(qmk_keyboard)
     local_path = QMK_LAYOUTS_PATH / f"{qmk_keyboard.replace('/', '@')}.json"
     cache_path = CACHE_LAYOUTS_PATH / f"{qmk_keyboard.replace('/', '@')}.json"
 

@@ -1,0 +1,10 @@
+# Each item maps a `qmk_keyboard` prefix to another keyboard, where latter is preferred over the former
+boardsource/unicorne: corne_rotated
+crkbd/: corne_rotated
+lily58/: lily58_rotated
+sofle/: sofle_rotated
+sofle_choc: sofle_rotated
+splitkb/aurora/corne/: corne_rotated
+splitkb/aurora/lily58/: lily58_rotated
+splitkb/aurora/sofle_v2/: sofle_rotated
+splitkb/kyria/: kyria_rotated
