@@ -140,7 +140,9 @@ A mapping of certain field names to their values, characterizing key side drawin
 - **`rel_w`**, **`rel_y`** (type: `float`): Delta dimension between external key rectangle and internal key rectangle. _Default:_ `12`, `12`
 - **`rx`**, **`ry`** (type: `float`): Curvature of the rounded internal key rectangle. _Default:_ `4`, `4`
 
-#### `svg_style`
+#### `svg_style`[^1]
+
+[^1]: Excluded from `keymap dump-config` by default, can be modified by manually adding it to the config file.
 
 The CSS used for the SVG styling. This includes font settings, styling of key and combo rectangles and texts within them, along with some tweaks for external SVG glyphs.
 Users are encouraged to not change the default value and use `svg_extra_style` to specify overrides instead.
@@ -182,7 +184,7 @@ _Type:_ `dict[str, str]`
 
 _Default:_ Empty
 
-#### `glyph_urls`
+#### `glyph_urls`[^1]
 
 Mapping of sources to (possibly templated) URLs for fetching SVG glyphs.
 For instance, `$$material:settings$$` will use the value for `material` and replace `{}` in the value with `settings`.
@@ -191,7 +193,7 @@ _Type:_ `dict[str, str]`
 
 _Default:_ See [`config.py`](keymap_drawer/config.py)
 
-#### `use_local_cache`
+#### `use_local_cache`[^1]
 
 Use a local filesystem cache on an OS-specific location for downloaded QMK keyboard jsons and SVG glyphs.
 
@@ -221,9 +223,9 @@ _Default:_ `false`
 
 #### `raw_binding_map`
 
-Convert raw keycode/binding strings specified as keys to the representations given by their values.[^1]
+Convert raw keycode/binding strings specified as keys to the representations given by their values.[^2]
 
-[^1]: The value can be a [`LayoutKey` mapping](KEYMAP_SPEC.md#layers) or a string representing the tap legend.
+[^2]: The value can be a [`LayoutKey` mapping](KEYMAP_SPEC.md#layers) or a string representing the tap legend.
 
 If a conversion was made, shortcut any further processing.
 E.g. `{"QK_BOOT": "BOOT", "&bootloader": "BOOT"}`.
@@ -250,7 +252,7 @@ _Default:_ `"toggle"`
 
 #### `trans_legend`
 
-Legend to output for transparent keys.[^1]
+Legend to output for transparent keys.[^2]
 
 _Type:_ `str | dict`
 
@@ -278,7 +280,7 @@ _Default:_ `["KC_"]`
 
 #### `qmk_keycode_map`
 
-Mapping to convert QMK keycodes to their display forms, applied after removing prefixes in `qmk_remove_keycode_prefix`.[^1]
+Mapping to convert QMK keycodes to their display forms, applied after removing prefixes in `qmk_remove_keycode_prefix`.[^2]
 
 _Type:_ `dict[str, str | dict]`
 
@@ -295,7 +297,7 @@ _Default:_ `[]`
 
 #### `zmk_keycode_map`
 
-Mapping to convert ZMK keycodes to their display forms, applied after removing prefixes in `zmk_remove_keycode_prefix`.[^1]
+Mapping to convert ZMK keycodes to their display forms, applied after removing prefixes in `zmk_remove_keycode_prefix`.[^2]
 
 _Type:_ `dict[str, str | dict]`
 

@@ -5,7 +5,7 @@ keycode converters for parsing.
 
 from textwrap import dedent
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
 
@@ -82,112 +82,115 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 
     # style CSS to be output in the SVG
     # if you do not need to remove existing definitions, consider using svg_extra_style instead
-    svg_style: str = dedent(
-        """\
-        /* inherit to force styles through use tags */
-        svg path {
-            fill: inherit;
-        }
+    svg_style: str = Field(
+        exclude=True,
+        default=dedent(
+            """\
+            /* inherit to force styles through use tags */
+            svg path {
+                fill: inherit;
+            }
 
-        /* font and background color specifications */
-        svg.keymap {
-            font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
-            font-size: 14px;
-            font-kerning: normal;
-            text-rendering: optimizeLegibility;
-            fill: #24292e;
-        }
+            /* font and background color specifications */
+            svg.keymap {
+                font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
+                font-size: 14px;
+                font-kerning: normal;
+                text-rendering: optimizeLegibility;
+                fill: #24292e;
+            }
 
-        /* default key styling */
-        rect.key {
-            fill: #f6f8fa;
-        }
+            /* default key styling */
+            rect.key {
+                fill: #f6f8fa;
+            }
 
-        rect.key, rect.combo {
-            stroke: #c9cccf;
-            stroke-width: 1;
-        }
+            rect.key, rect.combo {
+                stroke: #c9cccf;
+                stroke-width: 1;
+            }
 
-        /* default key side styling, only used is draw_key_sides is set */
-        rect.side {
-            filter: brightness(90%);
-        }
+            /* default key side styling, only used is draw_key_sides is set */
+            rect.side {
+                filter: brightness(90%);
+            }
 
-        /* color accent for combo boxes */
-        rect.combo, rect.combo-separate {
-            fill: #cdf;
-        }
+            /* color accent for combo boxes */
+            rect.combo, rect.combo-separate {
+                fill: #cdf;
+            }
 
-        /* color accent for held keys */
-        rect.held, rect.combo.held {
-            fill: #fdd;
-        }
+            /* color accent for held keys */
+            rect.held, rect.combo.held {
+                fill: #fdd;
+            }
 
-        /* color accent for ghost (optional) keys */
-        rect.ghost, rect.combo.ghost {
-            stroke-dasharray: 4, 4;
-            stroke-width: 2;
-        }
+            /* color accent for ghost (optional) keys */
+            rect.ghost, rect.combo.ghost {
+                stroke-dasharray: 4, 4;
+                stroke-width: 2;
+            }
 
-        text {
-            text-anchor: middle;
-            dominant-baseline: middle;
-        }
+            text {
+                text-anchor: middle;
+                dominant-baseline: middle;
+            }
 
-        /* styling for layer labels */
-        text.label {
-            font-weight: bold;
-            text-anchor: start;
-            stroke: white;
-            stroke-width: 2;
-            paint-order: stroke;
-        }
+            /* styling for layer labels */
+            text.label {
+                font-weight: bold;
+                text-anchor: start;
+                stroke: white;
+                stroke-width: 2;
+                paint-order: stroke;
+            }
 
-        /* styling for combo tap, and key hold/shifted label text */
-        text.combo, text.hold, text.shifted {
-            font-size: 11px;
-        }
+            /* styling for combo tap, and key hold/shifted label text */
+            text.combo, text.hold, text.shifted {
+                font-size: 11px;
+            }
 
-        text.hold {
-            text-anchor: middle;
-            dominant-baseline: auto;
-        }
+            text.hold {
+                text-anchor: middle;
+                dominant-baseline: auto;
+            }
 
-        text.shifted {
-            text-anchor: middle;
-            dominant-baseline: hanging;
-        }
+            text.shifted {
+                text-anchor: middle;
+                dominant-baseline: hanging;
+            }
 
-        /* styling for hold/shifted label text in combo box */
-        text.combo.hold, text.combo.shifted {
-            font-size: 8px;
-        }
+            /* styling for hold/shifted label text in combo box */
+            text.combo.hold, text.combo.shifted {
+                font-size: 8px;
+            }
 
-        /* lighter symbol for transparent keys */
-        text.trans {
-            fill: #7b7e81;
-        }
+            /* lighter symbol for transparent keys */
+            text.trans {
+                fill: #7b7e81;
+            }
 
-        /* styling for combo dendrons */
-        path.combo {
-            stroke-width: 1;
-            stroke: gray;
-            fill: none;
-        }
+            /* styling for combo dendrons */
+            path.combo {
+                stroke-width: 1;
+                stroke: gray;
+                fill: none;
+            }
 
-        /* Start Tabler Icons Cleanup */
-        /* cannot use height/width with glyphs */
-        .icon-tabler > path {
-            fill: inherit;
-            stroke: inherit;
-            stroke-width: 2;
-        }
-        /* hide tabler's default box */
-        .icon-tabler > path[stroke="none"][fill="none"] {
-            visibility: hidden;
-        }
-        /* End Tabler Icons Cleanup */
-        """
+            /* Start Tabler Icons Cleanup */
+            /* cannot use height/width with glyphs */
+            .icon-tabler > path {
+                fill: inherit;
+                stroke: inherit;
+                stroke-width: 2;
+            }
+            /* hide tabler's default box */
+            .icon-tabler > path[stroke="none"][fill="none"] {
+                visibility: hidden;
+            }
+            /* End Tabler Icons Cleanup */
+            """
+        ),
     )
 
     # extra CSS to be appended to svg_style
@@ -208,15 +211,18 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 
     # mapping of sources to (possibly templated) URLs for fetching SVG glyphs
     # e.g. `$$material:settings$$` will use the value for `material` and replace `{}` with `settings`
-    glyph_urls: dict[str, str] = {
-        "tabler": "https://unpkg.com/@tabler/icons/icons/outline/{}.svg",
-        "mdi": "https://unpkg.com/@mdi/svg/svg/{}.svg",
-        "mdil": "https://raw.githubusercontent.com/Pictogrammers/MaterialDesignLight/master/svg/{}.svg",
-        "material": "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/{}/default/48px.svg",
-    }
+    glyph_urls: dict[str, str] = Field(
+        exclude=True,
+        default={
+            "tabler": "https://unpkg.com/@tabler/icons/icons/outline/{}.svg",
+            "mdi": "https://unpkg.com/@mdi/svg/svg/{}.svg",
+            "mdil": "https://raw.githubusercontent.com/Pictogrammers/MaterialDesignLight/master/svg/{}.svg",
+            "material": "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/{}/default/48px.svg",
+        },
+    )
 
     # use a local filesystem cache on an OS-specific location for downloaded QMK keyboard jsons and SVG glyphs
-    use_local_cache: bool = True
+    use_local_cache: bool = Field(exclude=True, default=True)
 
 
 class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
