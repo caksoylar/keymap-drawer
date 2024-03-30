@@ -251,7 +251,7 @@ Below are a few tools and example usages from the community that might be inspir
 
 - [YellowAfterlife's Vial To Keymap Drawer](https://yal-tools.github.io/vial-to-keymap-drawer/): Parser to convert Vial .vil files to keymap YAMLs
 - [minusfive's ZMK config](https://github.com/minusfive/zmk-config): Uses an [extensive config file](https://github.com/minusfive/zmk-config/blob/main/keymap_drawer.config.yaml) for great results out of the automated drawing workflow, with plenty of SVG glyphs
-- [SethMilliken's Swept Corne config](https://github.com/SethMilliken/swept-corne-zmk/tree/seth): Another config using the automated workflow with a [nice configuration](https://github.com/SethMilliken/swept-corne-zmk/blob/seth/keymap_drawer.config.yaml) and SVG glyphs
+- [SethMilliken's ZMK config](https://github.com/SethMilliken/zmk-config): Another config using the automated workflow with a [nice configuration](https://github.com/SethMilliken/zmk-config/blob/main/keymap_drawer.config.yaml) and SVG glyphs
 - [englmaxi's ZMK config](https://github.com/englmaxi/zmk-config): Using key sides setting and CSS tricks to position multiple SVG glyphs in one key
 - [jbarr21's `keymap-display`](https://github.com/jbarr21/keymap-display): Uses a [converter script](https://github.com/jbarr21/keymap-display/blob/main/scripts/json2yaml) to convert QMK `keymap.c` to a keymap YAML
 - [casuanoob's keymap](https://github.com/casuanoob/zmk-config-bkb): Many useful unicode and SVG glyphs in the [keymap YAML](https://github.com/casuanoob/zmk-config-bkb/blob/master/assets/split34_keymap_zmk.yaml)
