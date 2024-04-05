@@ -20,6 +20,7 @@ class QmkJsonParser(KeymapParser):
     _lt_re = re.compile(r"LT\((\d+), *(\S+)\)")
     _osm_re = re.compile(r"OSM\(MOD_(\S+)\)")
     _osl_re = re.compile(r"OSL\((\d+)\)")
+    _tt_re = re.compile(r"TT\((\d+)\)")
 
     def __init__(
         self,
@@ -77,6 +78,10 @@ class QmkJsonParser(KeymapParser):
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from([current_layer], to_layer, key_positions)
             return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.sticky_label)
+        if m := self._tt_re.fullmatch(key_str):  # tap-toggle layer
+            to_layer = int(m.group(1).strip())
+            self.update_layer_activated_from([current_layer], to_layer, key_positions)
+            return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.tap_toggle_label)
         return mapped(key_str)
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:

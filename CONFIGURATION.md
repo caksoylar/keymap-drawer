@@ -250,6 +250,14 @@ _Type:_ `str`
 
 _Default:_ `"toggle"`
 
+#### `tap_toggle_label`
+
+Display text to place in hold field for tap-toggle (TT) keys.
+
+_Type:_ `str`
+
+_Default:_ `"tap-toggle"`
+
 #### `trans_legend`
 
 Legend to output for transparent keys.[^2]
