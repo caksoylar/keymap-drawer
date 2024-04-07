@@ -53,18 +53,16 @@ keymap = 'keymap_drawer.__main__:main'
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.pylint.MASTER]
+[tool.pylint.master]
 extension-pkg-whitelist = "pydantic"
 load-plugins = "pylint_pydantic"
 
-[tool.pylint.'MESSAGES CONTROL']
-disable = """
-    too-few-public-methods,
-"""
-
-[tool.pylint.BASIC]
+[tool.pylint.basic]
 good-names = "x,y,w,h,r,f,k,v,p,m,c"
 max-line-length = 120
+
+[tool.pylint."messages control"]
+disable = ["too-few-public-methods", "line-too-long"]
 
 [tool.mypy]
 plugins = "pydantic.mypy"
