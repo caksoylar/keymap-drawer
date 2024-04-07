@@ -156,6 +156,7 @@ The following `source` values are currently supported:
 - `mdil`: [Pictogrammers Material Design Icons Light](https://pictogrammers.com/library/mdil/) (use icon name as `id`)
 - `material`: [Google Material Symbols](https://fonts.google.com/icons) (use value in "Android" tab as `id`)
 - `tabler`: [Tabler Icons](https://tabler.io/icons) ("Outline" style, use icon name as `id`)
+- `phosphor`: [Phosphor Icons](https://phosphoricons.com) (use `<weight>/<name>` as `id`, e.g. `$$phosphor:bold/lock$$`)
 
 Fetched SVGs will be [cached by default](CONFIGURATION.md#use_local_cache) to speed up future runs.
 

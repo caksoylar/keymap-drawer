@@ -72,6 +72,13 @@ class GlyphMixin:
             if ":" in name:  # templated source:ID format
                 source, glyph_id = name.split(":", maxsplit=1)
                 if templated_url := self.cfg.glyph_urls.get(source):
+                    if source == "phosphor":  # special case to handle variants
+                        assert "/" in glyph_id, "phosphor glyphs should be in `$$phosphor:<type>/<id>$$` format"
+                        ph_type, ph_id = glyph_id.split("/", maxsplit=1)
+                        ph_type = ph_type.lower()
+                        glyph_id = f"{ph_type}/{ph_id}"
+                        if ph_type != "regular":
+                            glyph_id += f"-{ph_type}"
                     urls.append(templated_url.format(glyph_id))
             if url := self.cfg.glyph_urls.get(name):  # source only
                 urls.append(url)
@@ -134,7 +141,7 @@ class GlyphMixin:
 @lru_cache(maxsize=128)
 def _fetch_svg_url(name: str, url: str, use_local_cache: bool = False) -> str:
     """Get an SVG glyph definition from url, using the local cache for reading and writing if enabled."""
-    cache_path = CACHE_GLYPHS_PATH / f"{name}.svg"
+    cache_path = CACHE_GLYPHS_PATH / f"{name.replace('/', '@')}.svg"
     if use_local_cache and cache_path.is_file():
         with open(cache_path, "r", encoding="utf-8") as f:
             return f.read()
