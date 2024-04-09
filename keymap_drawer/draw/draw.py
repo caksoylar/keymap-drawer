@@ -35,6 +35,12 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             header += ":"
         self.out.write(f'<text x="{round(p.x)}" y="{round(p.y)}" class="label">{escape(header)}</text>\n')
 
+    def print_footer(self, p: Point) -> None:
+        self.output_stream.write(
+            f'<text x="{p.x - self.cfg.outer_pad_w}" y="{p.y - self.cfg.outer_pad_h / 2}" class="footer">'
+            f"{self.cfg.footer_text}</text>"
+        )
+
     def print_key(self, p_key: PhysicalKey, l_key: LayoutKey, key_ind: int) -> None:
         """
         Print SVG code for a rectangle with text representing the key, which is described by its physical
@@ -222,4 +228,8 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         extra_style = f"\n{self.cfg.svg_extra_style}" if self.cfg.svg_extra_style else ""
         self.output_stream.write(f"<style>{self.cfg.svg_style}{extra_style}</style>\n")
         self.output_stream.write(self.out.getvalue())
+
+        if self.cfg.footer_text:
+            self.print_footer(Point(board_w, board_h))
+
         self.output_stream.write("</svg>\n")

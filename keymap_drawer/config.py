@@ -145,6 +145,15 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
                 paint-order: stroke;
             }
 
+            /* styling for optional footer */
+            text.footer {
+                text-anchor: end;
+                dominant-baseline: auto;
+                stroke: white;
+                stroke-width: 2;
+                paint-order: stroke;
+            }
+
             /* styling for combo tap, and key hold/shifted label text */
             text.combo, text.hold, text.shifted {
                 font-size: 11px;
@@ -196,6 +205,9 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # extra CSS to be appended to svg_style
     # prefer to set this over modifying svg_style since the default value of svg_style can change
     svg_extra_style: str = ""
+
+    # footer text to be added to the bottom of the drawing, aligned right
+    footer_text: str = ""
 
     # shrink font size for legends wider than this many chars, set to 0 to disable
     # ideal value depends on the font size defined in svg_style and width of the boxes

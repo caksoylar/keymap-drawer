@@ -159,6 +159,15 @@ _Type:_ `string`
 
 _Default:_ Empty
 
+#### `footer_text`
+
+Footer text that will be displayed at the bottom of the drawing, right aligned.
+The value will be placed inside `<text>` tags and can have certain SVG elements in it.
+
+_Type:_ `string`
+
+_Default:_ Empty
+
 #### `shrink_wide_legends`
 
 Shrink font size for legends wider than this many chars, set to 0 to disable.
