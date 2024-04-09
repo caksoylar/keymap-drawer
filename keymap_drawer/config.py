@@ -141,7 +141,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
                 font-weight: bold;
                 text-anchor: start;
                 stroke: white;
-                stroke-width: 2;
+                stroke-width: 4;
                 paint-order: stroke;
             }
 
@@ -150,7 +150,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
                 text-anchor: end;
                 dominant-baseline: auto;
                 stroke: white;
-                stroke-width: 2;
+                stroke-width: 4;
                 paint-order: stroke;
             }
 
