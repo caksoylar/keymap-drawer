@@ -36,6 +36,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         self.out.write(f'<text x="{round(p.x)}" y="{round(p.y)}" class="label">{escape(header)}</text>\n')
 
     def print_footer(self, p: Point) -> None:
+        """Print a footer with text given by cfg.footer_text, with CSS class `footer` for bottom-right alignment."""
         self.output_stream.write(
             f'<text x="{p.x - self.cfg.outer_pad_w}" y="{p.y - self.cfg.outer_pad_h / 2}" class="footer">'
             f"{self.cfg.footer_text}</text>"
