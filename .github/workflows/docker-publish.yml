@@ -6,6 +6,10 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+        base: ["", "-alpine", "-slim"]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,5 +34,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.VERSION }}
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.VERSION }}${{ matrix.base }}
+            ghcr.io/${{ github.repository }}:latest${{ matrix.base }}
+          build-args: |
+            IMAGE=python:${{ matrix.python-version }}${{ matrix.base }}
