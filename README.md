@@ -48,6 +48,12 @@ keymap --help
 Alternatively, you can `pip install keymap-drawer` in a virtual environment or install into your user install directory with `pip install --user keymap-drawer`.
 See [the development section](#development) for instructions to install from source.
 
+### Using docker
+
+``` sh
+docker pull ghcr.io/caksoylar/keymap-drawer:latest
+```
+
 ### Bootstrapping your keymap representation
 
 **`keymap parse`** command helps to parse an existing QMK or ZMK keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
