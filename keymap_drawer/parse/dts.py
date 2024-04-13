@@ -162,6 +162,7 @@ class DeviceTree:
         preprocessor = Preprocessor()
         preprocessor.line_directive = None
         preprocessor.on_include_not_found = include_handler
+        preprocessor.assume_encoding = "utf-8"
         preprocessor.parse(in_str, source=file_name)
         with StringIO() as f_out:
             preprocessor.write(f_out)
