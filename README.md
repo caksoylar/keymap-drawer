@@ -48,6 +48,11 @@ keymap --help
 Alternatively, you can `pip install keymap-drawer` in a virtual environment or install into your user install directory with `pip install --user keymap-drawer`.
 See [the development section](#development) for instructions to install from source.
 
+> #### ℹ️ Windows command-line issues
+>
+> If you are running on Windows, using the `-o`/`--output` parameter to save command outputs to files is recommended instead of redirecting stdout.
+> Otherwise you might run into text encoding issues related to unicode characters in YAMLs and SVGs.
+
 ### Bootstrapping your keymap representation
 
 **`keymap parse`** command helps to parse an existing QMK or ZMK keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
