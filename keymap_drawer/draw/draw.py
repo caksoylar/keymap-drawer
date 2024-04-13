@@ -228,7 +228,6 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         )
         self.output_stream.write(self.get_glyph_defs())
         extra_style = f"\n{self.cfg.svg_extra_style}" if self.cfg.svg_extra_style else ""
-        self.output_stream.write(f"<style>{self.cfg.svg_style}{extra_style}</style>\n")
         if dark_mode is None and self.cfg.svg_style_dark:
             dark_style = f"\n@media (prefers-color-scheme: dark) {{\n{self.cfg.svg_style_dark}\n}}"
         elif dark_mode is True and self.cfg.svg_style_dark:
