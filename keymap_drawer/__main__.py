@@ -96,7 +96,7 @@ def main() -> None:
         "--config",
         help="A YAML file containing settings for parsing and drawing, "
         "default can be dumped using `dump-config` command and to be modified",
-        type=FileType("rt"),
+        type=FileType("rt", encoding="utf-8"),
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -146,7 +146,7 @@ def main() -> None:
         "keymap_yaml",
         help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
         "see README for schema",
-        type=FileType("rt"),
+        type=FileType("rt", encoding="utf-8"),
     )
     draw_p.add_argument(
         "-o",
@@ -160,10 +160,17 @@ def main() -> None:
         "parse", help="parse a QMK/ZMK keymap to YAML representation to stdout, to be used with the `draw` command"
     )
     keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
-    keymap_srcs.add_argument("-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse", type=FileType("rt"))
-    keymap_srcs.add_argument("-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=FileType("rt"))
+    keymap_srcs.add_argument(
+        "-q", "--qmk-keymap-json", help="Path to QMK keymap.json to parse", type=FileType("rt", encoding="utf-8")
+    )
+    keymap_srcs.add_argument(
+        "-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=FileType("rt", encoding="utf-8")
+    )
     parse_p.add_argument(
-        "-b", "--base-keymap", help="A base keymap YAML to inherit certain properties from", type=FileType("rt")
+        "-b",
+        "--base-keymap",
+        help="A base keymap YAML to inherit certain properties from",
+        type=FileType("rt", encoding="utf-8"),
     )
     parse_p.add_argument(
         "-l",
