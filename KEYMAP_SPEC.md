@@ -72,7 +72,7 @@ This option lets you specify a set of parameters to automatically generate a spl
 
 Following physical layout parameter can be specified either in the command line or under this field definition as a key-value pair:
 
-- **`ortho_layout`** (equivalent to `-o`/`--ortho-layout` on the command line):
+- **`ortho_layout`** (equivalent to `--ortho-layout` on the command line):
   Specifies a mapping of parameters to values to generate an ortholinear physical layout, with schema:
 
   | field name   | type                     | default value | description                                                                                              |

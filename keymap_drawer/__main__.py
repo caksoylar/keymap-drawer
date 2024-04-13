@@ -42,7 +42,7 @@ def draw(args: Namespace, config: DrawConfig) -> None:
 
     drawer = KeymapDrawer(
         config=config,
-        out=sys.stdout,
+        out=args.output,
         layers=yaml_data["layers"],
         layout=layout,
         combos=yaml_data.get("combos", []),
@@ -72,10 +72,10 @@ def parse(args: Namespace, config: ParseConfig) -> None:
             args.zmk_keymap
         )
 
-    yaml.safe_dump(parsed, sys.stdout, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
+    yaml.safe_dump(parsed, args.output, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
 
 
-def dump_config(config: Config) -> None:
+def dump_config(args: Namespace, config: Config) -> None:
     """Dump the currently active config, either default or parsed from args."""
 
     def cfg_str_representer(dumper, in_str):
@@ -84,7 +84,7 @@ def dump_config(config: Config) -> None:
         return dumper.represent_scalar("tag:yaml.org,2002:str", in_str)
 
     yaml.representer.SafeRepresenter.add_representer(str, cfg_str_representer)
-    yaml.safe_dump(config.model_dump(), sys.stdout, sort_keys=False, allow_unicode=True)
+    yaml.safe_dump(config.model_dump(), args.output, sort_keys=False, allow_unicode=True)
 
 
 def main() -> None:
@@ -121,7 +121,6 @@ def main() -> None:
         "use the first defined one by default",
     )
     draw_p.add_argument(
-        "-o",
         "--ortho-layout",
         help="Parametrized ortholinear layout definition in a YAML format, "
         "for example '{split: false, rows: 4, columns: 12}'",
@@ -149,6 +148,13 @@ def main() -> None:
         "see README for schema",
         type=FileType("rt"),
     )
+    draw_p.add_argument(
+        "-o",
+        "--output",
+        help="Output to path instead of stdout",
+        type=FileType("wt", encoding="utf-8"),
+        default=sys.stdout,
+    )
 
     parse_p = subparsers.add_parser(
         "parse", help="parse a QMK/ZMK keymap to YAML representation to stdout, to be used with the `draw` command"
@@ -171,9 +177,23 @@ def main() -> None:
         help="Number of columns in the layout to enable better key grouping in the output, optional",
         type=int,
     )
+    parse_p.add_argument(
+        "-o",
+        "--output",
+        help="Output to path instead of stdout",
+        type=FileType("wt", encoding="utf-8"),
+        default=sys.stdout,
+    )
 
-    _ = subparsers.add_parser(
+    dump_p = subparsers.add_parser(
         "dump-config", help="dump default draw and parse config to stdout that can be passed to -c/--config option"
+    )
+    dump_p.add_argument(
+        "-o",
+        "--output",
+        help="Output to path instead of stdout",
+        type=FileType("wt", encoding="utf-8"),
+        default=sys.stdout,
     )
 
     args = parser.parse_args()
@@ -186,7 +206,7 @@ def main() -> None:
         case "parse":
             parse(args, config.parse_config)
         case "dump-config":
-            dump_config(config)
+            dump_config(args, config)
 
 
 if __name__ == "__main__":
