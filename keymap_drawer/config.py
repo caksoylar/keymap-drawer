@@ -202,6 +202,23 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         ),
     )
 
+    # style CSS to overide colors for dark mode
+    svg_style_dark: str = Field(
+        exclude=True,
+        default=dedent(
+            """\
+            svg.keymap { fill: #d1d6db }
+            rect.key { fill: #050709 }
+            rect.key, rect.combo { stroke: #303336 }
+            rect.combo, rect.combo-separate { fill: #001133 }
+            rect.held, rect.combo.held { fill: #220000 }
+            text.label { stroke: #000000 }
+            text.trans { fill: #7e8184 }
+            path.combo { stroke: #7f7f7f }
+            """
+        ),
+    )
+
     # extra CSS to be appended to svg_style
     # prefer to set this over modifying svg_style since the default value of svg_style can change
     svg_extra_style: str = ""

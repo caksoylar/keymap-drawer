@@ -52,6 +52,7 @@ def draw(args: Namespace, config: DrawConfig) -> None:
         keys_only=args.keys_only,
         combos_only=args.combos_only,
         ghost_keys=args.ghost_keys,
+        dark_mode=True if args.dark_mode == "yes" else False if args.dark_mode == "no" else None,
     )
 
 
@@ -148,6 +149,14 @@ def main() -> None:
         help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
         "see README for schema",
         type=FileType("rt"),
+    )
+    draw_p.add_argument(
+        "--dark-mode",
+        help="Style the SVG for dark mode screens, will follow system settings if set to 'auto'",
+        choices=["yes", "no", "auto"],
+        default="no",
+        nargs="?",
+        const="yes",
     )
 
     parse_p = subparsers.add_parser(

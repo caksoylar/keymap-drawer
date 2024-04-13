@@ -175,6 +175,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         keys_only: bool = False,
         combos_only: bool = False,
         ghost_keys: Sequence[int] | None = None,
+        dark_mode: bool | None = None,
     ) -> None:
         """Print SVG code representing the keymap."""
         layers = deepcopy(self.keymap.layers)
@@ -228,6 +229,13 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         self.output_stream.write(self.get_glyph_defs())
         extra_style = f"\n{self.cfg.svg_extra_style}" if self.cfg.svg_extra_style else ""
         self.output_stream.write(f"<style>{self.cfg.svg_style}{extra_style}</style>\n")
+        if dark_mode is None and self.cfg.svg_style_dark:
+            dark_style = f"\n@media (prefers-color-scheme: dark) {{\n{self.cfg.svg_style_dark}\n}}"
+        elif dark_mode is True and self.cfg.svg_style_dark:
+            dark_style = f"\n{self.cfg.svg_style_dark}"
+        else:
+            dark_style = ""
+        self.output_stream.write(f"<style>{self.cfg.svg_style}{dark_style}{extra_style}</style>\n")
         self.output_stream.write(self.out.getvalue())
 
         if self.cfg.footer_text:
