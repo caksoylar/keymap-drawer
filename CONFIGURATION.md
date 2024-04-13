@@ -286,6 +286,28 @@ _Type:_ `bool`
 
 _Default:_ `false`
 
+#### `modifier_fn_map`
+
+Convert modifiers in modifier functions (used in keycodes with built-in modifiers like `LC(V)`
+in ZMK or `LCTL(KC_V)` in QMK) to given symbols -- set to `null` to disable the mapping. Valid fields:
+
+- **`left_ctrl`**, **`right_ctrl`**, **`left_shift`**, **`right_shift`**, **`left_alt`**, **`right_alt`**, **`left_gui`**, **`right_gui`** (type: `str`):
+  Mapping of each modifier to their corresponding display forms.
+
+  _Default:_ `"Ctl"`, `"Ctl"`, `"Sft"`, `"Sft"`, `"Alt"`, `"AGr"`, `"Gui"`, `"Gui"`
+
+- **`keycode_combiner`** (type: `str`): Pattern to join modifier functions with the modified keycode, must contain `{mods}` and `{key}`.
+
+  _Default:_ `"{mods}+ {key}"`
+
+- **`mod_combiner`** (type: `str`): Pattern to join multiple modifier function strings, must contain `{mod_1}` and `{mod_2}`.
+
+  _Default:_ `"{mod_1}+{mod_2}"`
+
+- **`special_combinations`** (type: `dict[str, str]`): Special look-up for combinations of mods, mod order is ignored. Keys must be modifier names joined by `+`.
+
+  _Default:_ `{"left_ctrl+left_alt+left_gui+left_shift": "Hyper", "left_ctrl+left_alt+left_shift": "Meh"}`
+
 #### `qmk_remove_keycode_prefix`
 
 Remove these prefixes from QMK keycodes before further processing.

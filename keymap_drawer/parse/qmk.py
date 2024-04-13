@@ -22,6 +22,43 @@ class QmkJsonParser(KeymapParser):
     _osl_re = re.compile(r"OSL\((\d+)\)")
     _tt_re = re.compile(r"TT\((\d+)\)")
 
+    _modifier_fn_to_std = {
+        "LCTL": ["left_ctrl"],
+        "C": ["left_ctrl"],
+        "LSFT": ["left_shift"],
+        "S": ["left_shift"],
+        "LALT": ["left_alt"],
+        "A": ["left_alt"],
+        "LOPT": ["left_alt"],
+        "LGUI": ["left_gui"],
+        "G": ["left_gui"],
+        "LCMD": ["left_gui"],
+        "LWIN": ["left_gui"],
+        "RCTL": ["right_ctrl"],
+        "RSFT": ["right_shift"],
+        "RALT": ["right_alt"],
+        "ROPT": ["right_alt"],
+        "ALGR": ["right_alt"],
+        "RGUI": ["right_gui"],
+        "RCMD": ["right_gui"],
+        "RWIN": ["right_gui"],
+        "LSG": ["left_shift", "left_gui"],
+        "SGUI": ["left_shift", "left_gui"],
+        "SCMD": ["left_shift", "left_gui"],
+        "SWIN": ["left_shift", "left_gui"],
+        "LAG": ["left_alt", "left_gui"],
+        "RSG": ["right_shift", "right_gui"],
+        "RAG": ["right_alt", "right_gui"],
+        "LCA": ["left_ctrl", "left_alt"],
+        "LSA": ["left_shift", "left_alt"],
+        "RSA": ["right_shift", "right_alt"],
+        "SAGR": ["right_shift", "right_alt"],
+        "RCS": ["right_ctrl", "right_shift"],
+        "LCAG": ["left_ctrl", "left_alt", "left_gui"],
+        "MEH": ["left_ctrl", "left_shift", "left_alt"],
+        "HYPR": ["left_ctrl", "left_shift", "left_alt", "left_gui"],
+    }
+
     def __init__(
         self,
         config: ParseConfig,
@@ -47,9 +84,13 @@ class QmkJsonParser(KeymapParser):
         assert self.layer_names is not None
 
         def mapped(key: str) -> LayoutKey:
+            key, mods = self.parse_modifier_fns(key)
             if self._prefix_re is not None:
                 key = self._prefix_re.sub("", key)
-            return LayoutKey.from_key_spec(self.cfg.qmk_keycode_map.get(key, key.replace("_", " ")))
+            mapped = LayoutKey.from_key_spec(self.cfg.qmk_keycode_map.get(key, key.replace("_", " ")))
+            if mods:
+                mapped.apply_formatter(lambda key: self.format_modified_keys(key, mods))
+            return mapped
 
         if m := self._trans_re.fullmatch(key_str):  # transparent
             return self.trans_key

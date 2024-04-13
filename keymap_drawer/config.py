@@ -241,6 +241,28 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     """Configuration settings related to parsing QMK/ZMK keymaps."""
 
+    class ModifierFnMap(BaseModel):
+        """
+        Mapping to replace modifiers in modifier functions with the given string. Includes `combiner`
+        patterns to determine how to format the result. Mod combinations in `mod_combinations` take
+        precedence over individual mod lookups.
+        """
+
+        left_ctrl: str = "Ctl"
+        right_ctrl: str = "Ctl"
+        left_shift: str = "Sft"
+        right_shift: str = "Sft"
+        left_alt: str = "Alt"  # Alt/Opt
+        right_alt: str = "AGr"  # Alt/Opt/AltGr
+        left_gui: str = "Gui"  # Cmd/Win
+        right_gui: str = "Gui"  # Cmd/Win
+        keycode_combiner: str = "{mods}+ {key}"  # pattern to join modifier functions with the modified keycode
+        mod_combiner: str = "{mod_1}+{mod_2}"  # pattern to join multiple modifier function strings
+        special_combinations: dict[str, str] = {  # special look-up for combinations of mods (mod order is ignored)
+            "left_ctrl+left_alt+left_gui+left_shift": "Hyper",
+            "left_ctrl+left_alt+left_shift": "Meh",
+        }
+
     # run C preprocessor on ZMK keymaps
     preprocess: bool = True
 
@@ -268,6 +290,10 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # creates ambiguity: you cannot tell if *all* the marked keys need to be held down while a
     # layer is active (which is the default behavior) or *any* of them (with this option)
     mark_alternate_layer_activators: bool = False
+
+    # convert modifiers in modifier functions (used in keycodes with built-in modifiers like LC(V)
+    # in ZMK or LCTL(KC_V) in QMK) to given symbols -- set to None/null to disable the mapping
+    modifier_fn_map: ModifierFnMap | None = ModifierFnMap()
 
     # remove these prefixes from QMK keycodes before further processing
     # can be augmented with other locale prefixes, e.g. "DE_"

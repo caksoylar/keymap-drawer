@@ -3,6 +3,7 @@ Module containing base parser class to parse keymaps into KeymapData and then du
 Do not use directly, use QmkJsonParser or ZmkKeymapParser instead.
 """
 
+import re
 from abc import ABC
 from io import TextIOWrapper
 from typing import Sequence
@@ -17,6 +18,8 @@ class ParseError(Exception):
 
 class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
     """Abstract base class for parsing firmware keymap representations."""
+
+    _modifier_fn_to_std: dict[str, list[str]]
 
     def __init__(
         self,
@@ -33,6 +36,49 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         self.conditional_layers: dict[int, list[int]] = {}  # then-layer to if-layers mapping
         self.trans_key = LayoutKey.from_key_spec(self.cfg.trans_legend)
         self.raw_binding_map = self.cfg.raw_binding_map.copy()
+        self._modifier_fn_re = re.compile(
+            "(" + "|".join(re.escape(mod) for mod in self._modifier_fn_to_std) + r") *\( *(.*) *\)"
+        )
+        if (mod_map := self.cfg.modifier_fn_map) is not None:
+            self._mod_combs_lookup = {
+                frozenset(mods.split("+")): val for mods, val in mod_map.special_combinations.items()
+            }
+
+    def parse_modifier_fns(self, keycode: str) -> tuple[str, list[str]]:
+        """
+        Strip potential modifier functions from the keycode then return a tuple of the keycode and the modifiers.
+        """
+        if self.cfg.modifier_fn_map is None:
+            return keycode, []
+
+        def strip_modifiers(keycode: str, current_mods: list[str] | None = None) -> tuple[str, list[str]]:
+            if current_mods is None:
+                current_mods = []
+            if not (m := self._modifier_fn_re.fullmatch(keycode)):
+                return keycode, current_mods
+            return strip_modifiers(m.group(2), current_mods + self._modifier_fn_to_std[m.group(1)])
+
+        return strip_modifiers(keycode)
+
+    def format_modified_keys(self, key_str: str, modifiers: list[str]) -> str:
+        """
+        Format the combination of modifier functions and modified keycode into their display form,
+        as configured by parse_config.modifier_fn_map.
+        """
+        if self.cfg.modifier_fn_map is None or not modifiers:
+            return key_str
+
+        if (combo_str := self._mod_combs_lookup.get(frozenset(modifiers))) is not None:
+            fns_str = combo_str
+        else:
+            fn_map = self.cfg.modifier_fn_map.dict()
+            assert all(
+                mod in fn_map for mod in modifiers
+            ), f"Not all modifier functions in {modifiers} have a corresponding mapping in parse_config.modifier_fn_map"
+            fns_str = fn_map[modifiers[0]]
+            for mod in modifiers[1:]:
+                fns_str = self.cfg.modifier_fn_map.mod_combiner.format(mod_1=fns_str, mod_2=fn_map[mod])
+        return self.cfg.modifier_fn_map.keycode_combiner.format(mods=fns_str, key=key_str)
 
     def update_layer_activated_from(
         self, from_layers: Sequence[int], to_layer: int, key_positions: Sequence[int]
