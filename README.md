@@ -1,4 +1,4 @@
-# ![keymap-drawer](/site/logo_light.svg)
+# ![keymap-drawer](/site/logo.svg)
 
 [![PyPI version](https://img.shields.io/pypi/v/keymap-drawer.svg)](https://pypi.org/project/keymap-drawer/)
 
@@ -6,7 +6,7 @@ Parse QMK & ZMK keymaps and draw them in vector graphics (SVG) format, with supp
 
 Available as a [command-line tool](#command-line-tool-installation) or a [web application](https://caksoylar.github.io/keymap-drawer).
 
-[![Example keymap](https://caksoylar.github.io/keymap-drawer/showcase.svg)](examples/showcase.yaml)
+[![Example keymap](/site/showcase.svg)](examples/showcase.yaml)
 
 ## Features
 
