@@ -4,6 +4,7 @@ keycode converters for parsing.
 """
 
 from textwrap import dedent
+from typing import Literal
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
@@ -39,6 +40,10 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # curvature of rounded key rectangles
     key_rx: float = 6
     key_ry: float = 6
+
+    # turn on dark mode which applies svg_style_dark overrides
+    # "auto" enables adapting to the web page or OS light/dark theme setting
+    dark_mode: bool | Literal["auto"] = False
 
     # number of columns in the output drawing
     n_columns: int = 1
@@ -198,6 +203,23 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
                 visibility: hidden;
             }
             /* End Tabler Icons Cleanup */
+            """
+        ),
+    )
+
+    # style CSS to override colors for dark mode
+    svg_style_dark: str = Field(
+        exclude=True,
+        default=dedent(
+            """\
+            svg.keymap { fill: #d1d6db; }
+            rect.key { fill: #3f4750; }
+            rect.key, rect.combo { stroke: #60666c; }
+            rect.combo, rect.combo-separate { fill: #1f3d7a; }
+            rect.held, rect.combo.held { fill: #854747; }
+            text.label, text.footer { stroke: black; }
+            text.trans { fill: #7e8184; }
+            path.combo { stroke: #7f7f7f; }
             """
         ),
     )

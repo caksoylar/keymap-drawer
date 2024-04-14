@@ -40,6 +40,15 @@ _Type:_ `float`
 
 _Default:_ `6`
 
+#### `dark_mode`
+
+Turn on dark mode which applies the CSS overrides in `svg_style_dark` config.
+Setting it to `"auto"` enables adapting to the web page or OS light/dark theme setting.
+
+_Type:_ `bool | "auto"`
+
+_Default:_ `false`
+
 #### `n_columns`
 
 Number of layer columns in the output drawing.

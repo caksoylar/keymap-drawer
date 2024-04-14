@@ -169,7 +169,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
 
         return Point(original_x + col_width * n_cols, p.y)
 
-    def print_board(
+    def print_board(  # pylint: disable=too-many-locals
         self,
         draw_layers: Sequence[str] | None = None,
         keys_only: bool = False,
@@ -226,8 +226,15 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n'
         )
         self.output_stream.write(self.get_glyph_defs())
+
+        dark_style = ""
+        if self.cfg.dark_mode == "auto" and self.cfg.svg_style_dark:
+            dark_style = f"\n@media (prefers-color-scheme: dark) {{\n{self.cfg.svg_style_dark}\n}}"
+        elif self.cfg.dark_mode is True and self.cfg.svg_style_dark:
+            dark_style = f"\n{self.cfg.svg_style_dark}"
         extra_style = f"\n{self.cfg.svg_extra_style}" if self.cfg.svg_extra_style else ""
-        self.output_stream.write(f"<style>{self.cfg.svg_style}{extra_style}</style>\n")
+
+        self.output_stream.write(f"<style>{self.cfg.svg_style}{dark_style}{extra_style}</style>\n")
         self.output_stream.write(self.out.getvalue())
 
         if self.cfg.footer_text:
