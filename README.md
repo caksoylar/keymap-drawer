@@ -255,11 +255,17 @@ jobs:
 
 Below are a few tools and example usages from the community that might be inspirational, whether they are doing unique things with styling, configuration or legends used, or integrate `keymap-drawer` into other workflows.
 
+### Tools
+
 - [YellowAfterlife's Vial To Keymap Drawer](https://yal-tools.github.io/vial-to-keymap-drawer/): Parser to convert Vial .vil files to keymap YAMLs
+- [jbarr21's `keymap-display`](https://github.com/jbarr21/keymap-display): Uses a [converter script](https://github.com/jbarr21/keymap-display/blob/main/scripts/json2yaml) to convert QMK `keymap.c` to a keymap YAML
+- [hnaderi's fork](https://github.com/hnaderi/keymap-drawer): Contains an example [Dockerfile](https://github.com/hnaderi/keymap-drawer/blob/main/Dockerfile) and publishes unofficial [Docker images](https://github.com/hnaderi/keymap-drawer/blob/main/README.md#using-docker)
+
+### Examples
+
 - [minusfive's ZMK config](https://github.com/minusfive/zmk-config): Uses an [extensive config file](https://github.com/minusfive/zmk-config/blob/main/keymap_drawer.config.yaml) for great results out of the automated drawing workflow, with plenty of SVG glyphs
 - [SethMilliken's ZMK config](https://github.com/SethMilliken/zmk-config): Another config using the automated workflow with a [nice configuration](https://github.com/SethMilliken/zmk-config/blob/main/keymap_drawer.config.yaml) and SVG glyphs
 - [englmaxi's ZMK config](https://github.com/englmaxi/zmk-config): Using key sides setting and CSS tricks to position multiple SVG glyphs in one key
-- [jbarr21's `keymap-display`](https://github.com/jbarr21/keymap-display): Uses a [converter script](https://github.com/jbarr21/keymap-display/blob/main/scripts/json2yaml) to convert QMK `keymap.c` to a keymap YAML
 - [casuanoob's keymap](https://github.com/casuanoob/zmk-config-bkb): Many useful unicode and SVG glyphs in the [keymap YAML](https://github.com/casuanoob/zmk-config-bkb/blob/master/assets/split34_keymap_zmk.yaml)
 - [possumvibes's keymap](https://github.com/possumvibes/keyboard-layout): Separate layer and combo diagrams
 - [infused-kim's ZMK config](https://github.com/infused-kim/zmk-config): [Uses the `--base-keymap` feature](https://github.com/infused-kim/zmk-config/blob/chocofi/main/keymap_img/update_keymap_img.sh) to pre-assign held keys and combo positions
