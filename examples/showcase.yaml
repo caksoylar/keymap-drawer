@@ -24,3 +24,4 @@ combos:
   - {p: [14, 24], k: $$mdi:play-pause$$}
 draw_config:
   glyph_tap_size: 18
+  dark_mode: auto
