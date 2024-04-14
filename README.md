@@ -51,7 +51,7 @@ See [the development section](#development) for instructions to install from sou
 ### Using docker
 
 ``` sh
-docker pull ghcr.io/caksoylar/keymap-drawer:latest
+docker pull ghcr.io/hnaderi/keymap-drawer:latest
 ```
 
 ### Bootstrapping your keymap representation
