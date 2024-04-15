@@ -160,6 +160,14 @@ _Type:_ `string`
 
 _Default:_ See [`config.py`](keymap_drawer/config.py)
 
+#### `svg_style_dark`[^1]
+
+The set of CSS overrides that are added when `dark_mode` is enabled, and conditionally added with `@media (prefers-color-scheme: dark)` when it is `"auto"`.
+
+_Type:_ `string`
+
+_Default:_ See [`config.py`](keymap_drawer/config.py)
+
 #### `svg_extra_style`
 
 Extra CSS that will be appended to `svg_style`, enabling augmenting and overriding properties.
