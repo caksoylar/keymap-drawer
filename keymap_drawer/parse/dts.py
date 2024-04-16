@@ -11,7 +11,6 @@ C preprocessor using pcpp.
 import re
 from collections import defaultdict
 from io import StringIO
-from itertools import chain
 
 import pyparsing as pp
 from pcpp.preprocessor import Action, OutputDirective, Preprocessor  # type: ignore
@@ -59,11 +58,10 @@ class DTNode:
 
     def get_array(self, property_re: str) -> list[str] | None:
         """Extract last defined values for a `array` type property matching the `property_re` regex."""
-        out = None
-        for m in re.finditer(rf"{property_re} = <(.*?)>(, <(.*?)>)*", self.content):
-            fields = [m.group(1)] + [field for field in m.groups()[2:] if field is not None]
-            out = list(chain.from_iterable(field.split(" ") for field in fields))
-        return out
+        matches = list(re.finditer(rf"{property_re} = (<.*?>( , <.*?>)*) ?;", self.content))
+        if not matches:
+            return None
+        return re.sub("[<>,]", "", matches[-1].group(1)).split(" ")
 
     def get_phandle_array(self, property_re: str) -> list[str] | None:
         """Extract last defined values for a `phandle-array` type property matching the `property_re` regex."""
