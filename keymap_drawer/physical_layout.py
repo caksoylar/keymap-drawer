@@ -203,13 +203,12 @@ def layout_factory(  # pylint: disable=too-many-arguments
             )
             layout = qmk_info["layouts"][qmk_layout]["layout"]
 
-        keys = QmkLayout(layout=layout).generate(config.key_h)
-    elif ortho_layout is not None:
-        keys = OrthoLayout(**ortho_layout).generate(config.key_w, config.key_h, config.split_gap)
-    else:  # cols_thumbs_notation
-        assert cols_thumbs_notation is not None
-        keys = CPTLayout(spec=cols_thumbs_notation).generate(config.key_w, config.key_h, config.split_gap)
-    return PhysicalLayout(keys=keys)
+        return QmkLayout(layout=layout).generate(config.key_h)
+    if ortho_layout is not None:
+        return OrthoLayout(**ortho_layout).generate(config.key_w, config.key_h, config.split_gap)
+
+    assert cols_thumbs_notation is not None
+    return CPTLayout(spec=cols_thumbs_notation).generate(config.key_w, config.key_h, config.split_gap)
 
 
 class OrthoLayout(BaseModel):
@@ -249,7 +248,7 @@ class OrthoLayout(BaseModel):
             assert self.split, '"drop_*" properties can only be used with split layouts'
         return self
 
-    def generate(self, key_w: float, key_h: float, split_gap: float) -> list[PhysicalKey]:
+    def generate(self, key_w: float, key_h: float, split_gap: float) -> PhysicalLayout:
         """Generate a list of PhysicalKeys from given ortho specifications."""
         nrows = self.rows
         if not isinstance(self.thumbs, int):
@@ -285,7 +284,7 @@ class OrthoLayout(BaseModel):
             y += key_h
 
         if not self.thumbs:
-            return keys
+            return PhysicalLayout(keys=keys)
 
         match self.thumbs:
             case int():  # implies split
@@ -307,7 +306,7 @@ class OrthoLayout(BaseModel):
             case _:
                 raise ValueError("Unknown thumbs value in ortho layout")
 
-        return keys
+        return PhysicalLayout(keys=keys)
 
 
 class CPTLayout(BaseModel):
@@ -359,7 +358,7 @@ class CPTLayout(BaseModel):
 
         return [key - min_pt for key in part_keys], max(p.x for p in part_keys) - min_pt.x
 
-    def generate(self, key_w: float, key_h: float, split_gap: float) -> list[PhysicalKey]:
+    def generate(self, key_w: float, key_h: float, split_gap: float) -> PhysicalLayout:
         """Generate a list of PhysicalKeys from given CPT specification."""
         parts = [match.groupdict() for part in self.spec.split() if (match := self.part_pattern.match(part))]
         max_rows = max(int(char) for part in parts for char in (part["a_l"] or part["a_r"]) if char.isdigit())
@@ -372,14 +371,16 @@ class CPTLayout(BaseModel):
             x_offsets.append(x_offsets[-1] + max_x + 1)
 
         sorted_keys = sorted(all_keys, key=lambda item: (int(item[0].y), item[1], int(item[0].x)))
-        return [
-            PhysicalKey(
-                Point((key.x + 0.5 + x_offsets[part_ind]) * key_w + part_ind * split_gap, (key.y + 0.5) * key_h),
-                key_w,
-                key_h,
-            )
-            for key, part_ind in sorted_keys
-        ]
+        return PhysicalLayout(
+            keys=[
+                PhysicalKey(
+                    Point((key.x + 0.5 + x_offsets[part_ind]) * key_w + part_ind * split_gap, (key.y + 0.5) * key_h),
+                    key_w,
+                    key_h,
+                )
+                for key, part_ind in sorted_keys
+            ]
+        )
 
 
 class QmkLayout(BaseModel):
@@ -398,20 +399,22 @@ class QmkLayout(BaseModel):
 
     layout: list[QmkKey]
 
-    def generate(self, key_size: float) -> list[PhysicalKey]:
+    def generate(self, key_size: float) -> PhysicalLayout:
         """Generate a sequence of PhysicalKeys from QmkKeys."""
         min_pt = Point(min(k.x for k in self.layout), min(k.y for k in self.layout))
-        return [
-            PhysicalKey.from_qmk_spec(
-                scale=key_size,
-                pos=Point(k.x, k.y) - min_pt,
-                width=k.w,
-                height=k.h,
-                rotation=k.r,
-                rotation_pos=Point(k.x if k.rx is None else k.rx, k.y if k.ry is None else k.ry) - min_pt,
-            )
-            for k in self.layout
-        ]
+        return PhysicalLayout(
+            keys=[
+                PhysicalKey.from_qmk_spec(
+                    scale=key_size,
+                    pos=Point(k.x, k.y) - min_pt,
+                    width=k.w,
+                    height=k.h,
+                    rotation=k.r,
+                    rotation_pos=Point(k.x if k.rx is None else k.rx, k.y if k.ry is None else k.ry) - min_pt,
+                )
+                for k in self.layout
+            ]
+        )
 
 
 def _map_qmk_keyboard(qmk_keyboard: str) -> str:

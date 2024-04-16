@@ -214,6 +214,8 @@ class KeymapData(BaseModel):
         """Create layout with type given by layout param."""
         if vals["layout"] is None:  # ignore for no-layout mode
             return vals
+        if isinstance(vals["layout"], PhysicalLayout):  # already provided a valid object
+            return vals
         vals["layout"] = layout_factory(config=vals["config"], **vals["layout"])
         return vals
 
