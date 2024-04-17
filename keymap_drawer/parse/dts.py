@@ -58,7 +58,7 @@ class DTNode:
 
     def get_array(self, property_re: str) -> list[str] | None:
         """Extract last defined values for a `array` type property matching the `property_re` regex."""
-        matches = list(re.finditer(rf"{property_re} = (<.*?>( , <.*?>)*) ?;", self.content))
+        matches = list(re.finditer(rf"{property_re} = (<.*?>( ?, ?<.*?>)*) ?;", self.content))
         if not matches:
             return None
         return re.sub("[<>,]", "", matches[-1].group(1)).split(" ")
