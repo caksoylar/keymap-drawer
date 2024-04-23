@@ -5,7 +5,7 @@ _corne: &corne
 _generic_3x5_3: &generic_3x5_3
   default_transform: {qmk_keyboard: obosob/arch_36}
 _ferris: &ferris
-  default_transform: {qmk_keyboard: ferris/sweep}
+  default_transform: {qmk_keyboard: ferris_rotated}
 _generic_60p: &generic_60p
   default_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, qmk_layout: LAYOUT_60_ansi}
 _pinky_cluster_34: &pinky_cluster_34
