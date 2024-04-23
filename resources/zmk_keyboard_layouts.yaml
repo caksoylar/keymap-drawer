@@ -292,6 +292,8 @@ skeletyl:
   default_transform: {qmk_keyboard: bastardkb/skeletyl/v2/splinky_3}
 slicemk_ergodox:
   default_transform: {qmk_keyboard: slicemk_ergodox}
+swoop:
+  default_transform: {qmk_keyboard: bluebell/swoop}
 swweeep: *generic_3x5_3
 tbkmini:
   default_transform: {qmk_keyboard: bastardkb/tbkmini/v2/splinky_3}
