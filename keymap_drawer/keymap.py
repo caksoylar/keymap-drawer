@@ -59,6 +59,9 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
         if self.shifted:
             self.shifted = formatter(self.shifted)
 
+    def __hash__(self):
+        return hash((self.tap, self.hold, self.shifted, self.type))
+
 
 class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
     """
