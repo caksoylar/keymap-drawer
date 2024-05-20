@@ -62,6 +62,8 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
             return keycode, []
 
         def strip_modifiers(keycode: str, current_mods: list[str] | None = None) -> tuple[str, list[str]]:
+            assert self._modifier_fn_re is not None
+
             if current_mods is None:
                 current_mods = []
             if not (m := self._modifier_fn_re.fullmatch(keycode)):
