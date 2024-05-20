@@ -1,7 +1,7 @@
 """Module containing class to parse devicetree format ZMK keymaps."""
 
 import re
-from itertools import chain
+from itertools import chain, islice
 from pathlib import Path
 from typing import Sequence
 
@@ -63,7 +63,11 @@ class KanataKeymapParser(KeymapParser):
         return "(" + " ".join(cls._element_to_str(sub) for sub in elt) + ")"
 
     def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals,too-many-branches
-        self, binding: str | pp.ParseResults, current_layer: int | None, key_positions: Sequence[int], no_shifted: bool = False
+        self,
+        binding: str | pp.ParseResults,
+        current_layer: int | None,
+        key_positions: Sequence[int],
+        no_shifted: bool = False,
     ) -> LayoutKey:
         binding_str = self._element_to_str(binding)
         if binding_str in self.raw_binding_map:
@@ -96,7 +100,7 @@ class KanataKeymapParser(KeymapParser):
             return LayoutKey(tap=binding[1], hold=self.cfg.toggle_label)
         if binding[0] in ("layer-while-held", "layer-toggle"):
             self.update_layer_activated_from(
-                [current_layer], self.layer_names.index(binding[1]), key_positions
+                [current_layer] if current_layer is not None else [], self.layer_names.index(binding[1]), key_positions
             )
             return LayoutKey(tap=binding[1])
         if binding[0] in ("unicode", "🔣"):
@@ -133,8 +137,37 @@ class KanataKeymapParser(KeymapParser):
                         ) from err
         return layers
 
-    # def _get_combos(self, dts: DeviceTree) -> list[ComboSpec]:
-    #     return []
+    def _get_combos(self, nodes: list[pp.ParseResults]) -> list[ComboSpec]:
+        try:
+            chords_node = next(node[1:] for node in nodes if node[0] == "defchordsv2-experimental")
+        except StopIteration:
+            return []
+
+        def batched(iterable, n):
+            it = iter(iterable)
+            while batch := tuple(islice(it, n)):
+                yield batch
+
+        combos = []
+        for combo_def in batched(chords_node, 5):
+            pos_node, action_node, _, _, disabled_layers_node = combo_def
+
+            key_pos = [DEFSRC_TO_POS.get(pos) for pos in pos_node]
+            if any(pos is None for pos in key_pos):
+                continue
+
+            try:
+                parsed_key = self._str_to_key(action_node, None, key_pos, no_shifted=True)
+            except Exception as err:
+                raise ParseError(
+                    f'Could not parse binding "{self._element_to_str(action_node)}" in combo node "{combo_def}" with exception "{err}"'
+                ) from err
+
+            combo = {"k": parsed_key, "p": key_pos}
+            if disabled_layers := list(disabled_layers_node):
+                combo["l"] = [name for name in self.layer_names if name not in disabled_layers]
+            combos.append(ComboSpec(**combo))
+        return combos
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
         """
@@ -150,7 +183,8 @@ class KanataKeymapParser(KeymapParser):
             self.aliases = {}
 
         layers = self._get_layers(defsrc, nodes)
+        combos = self._get_combos(nodes)
         layers = self.add_held_keys(layers)
-        keymap_data = KeymapData(layers=layers, layout=None, config=None)
+        keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
 
         return PHYSICAL_LAYOUT, keymap_data
