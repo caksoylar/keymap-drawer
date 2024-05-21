@@ -75,7 +75,6 @@ class KanataKeymapParser(KeymapParser):
         except StopIteration:
             pass
 
-
     def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals,too-many-branches
         self,
         binding: str | pp.ParseResults,
@@ -135,6 +134,11 @@ class KanataKeymapParser(KeymapParser):
             if len(binding) > 4:
                 binds[-1] = "…"
             return LayoutKey(tap=" +".join(binds))
+        if binding[0] == "macro":
+            binds = [recurse(bind).tap for bind in binding[1:4]]
+            if len(binding) > 4:
+                binds[-1] = "…"
+            return LayoutKey(tap="macro " + "  ".join(binds))
 
         return LayoutKey(tap=binding_str)
 
