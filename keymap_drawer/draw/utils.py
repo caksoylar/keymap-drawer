@@ -23,9 +23,14 @@ class UtilsMixin(GlyphMixin):
         return (' class="' + " ".join(c for c in classes if c) + '"') if classes else ""
 
     @staticmethod
-    def _split_text(text: str) -> list[str]:
+    def _split_text(text: str, truncate: int = 0) -> list[str]:
         # do not split on double spaces, but do split on single
-        return [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
+        lines = [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
+
+        # truncate number of lines if requested
+        if truncate and len(lines) > truncate:
+            lines = lines[: truncate - 1] + ["…"]
+        return lines
 
     def _draw_rect(self, p: Point, dims: Point, radii: Point, classes: Sequence[str]) -> None:
         self.out.write(
@@ -64,9 +69,15 @@ class UtilsMixin(GlyphMixin):
             return ""
         return f' style="font-size: {max(60.0, 100 * self.cfg.shrink_wide_legends / width):.0f}%"'
 
+    def _truncate_word(self, word: str) -> str:
+        if not self.cfg.shrink_wide_legends or len(word) <= (limit := int(1.7 * self.cfg.shrink_wide_legends)):
+            return word
+        return word[: limit - 1] + "…"
+
     def _draw_text(self, p: Point, word: str, classes: Sequence[str]) -> None:
         if not word:
             return
+        word = self._truncate_word(word)
         self.out.write(f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}>')
         self.out.write(
             f"<tspan{scale}>{escape(word)}</tspan>" if (scale := self._get_scaling(len(word))) else escape(word)
@@ -74,6 +85,7 @@ class UtilsMixin(GlyphMixin):
         self.out.write("</text>\n")
 
     def _draw_textblock(self, p: Point, words: Sequence[str], classes: Sequence[str], shift: float = 0) -> None:
+        words = [self._truncate_word(word) for word in words]
         self.out.write(f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}>\n')
         dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift) / 2)
         scaling = self._get_scaling(max(len(w) for w in words))
