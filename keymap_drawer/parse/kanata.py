@@ -38,6 +38,7 @@ class KanataKeymapParser(KeymapParser):
     ):
         super().__init__(config, columns, base_keymap, layer_names)
         self.aliases: dict[str, str | pp.ParseResults] = {}
+        self.vars: dict[str, str | pp.ParseResults] = {}
 
     @classmethod
     def _parse_cfg(cls, cfg_str: str, file_path: Path | None) -> list[pp.ParseResults]:
@@ -61,6 +62,20 @@ class KanataKeymapParser(KeymapParser):
             return elt
         return "(" + " ".join(cls._element_to_str(sub) for sub in elt) + ")"
 
+    def _get_aliases_vars(self, nodes: list[pp.ParseResults]) -> None:
+        try:
+            defalias = list(chain.from_iterable(node[1:] for node in nodes if node[0] == "defalias"))
+            self.aliases = {defalias[k]: defalias[k + 1] for k in range(0, len(defalias), 2)}
+        except StopIteration:
+            pass
+
+        try:
+            defvar = list(chain.from_iterable(node[1:] for node in nodes if node[0] == "defvar"))
+            self.vars = {defvar[k]: defvar[k + 1] for k in range(0, len(defvar), 2)}
+        except StopIteration:
+            pass
+
+
     def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals,too-many-branches
         self,
         binding: str | pp.ParseResults,
@@ -78,6 +93,8 @@ class KanataKeymapParser(KeymapParser):
 
         if isinstance(binding, str) and binding.startswith("@"):
             binding = self.aliases.get(binding[1:], binding)
+        if isinstance(binding, str) and binding.startswith("$"):
+            binding = self.vars.get(binding[1:], binding)
 
         if isinstance(binding, str):
             if binding in ("_", "‗", "≝"):
@@ -175,13 +192,10 @@ class KanataKeymapParser(KeymapParser):
         Parse a ZMK keymap with its content and path and return the layout spec and KeymapData to be dumped to YAML.
         """
         nodes = self._parse_cfg(in_str, Path(file_name) if file_name else None)
+
         defsrc = next(node[1:] for node in nodes if node[0] == "defsrc")
 
-        try:
-            defalias = list(chain.from_iterable(node[1:] for node in nodes if node[0] == "defalias"))
-            self.aliases = {defalias[k]: defalias[k + 1] for k in range(0, len(defalias), 2)}
-        except StopIteration:
-            self.aliases = {}
+        self._get_aliases_vars(nodes)
 
         layers = self._get_layers(defsrc, nodes)
         combos = self._get_combos(nodes)
