@@ -298,6 +298,10 @@ If you prefer not to use Poetry, you can get an editable install with `pip insta
 
 The source code for the Streamlit app lives in the [`keymap-drawer-web`](https://github.com/caksoylar/keymap-drawer-web) repo.
 
+## Questions? Feedback?
+
+If you have any questions on usage or feedback for new or existing features, please check out the [Discussions tab](https://github.com/caksoylar/keymap-drawer/discussions) and feel free to create a new one!
+
 ## Related projects
 
 - [@nickcoutsos's ZMK keymap editor](https://github.com/nickcoutsos/keymap-editor)
