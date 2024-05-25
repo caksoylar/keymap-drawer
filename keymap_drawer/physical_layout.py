@@ -23,6 +23,7 @@ from .config import DrawConfig
 
 QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
+QMK_DEFAULT_LAYOUTS_URL = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/layouts/default/{layout}/info.json"
 CACHE_LAYOUTS_PATH = Path(user_cache_dir("keymap-drawer", False)) / "qmk_layouts"
 QMK_MAPPINGS_PATH = Path(__file__).parent.parent / "resources" / "qmk_keyboard_mappings.yaml"
 
@@ -452,8 +453,12 @@ def _get_qmk_info(qmk_keyboard: str, use_local_cache: bool = False):
             return json.load(f)
 
     try:
-        with urlopen(QMK_METADATA_URL.format(keyboard=qmk_keyboard)) as f:
-            info = json.load(f)["keyboards"][qmk_keyboard]
+        if qmk_keyboard.startswith("generic/"):
+            with urlopen(QMK_DEFAULT_LAYOUTS_URL.format(layout=qmk_keyboard[len("generic/") :])) as f:
+                info = json.load(f)
+        else:
+            with urlopen(QMK_METADATA_URL.format(keyboard=qmk_keyboard)) as f:
+                info = json.load(f)["keyboards"][qmk_keyboard]
         if use_local_cache:
             cache_path.parent.mkdir(parents=True, exist_ok=True)
             with open(cache_path, "w", encoding="utf-8") as f_out:
