@@ -8,6 +8,7 @@ import json
 import re
 from dataclasses import dataclass
 from functools import cache, cached_property, lru_cache
+from io import BytesIO
 from math import cos, pi, sin, sqrt
 from pathlib import Path
 from typing import ClassVar, Literal
@@ -171,7 +172,7 @@ class PhysicalLayout(BaseModel):
 def layout_factory(  # pylint: disable=too-many-arguments
     config: DrawConfig,
     qmk_keyboard: str | None = None,
-    qmk_info_json: Path | None = None,
+    qmk_info_json: Path | BytesIO | None = None,
     qmk_layout: str | None = None,
     ortho_layout: dict | None = None,
     cols_thumbs_notation: str | None = None,
@@ -188,15 +189,17 @@ def layout_factory(  # pylint: disable=too-many-arguments
             qmk_info = _get_qmk_info(qmk_keyboard, config.use_local_cache)
         else:  # qmk_info_json
             assert qmk_info_json is not None
-            with open(qmk_info_json, "rb") as f:
+            with open(qmk_info_json, "rb") if not isinstance(qmk_info_json, BytesIO) else qmk_info_json as f:
                 qmk_info = json.load(f)
 
         if isinstance(qmk_info, list):
             assert qmk_layout is None, "Cannot use qmk_layout with a list-format QMK spec"
             layout = qmk_info  # shortcut for list-only representation
         elif qmk_layout is None:
+            assert "layouts" in qmk_info, "QMK info.json must contain a `layouts` field"
             layout = next(iter(qmk_info["layouts"].values()))["layout"]  # take the first layout in map
         else:
+            assert "layouts" in qmk_info, "QMK info.json must contain a `layouts` field"
             assert qmk_layout in qmk_info["layouts"], (
                 f'Could not find layout "{qmk_layout}" in QMK info.json, '
                 f'available options are: {list(qmk_info["layouts"])}'
