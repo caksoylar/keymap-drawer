@@ -32,7 +32,7 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         self.columns = columns if columns is not None else 0
         self.layer_names: list[str] | None = layer_names
         self.base_keymap = base_keymap
-        self.layer_activated_from: dict[int, set[int]] = {}  # layer to key positions
+        self.layer_activated_from: dict[int, set[tuple[int, bool]]] = {}  # layer to key positions + alternate flags
         self.conditional_layers: dict[int, list[int]] = {}  # then-layer to if-layers mapping
         self.trans_key = LayoutKey.from_key_spec(self.cfg.trans_legend)
         self.raw_binding_map = self.cfg.raw_binding_map.copy()
@@ -92,22 +92,30 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
 
         In order to properly keep track of multiple layer activation sequences, this method needs
         to be called in the order of increasing `to_layer` indices. It also ignores activating lower
-        layer indices from higher layers and only considers the first discovered keys.
+        layer indices from higher layers.
         """
-        # ignore if we already have a way to get to this layer (unless mark_alternate_layer_activators is set)
-        # or if this is a reverse layer order activation
-        if (not self.cfg.mark_alternate_layer_activators and to_layer in self.layer_activated_from) or (
-            from_layers and any(layer >= to_layer for layer in from_layers)
-        ):
+        # ignore if this is a reverse layer order activation
+        if from_layers and any(layer >= to_layer for layer in from_layers):
             return
 
-        if to_layer not in self.layer_activated_from:
+        # ignore if we already have a way to get to this layer (unless mark_alternate_layer_activators is set)
+        is_alternate = False
+        if to_layer in self.layer_activated_from:
+            if self.cfg.mark_alternate_layer_activators:
+                is_alternate = True
+            else:
+                return
+        else:
             self.layer_activated_from[to_layer] = set()
-        self.layer_activated_from[to_layer] |= set(key_positions)  # came here through these key(s)
+        self.layer_activated_from[to_layer] |= {
+            (k, is_alternate) for k in key_positions
+        }  # came here through these key(s)
 
         # also consider how the layer we are coming from got activated
         for from_layer in from_layers:
-            self.layer_activated_from[to_layer] |= self.layer_activated_from.get(from_layer, set())
+            self.layer_activated_from[to_layer] |= {
+                (k, is_alternate) for k, _ in self.layer_activated_from.get(from_layer, set())
+            }
 
     def add_held_keys(self, layers: dict[str, list[LayoutKey]]) -> dict[str, list[LayoutKey]]:
         """Add "held" specifiers to keys that we previously determined were held to activate a given layer."""
@@ -119,12 +127,16 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
 
         # assign held keys
         for layer_index, activating_keys in self.layer_activated_from.items():
-            for key_idx in activating_keys:
+            for key_idx, is_alternate in activating_keys:
                 key = layers[self.layer_names[layer_index]][key_idx]
+                if is_alternate and "held" in key.type:  # do not override primary held with alternate
+                    continue
+
+                key_type = "held alternate" if is_alternate else "held"
                 if key == self.trans_key:  # clear legend if it is a transparent key
-                    layers[self.layer_names[layer_index]][key_idx] = LayoutKey(type="held")
+                    layers[self.layer_names[layer_index]][key_idx] = LayoutKey(type=key_type)
                 else:
-                    key.type = "held"
+                    key.type = key_type
 
         return layers
 
