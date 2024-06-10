@@ -31,10 +31,11 @@ This folder contains resource/"data" files used by `keymap-drawer`. In particula
   The file names of files in this folder should match the QMK keyboard name, except that forward slashes are replaced by `@`. The definitions
   in this folder take priority over definitions that would otherwise be fetched from the QMK API.
 
-- [`qmk_keyboard_mappings.yaml`](qmk_keyboard_mappings.yaml): This file contains a set of mappings that map `qmk_keyboard` _prefixes_ to another
-  `qmk_keyboard` value. This is used to prefer certain physical layout definitions over others: For instance all Corne variants are mapped to use
-  the `qmk_layouts/corne_rotated.json` file instead of the QMK default layout for `crkbd/rev1`.
+- [`qmk_keyboard_mappings.yaml`](qmk_keyboard_mappings.yaml): This file contains a set of mappings that map `qmk_keyboard` values to another
+  `qmk_keyboard` value. If the key/field ends with a trailing slash, it matches as a prefix. Otherwise it looks for an exact match.
 
+  This is used to prefer certain physical layout definitions over others: For instance all Corne variants are mapped to use
+  the `qmk_layouts/corne_rotated.json` file instead of the QMK default layout for `crkbd/rev1`.
   This look-up and consequent replacement happens during drawing -- it is transparent to the user and it cannot be prevented.
 
 ## Contributing
