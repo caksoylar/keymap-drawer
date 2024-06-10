@@ -1,4 +1,5 @@
-# Each item maps a `qmk_keyboard` prefix to another keyboard, where latter is preferred over the former
+# Each item maps a `qmk_keyboard` value to another keyboard, where latter is preferred over the former
+# Looks for a prefix match if key has a trailing slash, exact match otherwise
 boardsource/unicorne: corne_rotated
 crkbd/: corne_rotated
 ferris/: ferris_rotated
@@ -10,3 +11,6 @@ splitkb/aurora/lily58/: lily58_rotated
 splitkb/aurora/sofle_v2/: sofle_rotated
 splitkb/aurora/sweep/: ferris_rotated
 splitkb/kyria/: kyria_rotated
+
+fingerpunch/ffkb: fingerpunch/luakeeb
+rufous: berylline
