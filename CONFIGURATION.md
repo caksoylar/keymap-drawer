@@ -295,9 +295,12 @@ _Default:_ `{"t": "▽", "type": "trans"}`
 #### `mark_alternate_layer_activators`
 
 Rather than only marking the first sequence of key positions to reach a layer as "held",
-mark all of the sequences to reach a given layer. this is disabled by default because it
+mark all of the sequences to reach a given layer. This is disabled by default because it
 creates ambiguity: you cannot tell if _all_ the marked keys need to be held down while a
 layer is active (which is the default behavior) or _any_ of them (with this option).
+
+The additional keys that are added by enabling this option get the key type "held alternate",
+so that you can override their styling in `svg_extra_style` with CSS selector `.held.alternate`.
 
 _Type:_ `bool`
 
