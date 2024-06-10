@@ -12,8 +12,6 @@ _pinky_cluster_34: &pinky_cluster_34
   default_transform: {qmk_keyboard: clog}
 _hummingbird_splay: &hummingbird_splay
   default_transform: {qmk_keyboard: berylline}
-_hummingbird_ortho: &hummingbird_ortho
-  default_transform: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2, drop_pinky: true, drop_inner: true}}
 
 # Upstream boards
 bdn9: &bdn9
@@ -93,7 +91,8 @@ fourier:
   default_transform: {qmk_keyboard: keebio/fourier}
 helix: &helix
   default_transform: {qmk_keyboard: helix/rev3_5rows}
-hummingbird: *hummingbird_ortho
+hummingbird:
+  default_transform: {qmk_keyboard: hummingbird}
 iris:
   default_transform: {qmk_keyboard: keebio/iris/rev2}
 jian:

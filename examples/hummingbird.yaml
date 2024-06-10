@@ -1,13 +1,9 @@
 # bootstrapped from https://github.com/jcmkk3/zmk-config/blob/main/config/hummingbird.keymap
 layout:
-  # qmk_keyboard: rufous
-  ortho_layout:
-    split: true
-    rows: 3
-    columns: 5
-    thumbs: 2
-    drop_pinky: true
-    drop_inner: true
+  qmk_keyboard: rufous  # you can also try the values below
+  #qmk_keyboard: hummingbird
+  #ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 2, drop_pinky: true, drop_inner: true}
+  #cols_thumbs_notation: "23332+2> 2<+23332"
 layers:
   Def:
   - [W, F, M, P, G, K, U, O, Y, SQT]
