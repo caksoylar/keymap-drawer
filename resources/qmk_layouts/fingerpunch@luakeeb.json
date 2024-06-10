@@ -1,5 +1,8 @@
 {
     "url": "https://fingerpunch.xyz/product/luakeeb/",
+    "layout_aliases": {
+        "LAYOUT_ffkb": "LAYOUT_split_3x5_4"
+    },
     "layouts": {
         "LAYOUT_split_3x5_4": {
             "layout": [

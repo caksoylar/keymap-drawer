@@ -201,6 +201,8 @@ def layout_factory(  # pylint: disable=too-many-arguments
             layout = next(iter(qmk_info["layouts"].values()))["layout"]  # take the first layout in map
         else:
             assert "layouts" in qmk_info, "QMK info.json must contain a `layouts` field"
+            if aliases := qmk_info.get("layout_aliases"):
+                qmk_layout = aliases.get(qmk_layout, qmk_layout)
             assert qmk_layout in qmk_info["layouts"], (
                 f'Could not find layout "{qmk_layout}" in QMK info.json, '
                 f'available options are: {list(qmk_info["layouts"])}'
