@@ -433,10 +433,9 @@ def _map_qmk_keyboard(qmk_keyboard: str) -> str:
     if to_keyboard := mappings.get(qmk_keyboard):
         return to_keyboard
 
-    if qmk_keyboard.endswith("/"):
-        for from_prefix, to_keyboard in mappings.items():
-            if qmk_keyboard.startswith(from_prefix):
-                return to_keyboard
+    for from_prefix, to_keyboard in mappings.items():
+        if from_prefix.endswith("/") and qmk_keyboard.startswith(from_prefix):
+            return to_keyboard
 
     return qmk_keyboard
 
