@@ -101,19 +101,17 @@ class DeviceTree:
     _compatible_re = re.compile(r'compatible = "(.*?)"')
     _custom_data_header = "__keymap_drawer_data__"
 
-    def __init__(
-        self, in_str: str, file_name: str | None = None, preprocess: bool = True, add_define: str | None = None
-    ):
+    def __init__(self, in_str: str, file_name: str | None = None, preprocess: bool = True, preamble: str | None = None):
         """
         Given an input DTS string `in_str` and `file_name` it is read from, parse it into an internap
         tree representation and track what "compatible" value each node has.
 
-        If `add_define` is set to a string, #define it for the preprocessor.
+        If `preamble` is set to a non-empty string, prepend it to the read buffer.
         """
         self.raw_buffer = in_str
         self.file_name = file_name
-        if add_define:
-            self.raw_buffer = f"#define {add_define}\n" + self.raw_buffer
+        if preamble:
+            self.raw_buffer = preamble + "\n" + self.raw_buffer
 
         prepped = self._preprocess(self.raw_buffer, file_name) if preprocess else in_str
 

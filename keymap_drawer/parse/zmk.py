@@ -240,7 +240,7 @@ class ZmkKeymapParser(KeymapParser):
         """
         Parse a ZMK keymap with its content and path and return the layout spec and KeymapData to be dumped to YAML.
         """
-        dts = DeviceTree(in_str, file_name, self.cfg.preprocess, add_define="KEYMAP_DRAWER")
+        dts = DeviceTree(in_str, file_name, self.cfg.preprocess, preamble=self.cfg.zmk_preamble)
 
         if self.cfg.preprocess and self.raw_binding_map:
             self._update_raw_binding_map(dts)

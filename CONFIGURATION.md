@@ -372,3 +372,12 @@ E.g. `{"combo_esc": {"align": "top", "offset": 0.5}}` would add these two fields
 _Type:_ `dict[str, dict]`
 
 _Default:_ `{}`
+
+#### `zmk_preamble`
+
+A string to prepend to ZMK keymaps before parsing that can be used to influence the parsed content.
+The default defines a `KEYMAP_DRAWER` symbol which can be used for checks with preprocessor directives.
+
+_Type:_ `string`
+
+_Default:_ `"#define KEYMAP_DRAWER"`

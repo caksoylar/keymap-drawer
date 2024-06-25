@@ -468,6 +468,9 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # e.g. {"combo_esc": {"align": "top", "offset": 0.5}}
     zmk_combos: dict[str, dict] = {}
 
+    # prepend this to ZMK keymaps before processing to customize parsing output
+    zmk_preamble: str = "#define KEYMAP_DRAWER"
+
 
 class Config(BaseSettings, env_prefix="KEYMAP_"):
     """All configuration settings used for this module."""
