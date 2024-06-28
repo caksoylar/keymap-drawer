@@ -170,9 +170,7 @@ class ComboDrawerMixin(UtilsMixin):
         Print SVG for all given combos, relative to that point.
         Return min and max y-coordinates of combo boxes, for bounding box calculations.
         """
-        combo_pts = []
-        for combo_ind, combo_spec in enumerate(combos):
-            combo_pts.append(self.print_combo(combo_spec, combo_ind))
+        combo_pts = [self.print_combo(combo, ind) for ind, combo in enumerate(combos) if not combo.hidden]
         return min((p.y for p, _ in combo_pts), default=None), max((p.y for _, p in combo_pts), default=None)
 
     def create_combo_diagrams(
@@ -194,6 +192,9 @@ class ComboDrawerMixin(UtilsMixin):
 
         layers = {}
         for ind, combo in enumerate(combos):
+            if combo.hidden:
+                continue
+
             empty_layer = [LayoutKey() for _ in range(len(self.layout))]
             if ghost_keys:
                 for key_position in ghost_keys:

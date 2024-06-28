@@ -79,6 +79,7 @@ class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
     height: float | None = Field(alias="h", default=None)
     rotation: float = Field(alias="r", default=0.0)
     draw_separate: bool | None = None
+    hidden: bool = False
 
     @classmethod
     def normalize_fields(cls, spec_dict: dict) -> dict:

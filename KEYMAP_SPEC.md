@@ -178,8 +178,9 @@ This is an optional field that contains a list of `ComboSpec`s, each of which is
 | `height (h)`        | `float`                                           | `null`        | the height of the combo box (in pixels), defaults to `draw_config.combo_h` if null                                                                                                |
 | `rotation (r)`      | `float`                                           | `0.0`         | the rotation of the combo box in degrees -- only applies to the box itself and not any dendrons                                                                                   |
 | `draw_separate`     | `null \| bool`                                    | `null`        | whether to draw the combo separate from layers, using a dedicated diagram. defaults to `draw_config.separate_combo_diagrams` if null                                              |
+| `hidden`            | `bool`                                            | `false`       | do not draw this combo at all -- useful when you have the combo in the parse output but you want to ignore it through your config                                                 |
 
-All fields except `key_positions`, `key` and `type` are ignored when combo is drawn in a separate diagram using `draw_separate` or `draw_config.separate_combo_diagrams`.
+All fields except `key_positions`, `key`, `type` and `hidden` are ignored when combo is drawn in a separate diagram using `draw_separate` or `draw_config.separate_combo_diagrams`.
 
 [^5]: Key indices start from `0` on the first key position and increase by columns and then rows, corresponding to their ordering in the `layers` field. This matches the `key-positions` property in ZMK combo definitions.
 [^6]: Just like for keys in a layer under the `layers` field, `key` field can be specified with a string value as a shortcut, or a mapping (where the `type` field will be ignored).
