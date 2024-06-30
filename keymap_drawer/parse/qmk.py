@@ -16,8 +16,8 @@ class QmkJsonParser(KeymapParser):
     _mo_re = re.compile(r"MO\((\d+)\)")
     _tog_re = re.compile(r"(TG|TO|DF)\((\d+)\)")
     _mts_re = re.compile(r"([A-Z_]+)_T\((\S+)\)")
-    _mtl_re = re.compile(r"MT\((\S+), *(\S+)\)")
-    _lt_re = re.compile(r"LT\((\d+), *(\S+)\)")
+    _mtl_re = re.compile(r"MT\((\S+),(\S+)\)")
+    _lt_re = re.compile(r"LT\((\d+),(\S+)\)")
     _osm_re = re.compile(r"OSM\(MOD_(\S+)\)")
     _osl_re = re.compile(r"OSL\((\d+)\)")
     _tt_re = re.compile(r"TT\((\d+)\)")
@@ -92,6 +92,7 @@ class QmkJsonParser(KeymapParser):
                 mapped.apply_formatter(lambda key: self.format_modified_keys(key, mods))
             return mapped
 
+        key_str = key_str.replace(" ", "")
         if m := self._trans_re.fullmatch(key_str):  # transparent
             return self.trans_key
         if m := self._mo_re.fullmatch(key_str):  # momentary layer
