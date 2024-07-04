@@ -331,13 +331,18 @@ class CPTLayout(BaseModel):
         rf"(?P<a_l>{alphas_pattern})(\+(?P<t_l>{thumbs_pattern}))?|"
         rf"((?P<t_r>{thumbs_pattern})\+)?(?P<a_r>{alphas_pattern})"
     )
+    split_pattern: ClassVar[str] = r"[ _]+"
+
+    @classmethod
+    def _split_spec(cls, spec: str) -> list[str]:
+        return [val for val in re.split(cls.split_pattern, spec) if val]
 
     @field_validator("spec")
     @classmethod
     def spec_validator(cls, val: str) -> str:
-        """Split spec string by spaces then validate each part."""
+        """Split spec string by spaces or underscores then validate each part."""
         assert all(
-            cls.part_pattern.match(part) for part in val.split()
+            cls.part_pattern.match(part) for part in cls._split_spec(val)
         ), "Cols+thumbs `spec` value does not match the expected syntax, please double check"
         return val
 
@@ -366,7 +371,7 @@ class CPTLayout(BaseModel):
 
     def generate(self, key_w: float, key_h: float, split_gap: float) -> PhysicalLayout:
         """Generate a list of PhysicalKeys from given CPT specification."""
-        parts = [match.groupdict() for part in self.spec.split() if (match := self.part_pattern.match(part))]
+        parts = [match.groupdict() for part in self._split_spec(self.spec) if (match := self.part_pattern.match(part))]
         max_rows = max(int(char) for part in parts for char in (part["a_l"] or part["a_r"]) if char.isdigit())
 
         x_offsets = [0.0]

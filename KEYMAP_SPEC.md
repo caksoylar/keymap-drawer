@@ -99,7 +99,7 @@ Following physical layout parameter can be specified either in the command line 
 - **`cols_thumbs_notation`** (equivalent to `-n`/`--cols-thumbs-notation` on the command line):
   Specifies a specially formatted string to describe an ortholinear keyboard layout. This string is composed of a number of digits
   corresponding to each column in the keyboard, optionally augmented by a count of thumb keys. This can be repeated to specify
-  split keyboards with two or more halves, separated by a space.
+  split keyboards with two or more halves, separated by a space or underscore.
 
   _Example:_ `layout: {cols_thumbs_notation: 33333+1 2+33332}`
 
