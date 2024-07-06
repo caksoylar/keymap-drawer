@@ -381,3 +381,11 @@ The default defines a `KEYMAP_DRAWER` symbol which can be used for checks with p
 _Type:_ `string`
 
 _Default:_ `"#define KEYMAP_DRAWER"`
+
+#### `zmk_additional_includes`
+
+A list of paths to add as search paths to the preprocessor. This can be useful to add the `zmk-helpers` module to the preprocessor. 
+
+_Type:_ `list[str]`
+
+_Default:_ `[]`

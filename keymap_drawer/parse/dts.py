@@ -101,7 +101,7 @@ class DeviceTree:
     _compatible_re = re.compile(r'compatible = "(.*?)"')
     _custom_data_header = "__keymap_drawer_data__"
 
-    def __init__(self, in_str: str, file_name: str | None = None, preprocess: bool = True, preamble: str | None = None):
+    def __init__(self, in_str: str, file_name: str | None = None, preprocess: bool = True, preamble: str | None = None, additional_includes: list[str] = []):
         """
         Given an input DTS string `in_str` and `file_name` it is read from, parse it into an internap
         tree representation and track what "compatible" value each node has.
@@ -110,10 +110,11 @@ class DeviceTree:
         """
         self.raw_buffer = in_str
         self.file_name = file_name
+        self.additional_includes = additional_includes
         if preamble:
             self.raw_buffer = preamble + "\n" + self.raw_buffer
 
-        prepped = self._preprocess(self.raw_buffer, file_name) if preprocess else in_str
+        prepped = self._preprocess(self.raw_buffer, file_name, self.additional_includes) if preprocess else in_str
 
         # make sure node labels and names are glued together and comments are removed,
         # then parse with nested curly braces
@@ -152,7 +153,7 @@ class DeviceTree:
                     self.chosen.content += " " + node.content
 
     @staticmethod
-    def _preprocess(in_str: str, file_name: str | None = None) -> str:
+    def _preprocess(in_str: str, file_name: str | None = None, additional_includes: list[str] = []) -> str:
         def include_handler(*args):  # type: ignore
             raise OutputDirective(Action.IgnoreAndPassThrough)
 
@@ -160,7 +161,10 @@ class DeviceTree:
         preprocessor.line_directive = None
         preprocessor.on_include_not_found = include_handler
         preprocessor.assume_encoding = "utf-8"
+        for path in additional_includes:
+            preprocessor.add_path(path)
         preprocessor.parse(in_str, source=file_name)
+
         with StringIO() as f_out:
             preprocessor.write(f_out)
             prepped = f_out.getvalue()
@@ -184,7 +188,7 @@ class DeviceTree:
         twice.
         """
         in_str = self.raw_buffer + f"\n{self._custom_data_header}\n{data}"
-        out = self._preprocess(in_str, self.file_name)
+        out = self._preprocess(in_str, self.file_name, self.additional_includes)
         data_pos = out.rfind(f"\n{self._custom_data_header}\n")
         assert data_pos >= 0, (
             f"Preprocessing extra data failed, please make sure '{self._custom_data_header}' "
