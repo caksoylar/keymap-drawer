@@ -101,13 +101,13 @@ class DeviceTree:
     _compatible_re = re.compile(r'compatible = "(.*?)"')
     _custom_data_header = "__keymap_drawer_data__"
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         in_str: str,
         file_name: str | None = None,
         preprocess: bool = True,
         preamble: str | None = None,
-        additional_includes: list[str] = [],
+        additional_includes: list[str] | None = None,
     ):
         """
         Given an input DTS string `in_str` and `file_name` it is read from, parse it into an internap
@@ -160,7 +160,7 @@ class DeviceTree:
                     self.chosen.content += " " + node.content
 
     @staticmethod
-    def _preprocess(in_str: str, file_name: str | None = None, additional_includes: list[str] = []) -> str:
+    def _preprocess(in_str: str, file_name: str | None = None, additional_includes: list[str] | None = None) -> str:
         def include_handler(*args):  # type: ignore
             raise OutputDirective(Action.IgnoreAndPassThrough)
 
@@ -168,7 +168,7 @@ class DeviceTree:
         preprocessor.line_directive = None
         preprocessor.on_include_not_found = include_handler
         preprocessor.assume_encoding = "utf-8"
-        for path in additional_includes:
+        for path in additional_includes or []:
             preprocessor.add_path(path)
         preprocessor.parse(in_str, source=file_name)
 
