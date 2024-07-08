@@ -121,7 +121,7 @@ jobs:
             ${{ runner.os }}-
 
       - name: West Init
-        run: west init -l ${{ inputs.config_path }}
+        run: west init -l ./config/ #todo fix hardcoded path
 
       - name: West Update
         run: west update
