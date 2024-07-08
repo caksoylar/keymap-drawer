@@ -99,6 +99,30 @@ jobs:
         if: inputs.install_branch != ''
         run: python3 -m pip install "git+${{ inputs.install_repo }}@${{ inputs.install_branch }}"
 
+      - name: Cache west modules
+        uses: actions/cache@v3.0.11
+        continue-on-error: true
+        env:
+          cache_name: cache-zephyr-${{ env.zephyr_version }}-modules
+        with:
+          path: |
+            modules/
+            tools/
+            zephyr/
+            bootloader/
+            zmk/
+          key: ${{ runner.os }}-build-${{ env.cache_name }}-${{ hashFiles('**/west.yml', '**/build.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache_name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: West Init
+        run: west init -l ${{ inputs.config_path }}
+
+      - name: West Update
+        run: west update
+
       - name: Draw keymaps
         id: draw
         run: |
