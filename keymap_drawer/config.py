@@ -489,6 +489,7 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # additional zmk include paths to be added to the preprocessor
     zmk_additional_includes: list[str] = []
 
+
 class Config(BaseSettings, env_prefix="KEYMAP_"):
     """All configuration settings used for this module."""
 

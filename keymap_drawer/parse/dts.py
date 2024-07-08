@@ -101,7 +101,14 @@ class DeviceTree:
     _compatible_re = re.compile(r'compatible = "(.*?)"')
     _custom_data_header = "__keymap_drawer_data__"
 
-    def __init__(self, in_str: str, file_name: str | None = None, preprocess: bool = True, preamble: str | None = None, additional_includes: list[str] = []):
+    def __init__(
+        self,
+        in_str: str,
+        file_name: str | None = None,
+        preprocess: bool = True,
+        preamble: str | None = None,
+        additional_includes: list[str] = [],
+    ):
         """
         Given an input DTS string `in_str` and `file_name` it is read from, parse it into an internap
         tree representation and track what "compatible" value each node has.
