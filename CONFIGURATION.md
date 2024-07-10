@@ -381,3 +381,11 @@ The default defines a `KEYMAP_DRAWER` symbol which can be used for checks with p
 _Type:_ `string`
 
 _Default:_ `"#define KEYMAP_DRAWER"`
+
+#### `zmk_additional_includes`
+
+A list of paths to add as search paths to the preprocessor for `#include` directives. This can be needed if you use Zephyr modules such as [`zmk-helpers`](https://github.com/urob/zmk-helpers/tree/v2) since they require augmenting the search path.
+
+_Type:_ `list[str]`
+
+_Default:_ `[]`

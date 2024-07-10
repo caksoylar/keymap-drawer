@@ -486,6 +486,9 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # prepend this to ZMK keymaps before processing to customize parsing output
     zmk_preamble: str = "#define KEYMAP_DRAWER"
 
+    # additional zmk include paths to be added to the preprocessor
+    zmk_additional_includes: list[str] = []
+
 
 class Config(BaseSettings, env_prefix="KEYMAP_"):
     """All configuration settings used for this module."""
