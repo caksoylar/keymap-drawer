@@ -384,7 +384,7 @@ _Default:_ `"#define KEYMAP_DRAWER"`
 
 #### `zmk_additional_includes`
 
-A list of paths to add as search paths to the preprocessor. This can be useful to add the `zmk-helpers` module to the preprocessor. 
+A list of paths to add as search paths to the preprocessor for `#include` directives. This can be needed if you use Zephyr modules such as [`zmk-helpers`](https://github.com/urob/zmk-helpers/tree/v2) since they require augmenting the search path.
 
 _Type:_ `list[str]`
 
