@@ -84,6 +84,8 @@ class QmkJsonParser(KeymapParser):
         assert self.layer_names is not None
 
         def mapped(key: str) -> LayoutKey:
+            if entry := self.cfg.qmk_keycode_map.get(key):
+                return LayoutKey.from_key_spec(entry)
             key, mods = self.parse_modifier_fns(key)
             if self._prefix_re is not None:
                 key = self._prefix_re.sub("", key)
