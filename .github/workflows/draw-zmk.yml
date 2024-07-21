@@ -15,7 +15,7 @@ on:
         required: false
         type: string
       west_config_path:
-        description: 'Path to where west.yaml is stored, e.g. `./config/`. If specified, west will be initialised'
+        description: 'Path to the folder containing west.yml, e.g. `config`. If specified, west will be initialized to fetch modules defined in west.yml'
         default: ''
         required: false
         type: string
