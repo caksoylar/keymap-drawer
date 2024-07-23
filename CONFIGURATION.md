@@ -194,6 +194,15 @@ _Type:_ `int`
 
 _Default:_ `7`
 
+#### `style_layer_activators`
+
+Detect layer names in legends and style them specially: By default they are underlined and
+link to the corresponding layer. Styling can be customized using the `layer-activator` CSS class.
+
+_Type:_ `bool`
+
+_Default:_ `true`
+
 #### `glyph_tap_size`, `glyph_hold_size`, `glyph_shifted_size`
 
 Height in `px` for SVG glyphs, in different key fields.

@@ -1,5 +1,6 @@
 """Module containing lower-level SVG drawing utils, to be used as a mixin."""
 
+import string
 from html import escape
 from io import StringIO
 from typing import Literal, Sequence
@@ -16,7 +17,20 @@ class UtilsMixin(GlyphMixin):
 
     # initialized in KeymapDrawer
     cfg: DrawConfig
+    layer_names: set[str]
     out: StringIO
+
+    @staticmethod
+    def _str_to_id(val: str) -> str:
+        if not val:
+            return "o_o"
+        val = val.replace(" ", "-")
+        while val[0] not in string.ascii_letters:
+            val = val[1:]
+            if not val:
+                return "x_x"
+        allowed = string.ascii_letters + string.digits + "-_:."
+        return "".join([c for c in val if c in allowed])
 
     @staticmethod
     def _to_class_str(classes: Sequence[str]) -> str:
@@ -109,14 +123,24 @@ class UtilsMixin(GlyphMixin):
         if not words:
             return
 
+        is_layer = self.cfg.style_layer_activators and (layer_name := " ".join(words)) in self.layer_names
+
         classes = [*classes, legend_type]
+        if is_layer:
+            classes.append("layer-activator")
 
         if len(words) == 1:
             if glyph := self.legend_is_glyph(words[0]):
                 self._draw_glyph(p, glyph, legend_type, classes)
                 return
 
-            self._draw_text(p, words[0], classes)
-            return
+        if is_layer:
+            self.out.write(f'<a href="#{self._str_to_id(layer_name)}">\n')
 
-        self._draw_textblock(p, words, classes, shift)
+        if len(words) == 1:
+            self._draw_text(p, words[0], classes)
+        else:
+            self._draw_textblock(p, words, classes, shift)
+
+        if is_layer:
+            self.out.write("</a>")

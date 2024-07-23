@@ -26,14 +26,16 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         assert self.keymap.layout is not None, "A PhysicalLayout must be provided for drawing"
         assert self.keymap.config is not None, "A DrawConfig must be provided for drawing"
         self.layout = self.keymap.layout
+        self.layer_names = set()
         self.output_stream = out
         self.out = StringIO()
 
     def print_layer_header(self, p: Point, header: str) -> None:
         """Print a layer header that precedes the layer visualization."""
-        if self.cfg.append_colon_to_layer_header:
-            header += ":"
-        self.out.write(f'<text x="{round(p.x)}" y="{round(p.y)}" class="label">{escape(header)}</text>\n')
+        text = header + ":" if self.cfg.append_colon_to_layer_header else header
+        self.out.write(
+            f'<text x="{round(p.x)}" y="{round(p.y)}" class="label" id="{self._str_to_id(header)}">{escape(text)}</text>\n'
+        )
 
     def print_footer(self, p: Point) -> None:
         """Print a footer with text given by cfg.footer_text, with CSS class `footer` for bottom-right alignment."""
@@ -201,6 +203,8 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
                 ), "Some key positions for `ghost_keys` are negative or too large for the layout"
                 for layer in layers.values():
                     layer[key_position].type = "ghost"
+
+        self.layer_names = set(layers)
 
         # write to internal output stream self.out
         p = self.print_layers(Point(0, 0), self.layout, layers, combos_per_layer, self.cfg.n_columns)

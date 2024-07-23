@@ -174,6 +174,10 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
                 dominant-baseline: hanging;
             }
 
+            text.layer-activator {
+                text-decoration: underline;
+            }
+
             /* styling for hold/shifted label text in combo box */
             text.combo.hold, text.combo.shifted {
                 font-size: 8px;
@@ -234,6 +238,10 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # shrink font size for legends wider than this many chars, set to 0 to disable
     # ideal value depends on the font size defined in svg_style and width of the boxes
     shrink_wide_legends: int = 7
+
+    # add special styling and hyperlinks for layer activator keys
+    # change styling via `layer-activators` CSS class
+    style_layer_activators: bool = True
 
     # height in pixels for glyphs in different key fields
     glyph_tap_size: int = 14
