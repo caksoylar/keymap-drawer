@@ -14,6 +14,11 @@ on:
         default: 'keymap_drawer.config.yaml'
         required: false
         type: string
+      west_config_path:
+        description: 'Path to the folder containing west.yml, e.g. `config`. If specified, west will be initialized to fetch modules defined in west.yml'
+        default: ''
+        required: false
+        type: string
       output_folder:
         description: 'Output folder for SVG and YAML files'
         default: 'keymap-drawer'
@@ -98,6 +103,37 @@ jobs:
       - name: Install keymap-drawer (git)
         if: inputs.install_branch != ''
         run: python3 -m pip install "git+${{ inputs.install_repo }}@${{ inputs.install_branch }}"
+
+      - name: Install west
+        if: inputs.west_config_path != ''
+        run: python3 -m pip install west
+
+      - name: Cache west modules
+        if: inputs.west_config_path != ''
+        uses: actions/cache@v4
+        continue-on-error: true
+        env:
+          cache_name: cache-zephyr-3.5.0-modules
+        with:
+          path: |
+            modules/
+            tools/
+            zephyr/
+            bootloader/
+            zmk/
+          key: ${{ runner.os }}-build-${{ env.cache_name }}-${{ hashFiles('**/west.yml', '**/build.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache_name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: West Init
+        if: inputs.west_config_path != ''
+        run: west init -l ${{ inputs.west_config_path }}
+
+      - name: West Update
+        if: inputs.west_config_path != ''
+        run: west update
 
       - name: Draw keymaps
         id: draw
