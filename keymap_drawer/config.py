@@ -91,19 +91,6 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         exclude=True,
         default=dedent(
             """\
-            :root {
-                --fg-color: #24292e;
-                --key-color: #f6f8fa;
-                --outline-color: #c9cccf;
-                --combo-color: #ccddff;
-                --held-color: #ffdddd;
-                --font-size: 14px;
-                --small-font-size: 11px;
-                --tiny-font-size: 8px;
-                --dendron-color: #808080;
-                --trans-fg-color: #7b7e81;
-            }
-
             /* inherit to force styles through use tags */
             svg path {
                 fill: inherit;
@@ -112,19 +99,19 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
             /* font and background color specifications */
             svg.keymap {
                 font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
-                font-size: var(--font-size);
+                font-size: 14px;
                 font-kerning: normal;
                 text-rendering: optimizeLegibility;
-                fill: var(--fg-color);
+                fill: #24292e;
             }
 
             /* default key styling */
             rect.key {
-                fill: var(--key-color);
+                fill: #f6f8fa;
             }
 
             rect.key, rect.combo {
-                stroke: var(--outline-color);
+                stroke: #c9cccf;
                 stroke-width: 1;
             }
 
@@ -135,15 +122,15 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 
             /* color accent for combo boxes */
             rect.combo, rect.combo-separate {
-                fill: var(--combo-color);
+                fill: #cdf;
             }
 
             /* color accent for held keys */
             rect.held, rect.combo.held {
-                fill: var(--held-color);
+                fill: #fdd;
             }
 
-            /* styling for ghost (optional) keys */
+            /* color accent for ghost (optional) keys */
             rect.ghost, rect.combo.ghost {
                 stroke-dasharray: 4, 4;
                 stroke-width: 2;
@@ -174,7 +161,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 
             /* styling for combo tap, and key hold/shifted label text */
             text.combo, text.hold, text.shifted {
-                font-size: var(--small-font-size);
+                font-size: 11px;
             }
 
             text.hold {
@@ -189,18 +176,18 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
 
             /* styling for hold/shifted label text in combo box */
             text.combo.hold, text.combo.shifted {
-                font-size: var(--tiny-font-size);
+                font-size: 8px;
             }
 
             /* lighter symbol for transparent keys */
             text.trans {
-                fill: var(--trans-fg-color);
+                fill: #7b7e81;
             }
 
             /* styling for combo dendrons */
             path.combo {
                 stroke-width: 1;
-                stroke: var(--dendron-color);
+                stroke: gray;
                 fill: none;
             }
 
@@ -225,16 +212,14 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         exclude=True,
         default=dedent(
             """\
-            :root {
-                --fg-color: #d1d6db;
-                --key-color: #3f4750;
-                --outline-color: #60666c;
-                --combo-color: #1f3d7a;
-                --held-color: #854747;
-                --trans-fg-color: #7e8184;
-                --dendron-color: #7f7f7f;
-            }
+            svg.keymap { fill: #d1d6db; }
+            rect.key { fill: #3f4750; }
+            rect.key, rect.combo { stroke: #60666c; }
+            rect.combo, rect.combo-separate { fill: #1f3d7a; }
+            rect.held, rect.combo.held { fill: #854747; }
             text.label, text.footer { stroke: black; }
+            text.trans { fill: #7e8184; }
+            path.combo { stroke: #7f7f7f; }
             """
         ),
     )
