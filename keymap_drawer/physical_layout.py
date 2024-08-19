@@ -17,7 +17,7 @@ from urllib.request import urlopen
 
 import yaml
 from platformdirs import user_cache_dir
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from .config import DrawConfig
 
@@ -397,12 +397,12 @@ class CPTLayout(BaseModel):
 class QmkLayout(BaseModel):
     """Generator for layouts given by QMK's info.json format."""
 
-    class QmkKey(BaseModel):
+    class QmkKey(BaseModel, populate_by_name=True):
         """Model representing each key in QMK's layout definition."""
 
         x: float  # coordinates of top-left corner
         y: float
-        w: float = 1.0
+        w: float = Field(default=1.0, validation_alias="u")
         h: float = 1.0
         r: float = 0  # assume CW rotation around rx, ry (defaults to x, y), after translation to x, y
         rx: float | None = None

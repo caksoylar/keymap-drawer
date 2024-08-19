@@ -6,7 +6,7 @@ containing key and combo specifications, paired with the physical keyboard layou
 from collections import defaultdict
 from functools import partial
 from itertools import chain
-from typing import Iterable, Literal, Callable
+from typing import Callable, Iterable, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_serializer, model_validator
 
