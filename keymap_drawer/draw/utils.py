@@ -105,8 +105,8 @@ class UtilsMixin(GlyphMixin):
         scaling = self._get_scaling(max(len(w) for w in words))
         self.out.write(f'<tspan x="{round(p.x)}" dy="-{dy_0}em"{scaling}>{escape(words[0])}</tspan>')
         for word in words[1:]:
-            self.out.write(f'<tspan x="{round(p.x)}" dy="{self.cfg.line_spacing}em"{scaling}>{escape(word)}</tspan>\n')
-        self.out.write("</text>\n")
+            self.out.write(f'<tspan x="{round(p.x)}" dy="{self.cfg.line_spacing}em"{scaling}>{escape(word)}</tspan>')
+        self.out.write("\n</text>\n")
 
     def _draw_glyph(self, p: Point, name: str, legend_type: LegendType, classes: Sequence[str]) -> None:
         width, height, d_y = self.get_glyph_dimensions(name, legend_type)
