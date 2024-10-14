@@ -34,7 +34,7 @@ It also decouples the physical keyboard layout from the keymap (i.e., layer and 
 
 ### Try it as a web application
 
-You can try the keymap parsing and drawing functionalities with a [Streamlit](https://streamlit.io) web application available at https://caksoylar.github.io/keymap-drawer.
+You can try the keymap parsing and drawing functionalities with a [Streamlit](https://streamlit.io) web application available at <https://caksoylar.github.io/keymap-drawer>.
 Below instructions mostly apply for the web interface, where subcommands and option flags are mapped to different widgets in the UX.
 
 ### Command-line tool installation
@@ -269,7 +269,7 @@ Below are a few tools and example usages from the community that might be inspir
 
 ### Examples
 
-- [minusfive's ZMK config](https://github.com/minusfive/zmk-config): Uses an [extensive config file](https://github.com/minusfive/zmk-config/blob/main/keymap_drawer.config.yaml) for great results out of the automated drawing workflow, with plenty of SVG glyphs
+- [minusfive's ZMK config](https://github.com/minusfive/zmk-config): Uses an [extensive config file](https://github.com/minusfive/zmk-config/blob/main/keymap-drawer/config.yaml) for great results out of the automated drawing workflow, with plenty of SVG glyphs
 - [SethMilliken's ZMK config](https://github.com/SethMilliken/zmk-config): Another config using the automated workflow with a [nice configuration](https://github.com/SethMilliken/zmk-config/blob/main/keymap_drawer.config.yaml) and SVG glyphs
 - [englmaxi's ZMK config](https://github.com/englmaxi/zmk-config): Using key sides setting and CSS tricks to position multiple SVG glyphs in one key
 - [casuanoob's keymap](https://github.com/casuanoob/zmk-config-bkb): Many useful unicode and SVG glyphs in the [keymap YAML](https://github.com/casuanoob/zmk-config-bkb/blob/master/assets/split34_keymap_zmk.yaml)
