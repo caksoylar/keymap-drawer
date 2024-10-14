@@ -85,7 +85,7 @@ class GlyphMixin:
 
         with ThreadPoolExecutor(max_workers=FETCH_WORKERS) as p:
             fetch_fn = partial(_fetch_svg_url, use_local_cache=self.cfg.use_local_cache)
-            return dict(zip(names, p.map(fetch_fn, names, urls, timeout=FETCH_TIMEOUT)))
+            return dict(zip(names, p.map(fetch_fn, names, urls, timeout=FETCH_TIMEOUT + 1)))
 
     @classmethod
     def _legend_to_name(cls, legend: str) -> str | None:
@@ -147,7 +147,7 @@ def _fetch_svg_url(name: str, url: str, use_local_cache: bool = False) -> str:
             return f.read()
 
     try:
-        with urlopen(url) as f:
+        with urlopen(url, timeout=FETCH_TIMEOUT) as f:
             content = f.read().decode("utf-8")
         if use_local_cache:
             cache_path.parent.mkdir(parents=True, exist_ok=True)
