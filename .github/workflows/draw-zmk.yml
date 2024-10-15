@@ -98,15 +98,15 @@ jobs:
 
       - name: Install keymap-drawer (pypi)
         if: inputs.install_branch == ''
-        run: python3 -m pipx install keymap-drawer
+        run: pipx install keymap-drawer
 
       - name: Install keymap-drawer (git)
         if: inputs.install_branch != ''
-        run: python3 -m pipx install "git+${{ inputs.install_repo }}@${{ inputs.install_branch }}"
+        run: pipx install "git+${{ inputs.install_repo }}@${{ inputs.install_branch }}"
 
       - name: Install west
         if: inputs.west_config_path != ''
-        run: python3 -m pipx install west
+        run: pipx install west
 
       - name: Cache west modules
         if: inputs.west_config_path != ''
