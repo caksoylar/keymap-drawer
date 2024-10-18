@@ -53,13 +53,13 @@ class DTNode:
     def get_string(self, property_re: str) -> str | None:
         """Extract last defined value for a `string` type property matching the `property_re` regex."""
         out = None
-        for m in re.finditer(rf'{property_re} = "(.*?)"', self.content):
+        for m in re.finditer(rf'(?:^|\s){property_re} = "(.*?)"', self.content):
             out = m.group(1)
         return out
 
     def get_array(self, property_re: str) -> list[str] | None:
         """Extract last defined values for a `array` type property matching the `property_re` regex."""
-        matches = list(re.finditer(rf"{property_re} = (<.*?>( ?, ?<.*?>)*) ?;", self.content))
+        matches = list(re.finditer(rf"(?:^|\s){property_re} = (<.*?>( ?, ?<.*?>)*) ?;", self.content))
         if not matches:
             return None
         return list(chain.from_iterable(content.split(" ") for content in re.findall(r"<(.*?)>", matches[-1].group(1))))
@@ -80,7 +80,7 @@ class DTNode:
         Only supports phandle paths `&p` rather than path types `"/a/b"` right now.
         """
         out = None
-        for m in re.finditer(rf"{property_re} = &(.*?);", self.content):
+        for m in re.finditer(rf"(?:^|\s){property_re} = &(.*?);", self.content):
             out = m.group(1)
         return out
 

@@ -133,7 +133,7 @@ class ZmkKeymapParser(KeymapParser):
         def get_behavior_bindings(compatible_value: str, n_bindings: int) -> dict[str, list[str]]:
             out = {}
             for node in dts.get_compatible_nodes(compatible_value):
-                if not (bindings := node.get_phandle_array("(?<!sensor-)bindings")):
+                if not (bindings := node.get_phandle_array("bindings")):
                     raise ParseError(f'Cannot parse bindings for behavior "{node.name}"')
                 if node.label is None:
                     raise ParseError(f'Cannot find label for behavior "{node.name}"')
@@ -172,7 +172,7 @@ class ZmkKeymapParser(KeymapParser):
         layers: dict[str, list[LayoutKey]] = {}
         for layer_ind, node in enumerate(layer_nodes):
             layer_name = self.layer_names[layer_ind]
-            if bindings := node.get_phandle_array(r"(?<!-)bindings"):
+            if bindings := node.get_phandle_array(r"bindings"):
                 layers[layer_name] = []
                 for ind, binding in enumerate(bindings):
                     try:
