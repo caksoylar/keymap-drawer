@@ -158,7 +158,9 @@ class ZmkKeymapParser(KeymapParser):
         if not (layer_parents := dts.get_compatible_nodes("zmk,keymap")):
             raise ParseError('Could not find any keymap nodes with "zmk,keymap" compatible property')
 
-        layer_nodes = [node for parent in layer_parents for node in parent.children]
+        layer_nodes = [
+            node for parent in layer_parents for node in parent.children if node.get_string("status") != "reserved"
+        ]
         if self.layer_names is None:
             self.layer_names = [
                 node.get_string("label|display-name") or node.name.removeprefix("layer_").removesuffix("_layer")
