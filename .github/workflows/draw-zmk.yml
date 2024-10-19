@@ -151,6 +151,7 @@ jobs:
               done
           }
 
+          shopt -s extglob
           declare -a DRAWINGS
           error_occurred=0
           mkdir -p "${{ inputs.output_folder }}"
