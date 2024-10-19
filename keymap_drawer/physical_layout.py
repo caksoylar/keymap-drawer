@@ -169,6 +169,14 @@ class PhysicalLayout(BaseModel):
     def __rmul__(self, other: int | float) -> "PhysicalLayout":
         return PhysicalLayout(keys=[other * k for k in self.keys])
 
+    def normalize(self) -> "PhysicalLayout":
+        """Normalize the layout so that the keys are all in (0, 0) to (width, height) coordinates."""
+        min_pt = Point(
+            min(k.pos.x - k.bounding_width / 2 for k in self.keys),
+            min(k.pos.y - k.bounding_height / 2 for k in self.keys),
+        )
+        return PhysicalLayout(keys=[k - min_pt for k in self.keys])
+
 
 def layout_factory(  # pylint: disable=too-many-arguments
     config: DrawConfig,
@@ -412,20 +420,19 @@ class QmkLayout(BaseModel):
 
     def generate(self, key_size: float) -> PhysicalLayout:
         """Generate a sequence of PhysicalKeys from QmkKeys."""
-        min_pt = Point(min(k.x for k in self.layout), min(k.y for k in self.layout))
         return PhysicalLayout(
             keys=[
                 PhysicalKey.from_qmk_spec(
                     scale=key_size,
-                    pos=Point(k.x, k.y) - min_pt,
+                    pos=Point(k.x, k.y),
                     width=k.w,
                     height=k.h,
                     rotation=k.r,
-                    rotation_pos=Point(k.x if k.rx is None else k.rx, k.y if k.ry is None else k.ry) - min_pt,
+                    rotation_pos=Point(k.x if k.rx is None else k.rx, k.y if k.ry is None else k.ry),
                 )
                 for k in self.layout
             ]
-        )
+        ).normalize()
 
 
 def _map_qmk_keyboard(qmk_keyboard: str) -> str:
