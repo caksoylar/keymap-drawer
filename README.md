@@ -274,7 +274,7 @@ Below are a few tools and example usages from the community that might be inspir
 - [englmaxi's ZMK config](https://github.com/englmaxi/zmk-config): Using key sides setting and CSS tricks to position multiple SVG glyphs in one key
 - [casuanoob's keymap](https://github.com/casuanoob/zmk-config-bkb): Many useful unicode and SVG glyphs in the [keymap YAML](https://github.com/casuanoob/zmk-config-bkb/blob/master/assets/split34_keymap_zmk.yaml)
 - [possumvibes's keymap](https://github.com/possumvibes/keyboard-layout): Separate layer and combo diagrams
-- [infused-kim's ZMK config](https://github.com/infused-kim/zmk-config): [Uses the `--base-keymap` feature](https://github.com/infused-kim/zmk-config/blob/chocofi/main/keymap_img/update_keymap_img.sh) to pre-assign held keys and combo positions
+- [infused-kim's ZMK config](https://github.com/infused-kim/zmk-config): Defines a script to [tweak the keymap](https://github.com/infused-kim/zmk-config/blob/main/keymap_img/keymap_img_adjuster.py) between parsing and drawing
 - [crides's Fissure write-up](https://github.com/crides/fissure): Custom physical layout with non-square keys and unique SVG styling
 
 If you use `keymap-drawer`, tag your Github repo with the [`keymap-drawer` topic](https://github.com/topics/keymap-drawer) and it will show up for anyone else searching for it!
