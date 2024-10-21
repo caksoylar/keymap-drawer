@@ -116,6 +116,7 @@ class PhysicalKey:
             width=self.width,
             height=self.height,
             rotation=self.rotation,
+            is_iso_enter=self.is_iso_enter,
         )
 
     def __sub__(self, other: "Point") -> "PhysicalKey":
@@ -124,6 +125,7 @@ class PhysicalKey:
             width=self.width,
             height=self.height,
             rotation=self.rotation,
+            is_iso_enter=self.is_iso_enter,
         )
 
     def __rmul__(self, other: int | float) -> "PhysicalKey":
@@ -132,6 +134,7 @@ class PhysicalKey:
             width=self.width * other,
             height=self.height * other,
             rotation=self.rotation,
+            is_iso_enter=self.is_iso_enter,
         )
 
 
