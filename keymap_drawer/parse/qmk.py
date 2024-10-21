@@ -82,6 +82,7 @@ class QmkJsonParser(KeymapParser):
             return LayoutKey(tap=key_str)
 
         assert self.layer_names is not None
+        assert self.layer_legends is not None
 
         def mapped(key: str) -> LayoutKey:
             if entry := self.cfg.qmk_keycode_map.get(key):
@@ -100,10 +101,10 @@ class QmkJsonParser(KeymapParser):
         if m := self._mo_re.fullmatch(key_str):  # momentary layer
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from([current_layer], to_layer, key_positions)
-            return LayoutKey(tap=self.layer_names[to_layer])
+            return LayoutKey(tap=self.layer_legends[to_layer])
         if m := self._tog_re.fullmatch(key_str):  # toggled layer
             to_layer = int(m.group(2).strip())
-            return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.toggle_label)
+            return LayoutKey(tap=self.layer_legends[to_layer], hold=self.cfg.toggle_label)
         if m := self._mts_re.fullmatch(key_str):  # short mod-tap syntax
             tap_key = mapped(m.group(2).strip())
             return LayoutKey(tap=tap_key.tap, hold=m.group(1), shifted=tap_key.shifted)
@@ -114,18 +115,18 @@ class QmkJsonParser(KeymapParser):
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from([current_layer], to_layer, key_positions)
             tap_key = mapped(m.group(2).strip())
-            return LayoutKey(tap=tap_key.tap, hold=self.layer_names[to_layer], shifted=tap_key.shifted)
+            return LayoutKey(tap=tap_key.tap, hold=self.layer_legends[to_layer], shifted=tap_key.shifted)
         if m := self._osm_re.fullmatch(key_str):  # one-shot mod
             tap_key = mapped(m.group(1).strip())
             return LayoutKey(tap=tap_key.tap, hold=self.cfg.sticky_label, shifted=tap_key.shifted)
         if m := self._osl_re.fullmatch(key_str):  # one-shot layer
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from([current_layer], to_layer, key_positions)
-            return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.sticky_label)
+            return LayoutKey(tap=self.layer_legends[to_layer], hold=self.cfg.sticky_label)
         if m := self._tt_re.fullmatch(key_str):  # tap-toggle layer
             to_layer = int(m.group(1).strip())
             self.update_layer_activated_from([current_layer], to_layer, key_positions)
-            return LayoutKey(tap=self.layer_names[to_layer], hold=self.cfg.tap_toggle_label)
+            return LayoutKey(tap=self.layer_legends[to_layer], hold=self.cfg.tap_toggle_label)
         return mapped(key_str)
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
@@ -145,6 +146,7 @@ class QmkJsonParser(KeymapParser):
         num_layers = len(raw["layers"])
         if self.layer_names is None:
             self.layer_names = [f"L{ind}" for ind in range(num_layers)]
+            self.update_layer_legends()
         else:  # user-provided layer names
             assert (
                 l_u := len(self.layer_names)

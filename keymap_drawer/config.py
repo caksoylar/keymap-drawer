@@ -315,6 +315,9 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # legend to output for transparent keys
     trans_legend: str | dict = {"t": "▽", "type": "trans"}
 
+    # override layer names displayed on keys to specified legends
+    layer_legend_map: dict[str, str] = {}
+
     # rather than only marking the first sequence of key positions to reach a layer as "held",
     # mark all of the sequences to reach a given layer. this is disabled by default because it
     # creates ambiguity: you cannot tell if *all* the marked keys need to be held down while a

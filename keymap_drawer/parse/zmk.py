@@ -67,6 +67,7 @@ class ZmkKeymapParser(KeymapParser):
             return LayoutKey(tap=binding)
 
         assert self.layer_names is not None
+        assert self.layer_legends is not None
 
         def mapped(key: str) -> LayoutKey:
             if entry := self.cfg.zmk_keycode_map.get(key):
@@ -119,8 +120,8 @@ class ZmkKeymapParser(KeymapParser):
                     self.update_layer_activated_from(
                         [current_layer] if current_layer is not None else [], int(par), key_positions
                     )
-                    return LayoutKey(tap=self.layer_names[int(par)])
-                return LayoutKey(tap=self.layer_names[int(par)], hold=self.cfg.toggle_label)
+                    return LayoutKey(tap=self.layer_legends[int(par)])
+                return LayoutKey(tap=self.layer_legends[int(par)], hold=self.cfg.toggle_label)
             case [ref, hold_par, tap_par] if ref in self.hold_taps:
                 hold_key = self._str_to_key(f"{self.hold_taps[ref][0]} {hold_par}", current_layer, key_positions)
                 tap_key = self._str_to_key(f"{self.hold_taps[ref][1]} {tap_par}", current_layer, key_positions)
@@ -166,6 +167,7 @@ class ZmkKeymapParser(KeymapParser):
                 node.get_string("label|display-name") or node.name.removeprefix("layer_").removesuffix("_layer")
                 for node in layer_nodes
             ]
+            self.update_layer_legends()
         else:
             assert (l_u := len(self.layer_names)) == (
                 l_p := len(layer_nodes)

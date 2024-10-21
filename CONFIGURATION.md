@@ -301,6 +301,16 @@ _Type:_ `str | dict`
 
 _Default:_ `{"t": "▽", "type": "trans"}`
 
+#### `layer_legend_map`
+
+For layer names specified, replace their representation on keys with the specified string.
+The layer names should match the form that they would normally be displayed as, i.e. the
+provided names if `keymap parse --layer-names` is used, otherwise the layer names inferred during parsing.
+
+_Type:_ `dict[str, str]`
+
+_Default:_ `{}`
+
 #### `mark_alternate_layer_activators`
 
 Rather than only marking the first sequence of key positions to reach a layer as "held",

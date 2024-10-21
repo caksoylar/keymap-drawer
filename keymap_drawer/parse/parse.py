@@ -31,6 +31,9 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         self.cfg = config
         self.columns = columns if columns is not None else 0
         self.layer_names: list[str] | None = layer_names
+        self.layer_legends: list[str] | None = None
+        if layer_names is not None:
+            self.update_layer_legends()
         self.base_keymap = base_keymap
         self.layer_activated_from: dict[int, set[tuple[int, bool]]] = {}  # layer to key positions + alternate flags
         self.conditional_layers: dict[int, list[int]] = {}  # then-layer to if-layers mapping
@@ -79,6 +82,11 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
             for mod in modifiers[1:]:
                 fns_str = self.cfg.modifier_fn_map.mod_combiner.format(mod_1=fns_str, mod_2=fn_map[mod])
         return self.cfg.modifier_fn_map.keycode_combiner.format(mods=fns_str, key=key_str)
+
+    def update_layer_legends(self) -> None:
+        """Create layer legends from layer_legend_map in parse_config and inferred/provided layer names."""
+        assert self.layer_names is not None
+        self.layer_legends = [self.cfg.layer_legend_map.get(name, name) for name in self.layer_names]
 
     def update_layer_activated_from(
         self, from_layers: Sequence[int], to_layer: int, key_positions: Sequence[int]
