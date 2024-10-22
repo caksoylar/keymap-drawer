@@ -63,6 +63,9 @@ class ZmkKeymapParser(KeymapParser):
     ) -> LayoutKey:
         if binding in self.raw_binding_map:
             return LayoutKey.from_key_spec(self.raw_binding_map[binding])
+        binding_parts = binding.split()
+        if binding_parts[0] in self.raw_binding_map:
+            return LayoutKey.from_key_spec(self.raw_binding_map[binding_parts[0]])
         if self.cfg.skip_binding_parsing:
             return LayoutKey(tap=binding)
 
@@ -91,7 +94,7 @@ class ZmkKeymapParser(KeymapParser):
                 mapped.apply_formatter(lambda key: self.format_modified_keys(key, mods))
             return mapped
 
-        match binding.split():
+        match binding_parts:
             case ["&none", *_]:
                 return LayoutKey()
             case ["&trans"]:
