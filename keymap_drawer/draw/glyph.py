@@ -7,6 +7,8 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache, partial
 from pathlib import Path
+from random import random
+from time import sleep
 from typing import Iterable
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -18,6 +20,7 @@ from keymap_drawer.keymap import KeymapData, LayoutKey
 
 FETCH_WORKERS = 8
 FETCH_TIMEOUT = 10
+N_RETRY = 5
 CACHE_GLYPHS_PATH = Path(user_cache_dir("keymap-drawer", False)) / "glyphs"
 
 
@@ -85,7 +88,7 @@ class GlyphMixin:
 
         with ThreadPoolExecutor(max_workers=FETCH_WORKERS) as p:
             fetch_fn = partial(_fetch_svg_url, use_local_cache=self.cfg.use_local_cache)
-            return dict(zip(names, p.map(fetch_fn, names, urls, timeout=FETCH_TIMEOUT + 1)))
+            return dict(zip(names, p.map(fetch_fn, names, urls, timeout=N_RETRY * (FETCH_TIMEOUT + 1))))
 
     @classmethod
     def _legend_to_name(cls, legend: str) -> str | None:
@@ -147,12 +150,20 @@ def _fetch_svg_url(name: str, url: str, use_local_cache: bool = False) -> str:
             return f.read()
 
     try:
-        with urlopen(url, timeout=FETCH_TIMEOUT) as f:
-            content = f.read().decode("utf-8")
+        for _ in range(N_RETRY):
+            try:
+                sleep(0.2 * random())
+                with urlopen(url, timeout=FETCH_TIMEOUT) as f:
+                    content = f.read().decode("utf-8")
+                break
+            except TimeoutError:
+                pass
+        else:
+            raise RuntimeError(f"Failed to fetch SVG in {N_RETRY} tries")
         if use_local_cache:
             cache_path.parent.mkdir(parents=True, exist_ok=True)
             with open(cache_path, "w", encoding="utf-8") as f_out:
                 f_out.write(content)
         return content
-    except HTTPError as exc:
-        raise ValueError(f'Could not fetch SVG from URL "{url}"') from exc
+    except (HTTPError, RuntimeError) as exc:
+        raise RuntimeError(f'Could not fetch SVG from URL "{url}"') from exc
