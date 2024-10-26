@@ -22,17 +22,19 @@ def draw(args: Namespace, config: Config) -> None:
     yaml_data = yaml.safe_load(args.keymap_yaml)
     assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
 
-    if args.qmk_keyboard or args.qmk_info_json or args.ortho_layout or args.cols_thumbs_notation:
+    if args.qmk_keyboard or args.qmk_info_json or args.dts_layout or args.ortho_layout or args.cols_thumbs_notation:
         layout = {
             "qmk_keyboard": args.qmk_keyboard,
             "qmk_info_json": args.qmk_info_json,
+            "dts_layout": args.dts_layout,
             "layout_name": args.layout_name,
             "ortho_layout": args.ortho_layout,
             "cols_thumbs_notation": args.cols_thumbs_notation,
         }
     else:
         assert "layout" in yaml_data, (
-            "A physical layout needs to be specified either via --qmk-keyboard/--layout-name/--ortho-layout, "
+            "A physical layout needs to be specified either via "
+            "--qmk-keyboard/--qmk-info-json/--dts-layout/--ortho-layout/--cols-thumbs-notation, "
             'or in a "layout" field in the keymap_yaml'
         )
         layout = yaml_data["layout"]
@@ -68,9 +70,9 @@ def parse(args: Namespace, config: Config) -> None:
             args.qmk_keymap_json
         )
     else:
-        parsed = ZmkKeymapParser(config.parse_config, args.columns, base_keymap=base, layer_names=args.layer_names).parse(
-            args.zmk_keymap
-        )
+        parsed = ZmkKeymapParser(
+            config.parse_config, args.columns, base_keymap=base, layer_names=args.layer_names
+        ).parse(args.zmk_keymap)
 
     yaml.safe_dump(parsed, args.output, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
 
@@ -114,12 +116,18 @@ def main() -> None:
         help="Name of the keyboard in QMK to fetch info.json containing the physical layout info, "
         "including revision if any",
     )
+    info_srcs.add_argument(
+        "-d",
+        "--dts-layout",
+        help="Path to file containing ZMK physical layout definition in devicetree format",
+        type=Path,
+    )
     draw_p.add_argument(
         "-l",
         "--layout-name",
         "--qmk-layout",
         help='Name of the layout to use in the QMK keyboard info file (starting with "LAYOUT_"), '
-        "use the first defined one by default",
+        "or ZMK DTS physical layout (node name). Use the first defined one if not specified",
     )
     draw_p.add_argument(
         "--ortho-layout",

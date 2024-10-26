@@ -47,8 +47,9 @@ Following physical layout parameters can be specified either in the command line
   _Example:_ `layout: {qmk_info_json: my_special_layout.json}`
 
 - **`layout_name`** (equivalent to `-l`/`--layout-name` on the command line):
-  Specifies the layout macro to be used for the QMK keyboard, defaults to first one specified if not used --
-  should be used alongside one of the above two options.
+  This argument is shared with the ZMK `dts_layout` below and when used with either of above two options,
+  it specifies the layout macro to be used among the ones defined in the QMK info file.
+  Defaults to first one specified if not used, should be used alongside one of the above three options.
 
   _Example:_ `layout: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x5_3}`
 
@@ -65,6 +66,27 @@ PCBs using the "Import" tool.[^1]
     `keymap-drawer` assumes rotation around the key center and layout helper assumes rotation around the top left of the key.
     For this reason it is recommended to explicitly specify `rx`, `ry` fields if `r` is specified. You might also want to omit the fields
     besides `x`, `y`, `r`, `rx` and `ry` in your final JSON since they won't be used by `keymap-drawer`.
+
+### ZMK physical layout specification
+
+This is the [official ZMK format](https://zmk.dev/docs/development/hardware-integration/physical-layouts) for specifying physical layouts,
+which are written in devicetree format and included in keyboard definitions.
+It lets you specify multiple "layouts" per keyboard corresponding to different devicetree nodes to support physical variations, similar to QMK format.
+The fields to specify each layout are described in the docs linked.
+
+ZMK physical layouts in devicetree files can be specified via either in the command line or under this field definition as key-value pairs:
+
+- **`dts_layout`** (equivalent to `-d`/`--dts-layout` on the command line):
+  Specifies the path to a local devicetree file containing ZMK physical layouts.
+
+  _Example:_ `layout: {dts_layout: my_keyboard-layouts.dtsi}`
+
+- **`layout_name`** (equivalent to `-l`/`--layout-name` on the command line):
+  This argument is shared with the QMK options and when used with `dts_layout`, specifies the node label for
+  in the devicetree ZMK physical layouts file to be used for display.
+  Defaults to first one specified if not used.
+
+  _Example:_ `layout: {dts_layout: path/to/kyria-layouts.dtsi, layout_name: splitkb_kyria_5col_layout}`
 
 ### Parametrized ortholinear layout specification
 
