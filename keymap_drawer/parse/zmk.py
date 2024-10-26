@@ -9,7 +9,7 @@ import yaml
 
 from keymap_drawer.config import ParseConfig
 from keymap_drawer.keymap import ComboSpec, KeymapData, LayoutKey
-from keymap_drawer.parse.dts import DeviceTree
+from keymap_drawer.dts import DeviceTree
 from keymap_drawer.parse.parse import KeymapParser, ParseError
 
 ZMK_LAYOUTS_PATH = Path(__file__).parent.parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
