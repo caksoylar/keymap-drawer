@@ -19,7 +19,8 @@ import yaml
 from platformdirs import user_cache_dir
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from .config import DrawConfig
+from keymap_drawer.config import Config, ParseConfig
+from keymap_drawer.dts import DeviceTree
 
 QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
@@ -182,20 +183,26 @@ class PhysicalLayout(BaseModel):
 
 
 def layout_factory(  # pylint: disable=too-many-arguments
-    config: DrawConfig,
+    config: Config,
     qmk_keyboard: str | None = None,
     qmk_info_json: Path | BytesIO | None = None,
+    dts_layout: Path | BytesIO | None = None,
     layout_name: str | None = None,
     qmk_layout: str | None = None,
     ortho_layout: dict | None = None,
     cols_thumbs_notation: str | None = None,
 ) -> PhysicalLayout:
     """Create and return a physical layout, as determined by the combination of arguments passed."""
-    if len([arg for arg in (qmk_keyboard, qmk_info_json, ortho_layout, cols_thumbs_notation) if arg is not None]) != 1:
+    if (
+        sum(arg is not None for arg in (qmk_keyboard, qmk_info_json, dts_layout, ortho_layout, cols_thumbs_notation))
+        != 1
+    ):
         raise ValueError(
-            'Please provide exactly one of "qmk_keyboard", "qmk_info_json", "ortho_layout" '
+            'Please provide exactly one of "qmk_keyboard", "qmk_info_json", "dts_layout", "ortho_layout" '
             'or "cpt_spec" specs for physical layout'
         )
+
+    draw_cfg, parse_cfg = config.draw_config, config.parse_config
 
     if qmk_layout is not None:
         assert layout_name is None, '"qmk_layout" is deprecated and cannot be used with "layout_name", use the latter'
@@ -203,7 +210,7 @@ def layout_factory(  # pylint: disable=too-many-arguments
 
     if qmk_keyboard or qmk_info_json:
         if qmk_keyboard:
-            qmk_info = _get_qmk_info(qmk_keyboard, config.use_local_cache)
+            qmk_info = _get_qmk_info(qmk_keyboard, draw_cfg.use_local_cache)
         else:  # qmk_info_json
             assert qmk_info_json is not None
             with open(qmk_info_json, "rb") if not isinstance(qmk_info_json, BytesIO) else qmk_info_json as f:
@@ -218,12 +225,14 @@ def layout_factory(  # pylint: disable=too-many-arguments
                 layout_name = aliases.get(layout_name, layout_name)
             layouts = {name: val["layout"] for name, val in qmk_info["layouts"].items()}
 
-        return QmkLayout(layouts=layouts).generate(layout_name=layout_name, key_size=config.key_h)
+        return QmkLayout(layouts=layouts).generate(layout_name=layout_name, key_size=draw_cfg.key_h)
+    if dts_layout is not None:
+        return _parse_dts_layout(dts_layout, parse_cfg).generate(layout_name=layout_name, key_size=draw_cfg.key_h)
     if ortho_layout is not None:
-        return OrthoLayout(**ortho_layout).generate(config.key_w, config.key_h, config.split_gap)
+        return OrthoLayout(**ortho_layout).generate(draw_cfg.key_w, draw_cfg.key_h, draw_cfg.split_gap)
 
     assert cols_thumbs_notation is not None
-    return CPTLayout(spec=cols_thumbs_notation).generate(config.key_w, config.key_h, config.split_gap)
+    return CPTLayout(spec=cols_thumbs_notation).generate(draw_cfg.key_w, draw_cfg.key_h, draw_cfg.split_gap)
 
 
 class OrthoLayout(BaseModel):
@@ -425,7 +434,7 @@ class QmkLayout(BaseModel):
         if layout_name is not None:
             assert layout_name in self.layouts, (
                 f'Could not find layout "{layout_name}" in QMK info.json, '
-                f'available options are: {list(self.layouts)}'
+                f"available options are: {list(self.layouts)}"
             )
             chosen_layout = self.layouts[layout_name]
         else:
@@ -498,3 +507,50 @@ def _get_qmk_info(qmk_keyboard: str, use_local_cache: bool = False):
             f"QMK keyboard '{qmk_keyboard}' not found, please make sure you specify an existing keyboard "
             "(hint: check from https://config.qmk.fm)"
         ) from exc
+
+
+def _parse_dts_layout(dts_in: Path | BytesIO, cfg: ParseConfig) -> QmkLayout:  # pylint: disable=too-many-locals
+    if isinstance(dts_in, Path):
+        with open(dts_in, "r", encoding="utf-8") as f:
+            in_str, file_name = f.read(), str(dts_in)
+    else:  # BytesIO
+        in_str, file_name = dts_in.read().decode("utf-8"), None
+
+    dts = DeviceTree(
+        in_str,
+        file_name,
+        preprocess=cfg.preprocess,
+        preamble=cfg.zmk_preamble,
+        additional_includes=cfg.zmk_additional_includes,
+    )
+
+    def parse_binding_params(bindings):
+        params = {
+            k: int(v.lstrip("(").rstrip(")")) / 100 for k, v in zip(("w", "h", "x", "y", "r", "rx", "ry"), bindings)
+        }
+        if params["r"] == 0:
+            del params["rx"], params["ry"]
+        return params
+
+    bindings_to_position = {"key_physical_attrs": parse_binding_params}
+
+    defined_layouts: dict[str | None, list[str] | None]
+    if nodes := dts.get_compatible_nodes("zmk,physical-layout"):
+        defined_layouts = {node.label or node.name: node.get_phandle_array("keys") for node in nodes}
+    elif keys_array := dts.root.get_phandle_array("keys"):
+        defined_layouts = {None: keys_array}
+    else:
+        raise ValueError(
+            'No `compatible = "zmk,physical-layout"` nodes nor a single `keys` property found in DTS layout'
+        )
+
+    layouts = {}
+    for layout_name, position_bindings in defined_layouts.items():
+        assert position_bindings is not None, f'No `keys` property found for layout "{layout_name}"'
+        keys = []
+        for binding_arr in position_bindings:
+            binding = binding_arr.split()
+            assert binding[0].lstrip("&") in bindings_to_position, f"Unrecognized position binding {binding[0]}"
+            keys.append(bindings_to_position[binding[0].lstrip("&")](binding[1:]))
+        layouts[layout_name] = keys
+    return QmkLayout(layouts=layouts)

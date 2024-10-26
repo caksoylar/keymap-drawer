@@ -11,13 +11,13 @@ from pathlib import Path
 
 import yaml
 
-from .config import Config, DrawConfig, ParseConfig
-from .draw import KeymapDrawer
-from .keymap import KeymapData
-from .parse import QmkJsonParser, ZmkKeymapParser
+from keymap_drawer.config import Config
+from keymap_drawer.draw import KeymapDrawer
+from keymap_drawer.keymap import KeymapData
+from keymap_drawer.parse import QmkJsonParser, ZmkKeymapParser
 
 
-def draw(args: Namespace, config: DrawConfig) -> None:
+def draw(args: Namespace, config: Config) -> None:
     """Draw the keymap in SVG format to stdout."""
     yaml_data = yaml.safe_load(args.keymap_yaml)
     assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
@@ -38,7 +38,7 @@ def draw(args: Namespace, config: DrawConfig) -> None:
         layout = yaml_data["layout"]
 
     if custom_config := yaml_data.get("draw_config"):
-        config = config.model_copy(update=custom_config)
+        config.draw_config = config.draw_config.model_copy(update=custom_config)
 
     drawer = KeymapDrawer(
         config=config,
@@ -55,7 +55,7 @@ def draw(args: Namespace, config: DrawConfig) -> None:
     )
 
 
-def parse(args: Namespace, config: ParseConfig) -> None:
+def parse(args: Namespace, config: Config) -> None:
     """Call the appropriate parser for given args and dump YAML keymap representation to stdout."""
     if args.base_keymap:
         yaml_data = yaml.safe_load(args.base_keymap)
@@ -64,11 +64,11 @@ def parse(args: Namespace, config: ParseConfig) -> None:
         base = None
 
     if args.qmk_keymap_json:
-        parsed = QmkJsonParser(config, args.columns, base_keymap=base, layer_names=args.layer_names).parse(
+        parsed = QmkJsonParser(config.parse_config, args.columns, base_keymap=base, layer_names=args.layer_names).parse(
             args.qmk_keymap_json
         )
     else:
-        parsed = ZmkKeymapParser(config, args.columns, base_keymap=base, layer_names=args.layer_names).parse(
+        parsed = ZmkKeymapParser(config.parse_config, args.columns, base_keymap=base, layer_names=args.layer_names).parse(
             args.zmk_keymap
         )
 
@@ -210,9 +210,9 @@ def main() -> None:
 
     match args.command:
         case "draw":
-            draw(args, config.draw_config)
+            draw(args, config)
         case "parse":
-            parse(args, config.parse_config)
+            parse(args, config)
         case "dump-config":
             dump_config(args, config)
 

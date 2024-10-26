@@ -10,8 +10,8 @@ from typing import Callable, Iterable, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_serializer, model_validator
 
-from .config import DrawConfig
-from .physical_layout import PhysicalLayout, layout_factory
+from keymap_drawer.config import Config
+from keymap_drawer.physical_layout import PhysicalLayout, layout_factory
 
 
 class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, extra="forbid"):
@@ -113,7 +113,7 @@ class KeymapData(BaseModel):
 
     # None-values only for use while parsing, i.e. no-layout mode
     layout: PhysicalLayout | None = None
-    config: DrawConfig | None = None
+    config: Config | None = None
 
     def get_combos_per_layer(self, layers: Iterable[str] | None = None) -> dict[str, list[ComboSpec]]:
         """Return a mapping of layer names to combos that are present on that layer, if they aren't drawn separately."""
@@ -123,7 +123,7 @@ class KeymapData(BaseModel):
 
         out: dict[str, list[ComboSpec]] = {layer_name: [] for layer_name in layers}
         for combo in self.combos:
-            if combo.draw_separate or (combo.draw_separate is None and self.config.separate_combo_diagrams):
+            if combo.draw_separate or (combo.draw_separate is None and self.config.draw_config.separate_combo_diagrams):
                 continue
             for layer_name in combo.layers if combo.layers else layers:
                 if layer_name in layers:
@@ -136,7 +136,7 @@ class KeymapData(BaseModel):
         return [
             combo
             for combo in self.combos
-            if combo.draw_separate or (combo.draw_separate is None and self.config.separate_combo_diagrams)
+            if combo.draw_separate or (combo.draw_separate is None and self.config.draw_config.separate_combo_diagrams)
         ]
 
     def dump(self, num_cols: int = 0) -> dict:

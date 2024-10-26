@@ -9,7 +9,7 @@ from html import escape
 from io import StringIO
 from typing import Mapping, Sequence, TextIO
 
-from keymap_drawer.config import DrawConfig
+from keymap_drawer.config import Config
 from keymap_drawer.draw.combo import ComboDrawerMixin
 from keymap_drawer.draw.utils import UtilsMixin
 from keymap_drawer.keymap import ComboSpec, KeymapData, LayoutKey
@@ -19,12 +19,12 @@ from keymap_drawer.physical_layout import PhysicalKey, PhysicalLayout, Point
 class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
     """Class that draws a keyboard representation in SVG."""
 
-    def __init__(self, config: DrawConfig, out: TextIO, **kwargs) -> None:
-        self.cfg = config
+    def __init__(self, config: Config, out: TextIO, **kwargs) -> None:
+        self.cfg = config.draw_config
         self.keymap = KeymapData(config=config, **kwargs)
         self.init_glyphs()
         assert self.keymap.layout is not None, "A PhysicalLayout must be provided for drawing"
-        assert self.keymap.config is not None, "A DrawConfig must be provided for drawing"
+        assert self.keymap.config is not None, "A Config must be provided for drawing"
         self.layout = self.keymap.layout
         self.layer_names = set()
         self.output_stream = out
