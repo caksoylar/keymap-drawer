@@ -206,21 +206,14 @@ def layout_factory(  # pylint: disable=too-many-arguments
 
         if isinstance(qmk_info, list):
             assert qmk_layout is None, "Cannot use qmk_layout with a list-format QMK spec"
-            layout = qmk_info  # shortcut for list-only representation
-        elif qmk_layout is None:
-            assert "layouts" in qmk_info, "QMK info.json must contain a `layouts` field"
-            layout = next(iter(qmk_info["layouts"].values()))["layout"]  # take the first layout in map
+            layouts = {None: qmk_info}  # shortcut for list-only representation
         else:
             assert "layouts" in qmk_info, "QMK info.json must contain a `layouts` field"
             if aliases := qmk_info.get("layout_aliases"):
                 qmk_layout = aliases.get(qmk_layout, qmk_layout)
-            assert qmk_layout in qmk_info["layouts"], (
-                f'Could not find layout "{qmk_layout}" in QMK info.json, '
-                f'available options are: {list(qmk_info["layouts"])}'
-            )
-            layout = qmk_info["layouts"][qmk_layout]["layout"]
+            layouts = {name: val["layout"] for name, val in qmk_info["layouts"].items()}
 
-        return QmkLayout(layout=layout).generate(config.key_h)
+        return QmkLayout(layouts=layouts).generate(layout_name=qmk_layout, key_size=config.key_h)
     if ortho_layout is not None:
         return OrthoLayout(**ortho_layout).generate(config.key_w, config.key_h, config.split_gap)
 
@@ -419,10 +412,20 @@ class QmkLayout(BaseModel):
         rx: float | None = None
         ry: float | None = None
 
-    layout: list[QmkKey]
+    layouts: dict[str | None, list[QmkKey]]
 
-    def generate(self, key_size: float) -> PhysicalLayout:
+    def generate(self, layout_name: str | None, key_size: float) -> PhysicalLayout:
         """Generate a sequence of PhysicalKeys from QmkKeys."""
+        assert self.layouts, "QmkLayout.layouts cannot be empty"
+        if layout_name is not None:
+            assert layout_name in self.layouts, (
+                f'Could not find layout "{layout_name}" in QMK info.json, '
+                f'available options are: {list(self.layouts)}'
+            )
+            chosen_layout = self.layouts[layout_name]
+        else:
+            chosen_layout = next(iter(self.layouts.values()))
+
         return PhysicalLayout(
             keys=[
                 PhysicalKey.from_qmk_spec(
@@ -433,7 +436,7 @@ class QmkLayout(BaseModel):
                     rotation=k.r,
                     rotation_pos=Point(k.x if k.rx is None else k.rx, k.y if k.ry is None else k.ry),
                 )
-                for k in self.layout
+                for k in chosen_layout
             ]
         ).normalize()
 
