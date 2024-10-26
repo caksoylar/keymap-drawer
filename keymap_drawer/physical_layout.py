@@ -185,6 +185,7 @@ def layout_factory(  # pylint: disable=too-many-arguments
     config: DrawConfig,
     qmk_keyboard: str | None = None,
     qmk_info_json: Path | BytesIO | None = None,
+    layout_name: str | None = None,
     qmk_layout: str | None = None,
     ortho_layout: dict | None = None,
     cols_thumbs_notation: str | None = None,
@@ -196,6 +197,10 @@ def layout_factory(  # pylint: disable=too-many-arguments
             'or "cpt_spec" specs for physical layout'
         )
 
+    if qmk_layout is not None:
+        assert layout_name is None, '"qmk_layout" is deprecated and cannot be used with "layout_name", use the latter'
+        layout_name = qmk_layout
+
     if qmk_keyboard or qmk_info_json:
         if qmk_keyboard:
             qmk_info = _get_qmk_info(qmk_keyboard, config.use_local_cache)
@@ -205,15 +210,15 @@ def layout_factory(  # pylint: disable=too-many-arguments
                 qmk_info = json.load(f)
 
         if isinstance(qmk_info, list):
-            assert qmk_layout is None, "Cannot use qmk_layout with a list-format QMK spec"
+            assert layout_name is None, "Cannot use layout_name with a list-format QMK spec"
             layouts = {None: qmk_info}  # shortcut for list-only representation
         else:
             assert "layouts" in qmk_info, "QMK info.json must contain a `layouts` field"
             if aliases := qmk_info.get("layout_aliases"):
-                qmk_layout = aliases.get(qmk_layout, qmk_layout)
+                layout_name = aliases.get(layout_name, layout_name)
             layouts = {name: val["layout"] for name, val in qmk_info["layouts"].items()}
 
-        return QmkLayout(layouts=layouts).generate(layout_name=qmk_layout, key_size=config.key_h)
+        return QmkLayout(layouts=layouts).generate(layout_name=layout_name, key_size=config.key_h)
     if ortho_layout is not None:
         return OrthoLayout(**ortho_layout).generate(config.key_w, config.key_h, config.split_gap)
 

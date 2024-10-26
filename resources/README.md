@@ -6,9 +6,9 @@ This folder contains resource/"data" files used by `keymap-drawer`. In particula
   of `matrix-transform` to [physical layout specs](../KEYMAP_SPEC.md#layout). For example:
   ```yaml
   planck:
-    layout_grid_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_ortho_4x12}
-    layout_mit_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_planck_1x2uC}
-    layout_2x2u_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_planck_2x2u}
+    layout_grid_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_ortho_4x12}
+    layout_mit_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_1x2uC}
+    layout_2x2u_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_2x2u}
   ```
   Above maps each of the three matrix transforms that are defined in the
   [ZMK `planck` config](https://github.com/zmkfirmware/zmk/blob/main/app/boards/arm/planck/planck_rev6.dts) to a corresponding QMK

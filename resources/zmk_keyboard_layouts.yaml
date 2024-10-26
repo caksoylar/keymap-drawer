@@ -1,13 +1,13 @@
 # Re-usable private layout definitions
 _corne: &corne
-  default_transform: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
-  five_column_transform: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x5_3}
+  default_transform: {qmk_keyboard: corne_rotated, layout_name: LAYOUT_split_3x6_3}
+  five_column_transform: {qmk_keyboard: corne_rotated, layout_name: LAYOUT_split_3x5_3}
 _generic_3x5_3: &generic_3x5_3
   default_transform: {qmk_keyboard: obosob/arch_36}
 _ferris: &ferris
   default_transform: {qmk_keyboard: ferris_rotated}
 _generic_60p: &generic_60p
-  default_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, qmk_layout: LAYOUT_60_ansi}
+  default_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, layout_name: LAYOUT_60_ansi}
 _pinky_cluster_34: &pinky_cluster_34
   default_transform: {qmk_keyboard: clog}
 _hummingbird_splay: &hummingbird_splay
@@ -21,14 +21,14 @@ bdn9_rev2: *bdn9
 #bt60_v1: *generic_60p
 #bt60_v1_hs: *generic_60p
 bt60_v2:  # missing a couple transforms
-  ansi_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, qmk_layout: LAYOUT_60_ansi}
-  iso_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, qmk_layout: LAYOUT_60_iso}
+  ansi_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, layout_name: LAYOUT_60_ansi}
+  iso_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, layout_name: LAYOUT_60_iso}
 bt65_v1:  # missing a couple transforms
-  ansi_transform: {qmk_keyboard: wilba_tech/wt65_d, qmk_layout: LAYOUT_65_ansi}
-  iso_transform: {qmk_keyboard: wilba_tech/wt65_d, qmk_layout: LAYOUT_65_iso}
+  ansi_transform: {qmk_keyboard: wilba_tech/wt65_d, layout_name: LAYOUT_65_ansi}
+  iso_transform: {qmk_keyboard: wilba_tech/wt65_d, layout_name: LAYOUT_65_iso}
 bt75_v1:  # missing a couple transforms
-  ansi_transform: {qmk_keyboard: kbdfans/kbd75/rev2, qmk_layout: LAYOUT_75_ansi}
-  iso_transform: {qmk_keyboard: kbdfans/kbd75/rev2, qmk_layout: LAYOUT_75_iso}
+  ansi_transform: {qmk_keyboard: kbdfans/kbd75/rev2, layout_name: LAYOUT_75_ansi}
+  iso_transform: {qmk_keyboard: kbdfans/kbd75/rev2, layout_name: LAYOUT_75_iso}
 corne-ish_zen: *corne
 corneish_zen: *corne
 corneish_zen_v1: *corne
@@ -39,21 +39,21 @@ dz60rgb_rev1: *dz60rgb
 ferris: *ferris
 ferris_rev02: *ferris
 kbdfans_tofu65: &kbdfans_tofu65
-  default_transform: {qmk_keyboard: tada68, qmk_layout: LAYOUT_65_ansi}
+  default_transform: {qmk_keyboard: tada68, layout_name: LAYOUT_65_ansi}
 kbdfans_tofu65_v2: *kbdfans_tofu65
 nice60: *generic_60p
 planck: &planck
-  layout_grid_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_ortho_4x12}
-  layout_mit_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_planck_1x2uC}
-  layout_2x2u_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_planck_2x2u}
+  layout_grid_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_ortho_4x12}
+  layout_mit_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_1x2uC}
+  layout_2x2u_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_2x2u}
 planck_rev6: *planck
 preonic: &preonic
-  layout_grid_transform: {qmk_keyboard: preonic/rev3, qmk_layout: LAYOUT_ortho_5x12}
-  layout_mit_transform: {qmk_keyboard: preonic/rev3, qmk_layout: LAYOUT_preonic_1x2uC}
-  layout_2x2u_transform: {qmk_keyboard: preonic/rev3, qmk_layout: LAYOUT_preonic_2x2u}
+  layout_grid_transform: {qmk_keyboard: preonic/rev3, layout_name: LAYOUT_ortho_5x12}
+  layout_mit_transform: {qmk_keyboard: preonic/rev3, layout_name: LAYOUT_preonic_1x2uC}
+  layout_2x2u_transform: {qmk_keyboard: preonic/rev3, layout_name: LAYOUT_preonic_2x2u}
 preonic_rev3: *preonic
 s40nc:
-  default_transform: {qmk_keyboard: coseyfannitutti/romeo, qmk_layout: LAYOUT_ansi_split_space}
+  default_transform: {qmk_keyboard: coseyfannitutti/romeo, layout_name: LAYOUT_ansi_split_space}
 
 # Upstream shields
 a_dux:
@@ -67,8 +67,8 @@ boardsource3x4:
 boardsource5x12:
   null: {qmk_keyboard: boardsource/5x12}
 chalice:
-  default_transform: {qmk_keyboard: chalice, qmk_layout: LAYOUT_default}
-  splitbs_transform: {qmk_keyboard: chalice, qmk_layout: LAYOUT_split_bs}
+  default_transform: {qmk_keyboard: chalice, layout_name: LAYOUT_default}
+  splitbs_transform: {qmk_keyboard: chalice, layout_name: LAYOUT_split_bs}
 clog: *pinky_cluster_34
 clueboard_california:
   null: {qmk_keyboard: clueboard/california}
@@ -83,7 +83,7 @@ eek:
 elephant42:
   default_transform: {qmk_keyboard: elephant42}
 ergodash:
-  default_transform: {qmk_keyboard: omkbd/ergodash/rev1, qmk_layout: LAYOUT_4key_2u_inner}
+  default_transform: {qmk_keyboard: omkbd/ergodash/rev1, layout_name: LAYOUT_4key_2u_inner}
 eternal_keypad: &eternal_keypad
   default_transform: {qmk_keyboard: eternal_keypad}
 eternal_keypad_lefty: *eternal_keypad
@@ -97,21 +97,21 @@ iris:
   default_transform: {qmk_keyboard: keebio/iris/rev2}
 jian:
   default_transform: {qmk_keyboard: jian/rev2}
-  crkbd_transform: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
-  five_column_transform: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x5_3}
+  crkbd_transform: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x6_3}
+  five_column_transform: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x5_3}
 jiran:
   default_transform: {qmk_keyboard: jiran/rev2}
   jian_transform: {qmk_keyboard: jian/rev2}
-  crkbd_transform: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
+  crkbd_transform: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x6_3}
 jorne: &jorne
   default_transform: {qmk_keyboard: jorne/rev1}
-  crkbd_transform: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x6_3}
-  five_column_transform: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x5_3}
+  crkbd_transform: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x6_3}
+  five_column_transform: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x5_3}
 knob_goblin:  # this has some empty spots that are not removed through a matrix transform
   null: {ortho_layout: {split: false, rows: 5, columns: 5}}  # {qmk_keyboard: knobgoblin}
 kyria: &kyria
   default_transform: {qmk_keyboard: splitkb/kyria/rev1}
-  five_column_transform: {qmk_keyboard: splitkb/kyria/rev1, qmk_layout: LAYOUT_split_3x5_5} # non-existent layout
+  five_column_transform: {qmk_keyboard: splitkb/kyria/rev1, layout_name: LAYOUT_split_3x5_5} # non-existent layout
 kyria_rev2: *kyria
 kyria_rev3: *kyria
 leeloo:
@@ -132,16 +132,16 @@ nibble:
   default_transform: {qmk_keyboard: nullbitsco/nibble}
 osprette: *pinky_cluster_34
 pancake:
-  null: {qmk_keyboard: spaceman/pancake/rev1/promicro, qmk_layout: LAYOUT_ortho_4x12}
+  null: {qmk_keyboard: spaceman/pancake/rev1/promicro, layout_name: LAYOUT_ortho_4x12}
 qaz: &qaz
   default_transform: {qmk_keyboard: tominabox1/qaz}
 quefrency:
-  default_transform: {qmk_keyboard: keebio/quefrency/rev2, qmk_layout: LAYOUT_65}
+  default_transform: {qmk_keyboard: keebio/quefrency/rev2, layout_name: LAYOUT_65}
 redox:
   default_transform: {qmk_keyboard: redox/rev1/base}
 reviung34:
-  dual_1u_transform: {qmk_keyboard: reviung/reviung34, qmk_layout: LAYOUT_reviung34}
-  single_2u_transform: {qmk_keyboard: reviung/reviung34, qmk_layout: LAYOUT_reviung34_2u}
+  dual_1u_transform: {qmk_keyboard: reviung/reviung34, layout_name: LAYOUT_reviung34}
+  single_2u_transform: {qmk_keyboard: reviung/reviung34, layout_name: LAYOUT_reviung34_2u}
 reviung41: &reviung41
   default_transform: {qmk_keyboard: reviung/reviung41}
 reviung5:
@@ -194,8 +194,8 @@ breeze:
   default_transform: {qmk_keyboard: afternoonlabs/breeze/rev1}
 chaz: *qaz
 chipper: &corne_5col_default
-  five_column_transform: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x5_3}
-  default_transform: {qmk_keyboard: corne_rotated, qmk_layout: LAYOUT_split_3x6_3}
+  five_column_transform: {qmk_keyboard: corne_rotated, layout_name: LAYOUT_split_3x5_3}
+  default_transform: {qmk_keyboard: corne_rotated, layout_name: LAYOUT_split_3x6_3}
 chippy: *corne_5col_default
 chocofi: &chocofi
   default_transform: {qmk_keyboard: chocofi}
@@ -239,7 +239,7 @@ hypergolic:
 klein:
   default_transform: {ortho_layout: {split: true, rows: 3, columns: 5, thumbs: 4}}
 klor:
-  default_transform: {qmk_keyboard: klor, qmk_layout: LAYOUT_polydactyl}
+  default_transform: {qmk_keyboard: klor, layout_name: LAYOUT_polydactyl}
 klotz:
   default_transform: {qmk_keyboard: klotz}
 kurp:
@@ -249,14 +249,14 @@ le_chiff_ble:
 levinson:
   default_transform: {qmk_keyboard: keebio/levinson/rev3}
 lpgalaxy_blank_slate:
-  ortho_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_ortho_4x12}
-  mit_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_planck_1x2uC}
-  dual_2u_transform: {qmk_keyboard: planck/rev6, qmk_layout: LAYOUT_planck_2x2u}
+  ortho_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_ortho_4x12}
+  mit_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_1x2uC}
+  dual_2u_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_2x2u}
 lpgalaxy_war_driver:
-  standard_transform: {qmk_keyboard: thevankeyboards/minivan, qmk_layout: LAYOUT}
-  arrows_transform: {qmk_keyboard: thevankeyboards/minivan, qmk_layout: LAYOUT_arrow}
-  southpaw_transform: {qmk_keyboard: thevankeyboards/minivan, qmk_layout: LAYOUT_command}
-  southpaw_arrows_transform: {qmk_keyboard: thevankeyboards/minivan, qmk_layout: LAYOUT_arrow_command}
+  standard_transform: {qmk_keyboard: thevankeyboards/minivan, layout_name: LAYOUT}
+  arrows_transform: {qmk_keyboard: thevankeyboards/minivan, layout_name: LAYOUT_arrow}
+  southpaw_transform: {qmk_keyboard: thevankeyboards/minivan, layout_name: LAYOUT_command}
+  southpaw_arrows_transform: {qmk_keyboard: thevankeyboards/minivan, layout_name: LAYOUT_arrow_command}
 luakeeb:
   default_transform: {qmk_keyboard: fingerpunch/luakeeb}
 luna: *hummingbird_splay
@@ -267,7 +267,7 @@ osprey: &osprey
 osprey_a: *osprey
 pockettype: *planck
 pteron36:
-  default_transform: {qmk_keyboard: pteron36, qmk_layout: LAYOUT_split_3x5_3}
+  default_transform: {qmk_keyboard: pteron36, layout_name: LAYOUT_split_3x5_3}
 rae_dux: *generic_3x5_3
 rebound: &rebound
   default_transform: {qmk_keyboard: montsinger/rebound/rev4}
@@ -286,7 +286,7 @@ rommana: *hummingbird_splay
 rufous:
   default_transform: {qmk_keyboard: rufous}
 satpad:
-  default_transform: {qmk_keyboard: miuni32, qmk_layout: LAYOUT_ortho_3x11}
+  default_transform: {qmk_keyboard: miuni32, layout_name: LAYOUT_ortho_3x11}
 skeletyl:
   default_transform: {qmk_keyboard: bastardkb/skeletyl/v2/splinky_3}
 slicemk_ergodox:
@@ -298,9 +298,9 @@ tbkmini:
   default_transform: {qmk_keyboard: bastardkb/tbkmini/v2/splinky_3}
   skeletyl_transform: {qmk_keyboard: bastardkb/skeletyl/v2/splinky_3}
 technikable:
-  ortho_transform: {qmk_keyboard: technikable, qmk_layout: LAYOUT_technikable_4x12}
-  mit_transform: {qmk_keyboard: technikable, qmk_layout: LAYOUT_technikable_1x2uC}
-  dual_2u_transform: {qmk_keyboard: technikable, qmk_layout: LAYOUT_technikable_2x2u}
+  ortho_transform: {qmk_keyboard: technikable, layout_name: LAYOUT_technikable_4x12}
+  mit_transform: {qmk_keyboard: technikable, layout_name: LAYOUT_technikable_1x2uC}
+  dual_2u_transform: {qmk_keyboard: technikable, layout_name: LAYOUT_technikable_2x2u}
 tipper_tf: *ferris
 tornblue:
   default_transform: {qmk_keyboard: torn}

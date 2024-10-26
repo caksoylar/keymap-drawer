@@ -141,7 +141,7 @@ class QmkJsonParser(KeymapParser):
         if "keyboard" in raw:
             layout["qmk_keyboard"] = raw["keyboard"]
         if "layout" in raw:
-            layout["qmk_layout"] = raw["layout"]
+            layout["layout_name"] = raw["layout"]
 
         num_layers = len(raw["layers"])
         if self.layer_names is None:

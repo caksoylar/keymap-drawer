@@ -46,13 +46,13 @@ Following physical layout parameters can be specified either in the command line
 
   _Example:_ `layout: {qmk_info_json: my_special_layout.json}`
 
-- **`qmk_layout`** (equivalent to `-l`/`--qmk-layout` on the command line):
+- **`layout_name`** (equivalent to `-l`/`--layout-name` on the command line):
   Specifies the layout macro to be used for the QMK keyboard, defaults to first one specified if not used --
   should be used alongside one of the above two options.
 
-  _Example:_ `layout: {qmk_keyboard: crkbd/rev1, qmk_layout: LAYOUT_split_3x5_3}`
+  _Example:_ `layout: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x5_3}`
 
-**Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for `qmk_keyboard` and `qmk_layout` values, and preview the physical layout.
+**Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for `qmk_keyboard` and `layout_name` values, and preview the physical layout.
 
 You can create your own physical layout definitions in QMK format to use with `keymap-drawer`, which accepts JSONs with the official schema that
 has layouts listed under the `layout` key, or one that directly consists of a list of key specs as a shortcut. The best way to generate one is to use

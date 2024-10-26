@@ -1,7 +1,7 @@
 # default QMK keymap, bootstrapped from QMK Configurator export
 layout:
   qmk_keyboard: tominabox1/qaz
-  qmk_layout: LAYOUT_split_space
+  layout_name: LAYOUT_split_space
 layers:
   BASE:
   - [Q, W, E, R, T, Y, U, I, O, P]

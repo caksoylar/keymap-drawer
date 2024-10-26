@@ -26,13 +26,13 @@ def draw(args: Namespace, config: DrawConfig) -> None:
         layout = {
             "qmk_keyboard": args.qmk_keyboard,
             "qmk_info_json": args.qmk_info_json,
-            "qmk_layout": args.qmk_layout,
+            "layout_name": args.layout_name,
             "ortho_layout": args.ortho_layout,
             "cols_thumbs_notation": args.cols_thumbs_notation,
         }
     else:
         assert "layout" in yaml_data, (
-            "A physical layout needs to be specified either via --qmk-keyboard/--qmk-layout/--ortho-layout, "
+            "A physical layout needs to be specified either via --qmk-keyboard/--layout-name/--ortho-layout, "
             'or in a "layout" field in the keymap_yaml'
         )
         layout = yaml_data["layout"]
@@ -116,8 +116,9 @@ def main() -> None:
     )
     draw_p.add_argument(
         "-l",
+        "--layout-name",
         "--qmk-layout",
-        help='Name of the layout (starting with "LAYOUT_") to use in the QMK keyboard info file, '
+        help='Name of the layout to use in the QMK keyboard info file (starting with "LAYOUT_"), '
         "use the first defined one by default",
     )
     draw_p.add_argument(
