@@ -273,6 +273,7 @@ Below are a few tools and example usages from the community that might be inspir
 - [SethMilliken's ZMK config](https://github.com/SethMilliken/zmk-config): Another config using the automated workflow with a [nice configuration](https://github.com/SethMilliken/zmk-config/blob/main/keymap_drawer.config.yaml) and SVG glyphs
 - [englmaxi's ZMK config](https://github.com/englmaxi/zmk-config): Using key sides setting and CSS tricks to position multiple SVG glyphs in one key
 - [casuanoob's keymap](https://github.com/casuanoob/zmk-config-bkb): Many useful unicode and SVG glyphs in the [keymap YAML](https://github.com/casuanoob/zmk-config-bkb/blob/master/assets/split34_keymap_zmk.yaml)
+- [rafaelromao's keymap](https://github.com/rafaelromao/keyboards#diagram): Advanced keymap with many glyphs and a Inkscape-based PNG conversion command
 - [possumvibes's keymap](https://github.com/possumvibes/keyboard-layout): Separate layer and combo diagrams
 - [infused-kim's ZMK config](https://github.com/infused-kim/zmk-config): Defines a script to [tweak the keymap](https://github.com/infused-kim/zmk-config/blob/main/keymap_img/keymap_img_adjuster.py) between parsing and drawing
 - [crides's Fissure write-up](https://github.com/crides/fissure): Custom physical layout with non-square keys and unique SVG styling
