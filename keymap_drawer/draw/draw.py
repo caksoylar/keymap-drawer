@@ -109,7 +109,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
 
         self.out.write("</g>\n")
 
-    def print_layers(  # pylint: disable=too-many-arguments,too-many-locals
+    def print_layers(  # pylint: disable=too-many-locals
         self,
         p: Point,
         layout: PhysicalLayout,

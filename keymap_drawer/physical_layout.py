@@ -71,7 +71,7 @@ class PhysicalKey:
     is_iso_enter: bool = False
 
     @classmethod
-    def from_qmk_spec(  # pylint: disable=too-many-arguments
+    def from_qmk_spec(
         cls, scale: float, pos: Point, width: float, height: float, rotation: float, rotation_pos: Point
     ) -> "PhysicalKey":
         """
@@ -182,7 +182,7 @@ class PhysicalLayout(BaseModel):
         return PhysicalLayout(keys=[k - min_pt for k in self.keys])
 
 
-def layout_factory(  # pylint: disable=too-many-arguments
+def layout_factory(
     config: Config,
     qmk_keyboard: str | None = None,
     qmk_info_json: Path | BytesIO | None = None,

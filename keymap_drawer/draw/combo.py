@@ -18,9 +18,7 @@ class ComboDrawerMixin(UtilsMixin):
     out: StringIO
     layout: PhysicalLayout
 
-    def _draw_arc_dendron(  # pylint: disable=too-many-arguments
-        self, p_1: Point, p_2: Point, x_first: bool, shorten: float, arc_scale: float
-    ) -> None:
+    def _draw_arc_dendron(self, p_1: Point, p_2: Point, x_first: bool, shorten: float, arc_scale: float) -> None:
         diff = p_2 - p_1
 
         # check if the points are too close to draw an arc, if so draw a line instead

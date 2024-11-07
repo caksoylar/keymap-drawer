@@ -101,7 +101,7 @@ class DeviceTree:
     _compatible_re = re.compile(r'compatible = "(.*?)"')
     _custom_data_header = "__keymap_drawer_data__"
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         in_str: str,
         file_name: str | None = None,

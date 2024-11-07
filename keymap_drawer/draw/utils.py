@@ -117,7 +117,7 @@ class UtilsMixin(GlyphMixin):
             f'height="{height}" width="{width}"{self._to_class_str(classes)}/>\n'
         )
 
-    def _draw_legend(  # pylint: disable=too-many-arguments
+    def _draw_legend(
         self, p: Point, words: Sequence[str], classes: Sequence[str], legend_type: LegendType, shift: float = 0
     ) -> None:
         if not words:
