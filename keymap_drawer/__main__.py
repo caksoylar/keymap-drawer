@@ -66,12 +66,20 @@ def parse(args: Namespace, config: Config) -> None:
         base = None
 
     if args.qmk_keymap_json:
-        parsed = QmkJsonParser(config.parse_config, args.columns, base_keymap=base, layer_names=args.layer_names).parse(
-            args.qmk_keymap_json
-        )
+        parsed = QmkJsonParser(
+            config.parse_config,
+            args.columns,
+            base_keymap=base,
+            layer_names=args.layer_names,
+            virtual_layers=args.virtual_layers,
+        ).parse(args.qmk_keymap_json)
     else:
         parsed = ZmkKeymapParser(
-            config.parse_config, args.columns, base_keymap=base, layer_names=args.layer_names
+            config.parse_config,
+            args.columns,
+            base_keymap=base,
+            layer_names=args.layer_names,
+            virtual_layers=args.virtual_layers,
         ).parse(args.zmk_keymap)
 
     yaml.safe_dump(parsed, args.output, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
@@ -185,6 +193,11 @@ def main() -> None:
         "-l",
         "--layer-names",
         help="List of layer names to override parsed names; its length should match the number of layers",
+        nargs="+",
+    )
+    parse_p.add_argument(
+        "--virtual-layers",
+        help='List of layer names to append as empty "virtual" layers at the end; this can be used for assigning combos etc.',
         nargs="+",
     )
     parse_p.add_argument(

@@ -65,8 +65,9 @@ class QmkJsonParser(KeymapParser):
         columns: int | None,
         base_keymap: KeymapData | None = None,
         layer_names: list[str] | None = None,
+        virtual_layers: list[str] | None = None,
     ):
-        super().__init__(config, columns, base_keymap, layer_names)
+        super().__init__(config, columns, base_keymap, layer_names, virtual_layers)
         self._prefix_re: re.Pattern | None
         if prefixes := self.cfg.qmk_remove_keycode_prefix:
             self._prefix_re = re.compile(r"\b(" + "|".join(re.escape(prefix) for prefix in set(prefixes)) + ")")
@@ -166,6 +167,7 @@ class QmkJsonParser(KeymapParser):
                         f'Could not parse keycode "{key}" in layer "{layer_name}" with exception "{err}"'
                     ) from err
 
+        layers = self.append_virtual_layers(layers)
         layers = self.add_held_keys(layers)
         keymap_data = KeymapData(layers=layers, layout=None, config=None)
 

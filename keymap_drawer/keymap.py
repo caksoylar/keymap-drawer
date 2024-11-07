@@ -235,7 +235,8 @@ class KeymapData(BaseModel):
     @model_validator(mode="after")
     def check_dimensions(self):
         """Validate that physical layout and layers have the same number of keys."""
-        if self.layout is None:  # ignore for no-layout mode
+        if self.layout is None:  # only check self-consistency for no-layout mode
+            assert len(set(len(layer) for layer in self.layers.values())) == 1, "Number of keys differ between layers"
             return self
         for name, layer in self.layers.items():
             assert len(layer) == len(self.layout), (

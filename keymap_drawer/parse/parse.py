@@ -27,11 +27,13 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         columns: int | None,
         base_keymap: KeymapData | None = None,
         layer_names: list[str] | None = None,
+        virtual_layers: list[str] | None = None,
     ):
         self.cfg = config
         self.columns = columns if columns is not None else 0
         self.layer_names: list[str] | None = layer_names
         self.layer_legends: list[str] | None = None
+        self.virtual_layers = virtual_layers if virtual_layers is not None else []
         if layer_names is not None:
             self.update_layer_legends()
         self.base_keymap = base_keymap
@@ -86,7 +88,9 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
     def update_layer_legends(self) -> None:
         """Create layer legends from layer_legend_map in parse_config and inferred/provided layer names."""
         assert self.layer_names is not None
-        self.layer_legends = [self.cfg.layer_legend_map.get(name, name) for name in self.layer_names]
+        self.layer_legends = [
+            self.cfg.layer_legend_map.get(name, name) for name in self.layer_names + self.virtual_layers
+        ]
 
     def update_layer_activated_from(
         self, from_layers: Sequence[int], to_layer: int, key_positions: Sequence[int]
@@ -147,6 +151,13 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
                     key.type = key_type
 
         return layers
+
+    def append_virtual_layers(self, layers: dict[str, list[LayoutKey]]) -> dict[str, list[LayoutKey]]:
+        """Add blank "virtual" layers at the end of the keymap, for use in later visualization."""
+        layer_length = max(
+            (len(layer) for layer in layers.values()), default=0
+        )  # should all be equal, but that's validated later
+        return layers | {name: [LayoutKey() for _ in range(layer_length)] for name in self.virtual_layers}
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
         raise NotImplementedError

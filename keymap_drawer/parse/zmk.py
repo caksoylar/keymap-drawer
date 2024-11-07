@@ -36,8 +36,9 @@ class ZmkKeymapParser(KeymapParser):
         columns: int | None,
         base_keymap: KeymapData | None = None,
         layer_names: list[str] | None = None,
+        virtual_layers: list[str] | None = None,
     ):
-        super().__init__(config, columns, base_keymap, layer_names)
+        super().__init__(config, columns, base_keymap, layer_names, virtual_layers)
         self.hold_taps = {"&mt": ["&kp", "&kp"], "&lt": ["&mo", "&kp"]}
         self.mod_morphs = {"&gresc": ["&kp ESC", "&kp GRAVE"]}
         self.sticky_keys = {"&sk": ["&kp"], "&sl": ["&mo"]}
@@ -263,6 +264,7 @@ class ZmkKeymapParser(KeymapParser):
         self._update_behaviors(dts)
         self._update_conditional_layers(dts)
         layers = self._get_layers(dts)
+        layers = self.append_virtual_layers(layers)
         combos = self._get_combos(dts)
         layers = self.add_held_keys(layers)
 
