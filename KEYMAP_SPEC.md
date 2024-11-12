@@ -131,7 +131,7 @@ The right half has a left-aligned thumb cluster with two keys, 5 columns with 3 
 Normally each column will be centered vertically, but you can also add modifier characters after each column count to tweak this:
 `v` or `d` (for ↓/"down") pushes the column down by half a key height, and `^` or `u` (for ↑/"up") pushes it up by the same amount.
 These modifiers can be repeated to push further.
-Similarly, you can use `>` to push a thumb row right by half a key width, or `<` to push it left.
+Similarly, you can use `>` or `r` to push a thumb row right by half a key width, or `<` or `l` to push it left.
 
 As an advanced example, notation `2v333+2> 3<<+13332^ 33` will result in a physical layout that looks like below:
 
