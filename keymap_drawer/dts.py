@@ -1,20 +1,22 @@
 """
-Helper module to parse ZMK keymap-like DT syntax into a tree,
-while keeping track of "compatible" values and utilities to parse
-bindings fields.
+Helper module to parse ZMK keymap-like DT syntax to extract nodes with
+given "compatible" values, and utilities to extract their properties and
+child nodes.
 
-The implementation is based on a nested expression parser for curly braces
-through pyparsing with some additions on top to clean up comments and run the
-C preprocessor using pcpp.
+The implementation is based on pcpp to run the C preprocessor, and then
+tree-sitter-devicetree to run queries to find compatible nodes and extract properties.
+Node overrides via node references are supported in a limited capacity.
 """
 
 import re
-from collections import defaultdict
 from io import StringIO
 from itertools import chain
 
-import pyparsing as pp
+import tree_sitter_devicetree as ts
 from pcpp.preprocessor import Action, OutputDirective, Preprocessor  # type: ignore
+from tree_sitter import Language, Node, Parser, Tree
+
+TS_LANG = Language(ts.language())
 
 
 class DTNode:
@@ -24,45 +26,56 @@ class DTNode:
     label: str | None
     content: str
     children: list["DTNode"]
-    label_refs: dict[str, "DTNode"]
 
-    def __init__(self, name: str, parse: pp.ParseResults):
+    def __init__(self, node: Node, text_buf: bytes, override_nodes: list["DTNode"] | None = None):
         """
         Initialize a node from its name (which may be in the form of `label:name`)
         and `parse` which contains the node itself.
         """
+        self.node = node
+        self.text_buf = text_buf
+        name_node = node.child_by_field_name("name")
+        assert name_node is not None
+        self.name = self._get_content(name_node)
+        self.label = self._get_content(v) if (v := node.child_by_field_name("label")) is not None else None
+        self.children = sorted(
+            (DTNode(child, text_buf, override_nodes) for child in node.children if child.type == "node"),
+            key=lambda x: x.node.start_byte,
+        )
+        self.overrides = []
+        if override_nodes and self.label is not None:
+            # consider pre-compiling nodes by label for performance
+            self.overrides = [node for node in override_nodes if self.label == node.name.lstrip("&")]
 
-        if ":" in name:
-            self.label, self.name = name.split(":", maxsplit=1)
-        else:
-            self.label, self.name = None, name
+    def _get_content(self, node: Node) -> str:
+        return self.text_buf[node.start_byte : node.end_byte].decode("utf-8").replace("\n", " ")
 
-        self.content = " ".join(elt for elt in parse if isinstance(elt, str))
-        self.children = [
-            DTNode(name=elt_p, parse=elt_n)
-            for elt_p, elt_n in zip(parse[:-1], parse[1:])
-            if isinstance(elt_p, str) and isinstance(elt_n, pp.ParseResults)
-        ]
-
-        # keep track of labeled nodes
-        self.label_refs = {self.label: self} if self.label else {}
-        for child in self.children:
-            self.label_refs |= child.label_refs
-            child.label_refs = {}
+    def _get_property(self, property_re: str) -> list[Node] | None:
+        children = [node for node in self.node.children if node.type == "property"]
+        for override_node in self.overrides:
+            children += [node for node in override_node.node.children if node.type == "property"]
+        for child in children[::-1]:
+            name_node = child.child_by_field_name("name")
+            assert name_node is not None
+            if re.match(property_re, self._get_content(name_node)):
+                return child.children_by_field_name("value")
+        return None
 
     def get_string(self, property_re: str) -> str | None:
         """Extract last defined value for a `string` type property matching the `property_re` regex."""
-        out = None
-        for m in re.finditer(rf'(?:^|\s)({property_re}) = "(.*?)"', self.content):
-            out = m.group(2)
-        return out
+        if (nodes := self._get_property(property_re)) is None:
+            return None
+        return self._get_content(nodes[0]).strip('"')
 
     def get_array(self, property_re: str) -> list[str] | None:
         """Extract last defined values for a `array` type property matching the `property_re` regex."""
-        matches = list(re.finditer(rf"(?:^|\s){property_re} = (<.*?>( ?, ?<.*?>)*) ?;", self.content))
-        if not matches:
+        if (nodes := self._get_property(property_re)) is None:
             return None
-        return list(chain.from_iterable(content.split(" ") for content in re.findall(r"<(.*?)>", matches[-1].group(1))))
+        return list(
+            chain.from_iterable(
+                self._get_content(node).strip("<>").split() for node in nodes if node.type == "integer_cells"
+            )
+        )
 
     def get_phandle_array(self, property_re: str) -> list[str] | None:
         """Extract last defined values for a `phandle-array` type property matching the `property_re` regex."""
@@ -79,26 +92,24 @@ class DTNode:
         Extract last defined value for a `path` type property matching the `property_re` regex.
         Only supports phandle paths `&p` rather than path types `"/a/b"` right now.
         """
-        out = None
-        for m in re.finditer(rf"(?:^|\s){property_re} = &(.*?);", self.content):
-            out = m.group(1)
-        return out
+        if (nodes := self._get_property(property_re)) is None:
+            return None
+        return self._get_content(nodes[0]).lstrip("&")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        content = " ".join(self._get_content(node) for node in self.node.children if node.type != "node")
         return (
-            f"DTNode(name={self.name!r}, label={self.label!r}, content={self.content!r}, "
-            f"children={[node.name for node in self.children]})\n"
+            f"DTNode(name={self.name!r}, label={self.label!r}, content={content!r}, "
+            f"children={[node.name for node in self.children]})"
         )
 
 
 class DeviceTree:
     """
     Class that parses a DTS file (optionally preprocessed by the C preprocessor)
-    and represents it as a DT tree, with some helpful methods.
+    and provides methods to extract `compatible` and `chosen` nodes as DTNode's.
     """
 
-    _nodelabel_re = re.compile(r"([\w-]+) *: *([\w-]+) *{")
-    _compatible_re = re.compile(r'compatible = "(.*?)"')
     _custom_data_header = "__keymap_drawer_data__"
 
     def __init__(
@@ -110,8 +121,9 @@ class DeviceTree:
         additional_includes: list[str] | None = None,
     ):
         """
-        Given an input DTS string `in_str` and `file_name` it is read from, parse it into an internap
-        tree representation and track what "compatible" value each node has.
+        Given an input DTS string `in_str` and `file_name` it is read from, parse it to be
+        able to get `compatible` and `chosen` nodes.
+        For performance reasons, the whole tree isn't parsed into DTNode's.
 
         If `preamble` is set to a non-empty string, prepend it to the read buffer.
         """
@@ -123,41 +135,65 @@ class DeviceTree:
 
         prepped = self._preprocess(self.raw_buffer, file_name, self.additional_includes) if preprocess else in_str
 
-        # make sure node labels and names are glued together and comments are removed,
-        # then parse with nested curly braces
-        self.root = DTNode(
-            "ROOT",
-            pp.nested_expr("{", "};")
-            .ignore("//" + pp.SkipTo(pp.lineEnd))
-            .ignore(pp.c_style_comment)
-            .parse_string("{ " + self._nodelabel_re.sub(r"\1:\2 {", prepped) + " };")[0],
+        self.ts_buffer = prepped.encode("utf-8")
+        tree = Parser(TS_LANG).parse(self.ts_buffer)
+        self.root_nodes = self._find_root_ts_nodes(tree)
+        self.override_nodes = [DTNode(node, self.ts_buffer) for node in self._find_override_ts_nodes(tree)]
+        self.chosen_nodes = [DTNode(node, self.ts_buffer) for node in self._find_chosen_ts_nodes(tree)]
+
+    @staticmethod
+    def _find_root_ts_nodes(tree: Tree) -> list[Node]:
+        return sorted(
+            TS_LANG.query(
+                """
+                (document
+                  (node
+                    name: (identifier) @nodename
+                    (#eq? @nodename "/")
+                  ) @rootnode
+                )
+                """
+            )
+            .captures(tree.root_node)
+            .get("rootnode", []),
+            key=lambda node: node.start_byte,
         )
 
-        # handle all node label-based overrides by appending their contents to the referred node's
-        override_nodes = [node for node in self.root.children if node.name.startswith("&")]
-        regular_nodes = [node for node in self.root.children if not node.name.startswith("&")]
-        for node in override_nodes:
-            if (label := node.name.removeprefix("&")) in self.root.label_refs:
-                self.root.label_refs[label].content += " " + node.content
-        self.root.children = regular_nodes
+    @staticmethod
+    def _find_override_ts_nodes(tree: Tree) -> list[Node]:
+        return sorted(
+            TS_LANG.query(
+                """
+                (document
+                  (node
+                    name: (reference
+                      label: (identifier)
+                    )
+                  ) @overridenode
+                )
+                """
+            )
+            .captures(tree.root_node)
+            .get("overridenode", []),
+            key=lambda node: node.start_byte,
+        )
 
-        # parse through all nodes and hash according to "compatible" values
-        self.compatibles: defaultdict[str, list[DTNode]] = defaultdict(list)
-
-        def assign_compatibles(node: DTNode) -> None:
-            if m := self._compatible_re.search(node.content):
-                self.compatibles[m.group(1)].append(node)
-            for child in node.children:
-                assign_compatibles(child)
-
-        assign_compatibles(self.root)
-
-        # find all chosen nodes and concatenate their content
-        self.chosen = DTNode("__chosen__", pp.ParseResults())
-        for root_child in self.root.children:
-            for node in root_child.children:
-                if node.name == "chosen":
-                    self.chosen.content += " " + node.content
+    @staticmethod
+    def _find_chosen_ts_nodes(tree: Tree) -> list[Node]:
+        return sorted(
+            TS_LANG.query(
+                """
+                (node
+                  name: (identifier) @nodename
+                  (#eq? @nodename "chosen")
+                ) @chosennode
+                """
+            )
+            .set_max_start_depth(2)
+            .captures(tree.root_node)
+            .get("chosennode", []),
+            key=lambda node: node.start_byte,
+        )
 
     @staticmethod
     def _preprocess(in_str: str, file_name: str | None = None, additional_includes: list[str] | None = None) -> str:
@@ -179,11 +215,30 @@ class DeviceTree:
 
     def get_compatible_nodes(self, compatible_value: str) -> list[DTNode]:
         """Return a list of nodes that have the given compatible value."""
-        return self.compatibles[compatible_value]
+        nodes = chain.from_iterable(
+            TS_LANG.query(
+                rf"""
+                (node
+                  (property name: (identifier) @prop value: (string_literal) @propval)
+                  (#eq? @prop "compatible") (#eq? @propval "\"{compatible_value}\"")
+                ) @node
+                """
+            )
+            .captures(node)
+            .get("node", [])
+            for node in self.root_nodes
+        )
+        return sorted(
+            (DTNode(node, self.ts_buffer, self.override_nodes) for node in nodes), key=lambda x: x.node.start_byte
+        )
 
     def get_chosen_property(self, property_name: str) -> str | None:
         """Return phandle for a given property in the /chosen node."""
-        return self.chosen.get_path(re.escape(property_name))
+        phandle = None
+        for node in self.chosen_nodes:
+            if (val := node.get_path(re.escape(property_name))) is not None:
+                phandle = val
+        return phandle
 
     def preprocess_extra_data(self, data: str) -> str:
         """
@@ -202,9 +257,3 @@ class DeviceTree:
             "does not get modified by #define's"
         )
         return out[data_pos + len(self._custom_data_header) + 2 :]
-
-    def __repr__(self):
-        def recursive_repr(node):
-            return repr(node) + "".join(recursive_repr(child) for child in node.children)
-
-        return recursive_repr(self.root)

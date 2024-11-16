@@ -537,12 +537,8 @@ def _parse_dts_layout(dts_in: Path | BytesIO, cfg: ParseConfig) -> QmkLayout:  #
     defined_layouts: dict[str | None, list[str] | None]
     if nodes := dts.get_compatible_nodes("zmk,physical-layout"):
         defined_layouts = {node.label or node.name: node.get_phandle_array("keys") for node in nodes}
-    elif keys_array := dts.root.get_phandle_array("keys"):
-        defined_layouts = {None: keys_array}
     else:
-        raise ValueError(
-            'No `compatible = "zmk,physical-layout"` nodes nor a single `keys` property found in DTS layout'
-        )
+        raise ValueError('No `compatible = "zmk,physical-layout"` nodes found in DTS layout')
 
     layouts = {}
     for layout_name, position_bindings in defined_layouts.items():

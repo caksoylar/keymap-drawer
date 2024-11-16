@@ -8,15 +8,15 @@ from typing import Sequence
 import yaml
 
 from keymap_drawer.config import ParseConfig
-from keymap_drawer.keymap import ComboSpec, KeymapData, LayoutKey
 from keymap_drawer.dts import DeviceTree
+from keymap_drawer.keymap import ComboSpec, KeymapData, LayoutKey
 from keymap_drawer.parse.parse import KeymapParser, ParseError
 
 ZMK_LAYOUTS_PATH = Path(__file__).parent.parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
 
 
 class ZmkKeymapParser(KeymapParser):
-    """Parser for ZMK devicetree keymaps, using C preprocessor and hacky pyparsing-based parsers."""
+    """Parser for ZMK devicetree keymaps, using C preprocessor and tree-sitter-devicetree."""
 
     _numbers_re = re.compile(r"N(UM(BER)?_)?(\d)")
     _modifier_fn_to_std = {
@@ -142,6 +142,8 @@ class ZmkKeymapParser(KeymapParser):
                     raise ParseError(f'Cannot parse bindings for behavior "{node.name}"')
                 if node.label is None:
                     raise ParseError(f'Cannot find label for behavior "{node.name}"')
+                if len(bindings) < n_bindings:
+                    raise ParseError(f'Could not find {n_bindings} bindings in definition of behavior "{node.name}"')
                 out[f"&{node.label}"] = bindings[:n_bindings]
             return out
 
@@ -180,7 +182,7 @@ class ZmkKeymapParser(KeymapParser):
         layers: dict[str, list[LayoutKey]] = {}
         for layer_ind, node in enumerate(layer_nodes):
             layer_name = self.layer_names[layer_ind]
-            if bindings := node.get_phandle_array(r"bindings"):
+            if bindings := node.get_phandle_array("bindings"):
                 layers[layer_name] = []
                 for ind, binding in enumerate(bindings):
                     try:

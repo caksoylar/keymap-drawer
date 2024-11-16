@@ -23,10 +23,11 @@ repository = "https://github.com/caksoylar/keymap-drawer"
 python = "^3.10"
 pydantic = "^2.0.0"
 pcpp = "^1.30"
-pyparsing = "^3.0.9"
 pyyaml = "^6.0"
 platformdirs = "^4.0.0"
 pydantic-settings = "^2.2.1"
+tree-sitter = "^0.23.2"
+tree-sitter-devicetree = "^0.12.1"
 
 [tool.poetry.group.dev]
 optional = true
