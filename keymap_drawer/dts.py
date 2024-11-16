@@ -215,19 +215,15 @@ class DeviceTree:
 
     def get_compatible_nodes(self, compatible_value: str) -> list[DTNode]:
         """Return a list of nodes that have the given compatible value."""
-        nodes = chain.from_iterable(
-            TS_LANG.query(
-                rf"""
-                (node
-                  (property name: (identifier) @prop value: (string_literal) @propval)
-                  (#eq? @prop "compatible") (#eq? @propval "\"{compatible_value}\"")
-                ) @node
-                """
-            )
-            .captures(node)
-            .get("node", [])
-            for node in self.root_nodes
+        query = TS_LANG.query(
+            rf"""
+            (node
+              (property name: (identifier) @prop value: (string_literal) @propval)
+              (#eq? @prop "compatible") (#eq? @propval "\"{compatible_value}\"")
+            ) @node
+            """
         )
+        nodes = chain.from_iterable(query.captures(node).get("node", []) for node in self.root_nodes)
         return sorted(
             (DTNode(node, self.ts_buffer, self.override_nodes) for node in nodes), key=lambda x: x.node.start_byte
         )
