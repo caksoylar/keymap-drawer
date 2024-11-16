@@ -53,8 +53,8 @@ class DTNode:
     def get_string(self, property_re: str) -> str | None:
         """Extract last defined value for a `string` type property matching the `property_re` regex."""
         out = None
-        for m in re.finditer(rf'(?:^|\s){property_re} = "(.*?)"', self.content):
-            out = m.group(1)
+        for m in re.finditer(rf'(?:^|\s)({property_re}) = "(.*?)"', self.content):
+            out = m.group(2)
         return out
 
     def get_array(self, property_re: str) -> list[str] | None:
