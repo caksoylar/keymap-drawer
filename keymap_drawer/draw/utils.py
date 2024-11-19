@@ -9,7 +9,7 @@ from keymap_drawer.config import DrawConfig
 from keymap_drawer.draw.glyph import GlyphMixin
 from keymap_drawer.physical_layout import Point
 
-LegendType = Literal["tap", "hold", "shifted"]
+LegendType = Literal["tap", "hold", "shifted", "left", "right"]
 
 
 class UtilsMixin(GlyphMixin):

@@ -42,7 +42,7 @@ class GlyphMixin:
         """Preprocess all glyphs in the keymap to get their name to SVG mapping."""
 
         def find_key_glyph_names(key: LayoutKey) -> set[str]:
-            return {glyph for field in (key.tap, key.hold, key.shifted) if (glyph := self._legend_to_name(field))}
+            return {glyph for field in (key.tap, key.hold, key.shifted, key.left, key.right) if (glyph := self._legend_to_name(field))}
 
         # find all named glyphs in the keymap
         names = set()

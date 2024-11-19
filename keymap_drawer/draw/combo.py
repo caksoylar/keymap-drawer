@@ -141,6 +141,19 @@ class ComboDrawerMixin(UtilsMixin):
             classes=["combo", combo.type, combo.key.type],
             legend_type="tap",
         )
+        # FIXME: combos were not test
+        self._draw_legend(
+            p - Point(self.cfg.combo_w / 2 - self.cfg.small_pad, 0),
+            [combo.key.left],
+            classes=["combo", combo.type, combo.key.type],
+            legend_type="left",
+        )
+        self._draw_legend(
+            p + Point(self.cfg.combo_w / self.cfg.legend_right_rel_w - self.cfg.inner_pad_w - self.cfg.small_pad, 0),
+            [combo.key.right],
+            classes=["combo", combo.type, combo.key.type],
+            legend_type="right",
+        )
         self._draw_legend(
             p + Point(0, self.cfg.combo_h / 2 - self.cfg.small_pad),
             [combo.key.hold],

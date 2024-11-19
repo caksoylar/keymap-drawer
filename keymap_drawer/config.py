@@ -79,6 +79,9 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     legend_rel_x: float = 0
     legend_rel_y: float = 0
 
+    # FIXME: better naming of the configuration and explanation to indicate that this refers to the fraction of the width where the right label will be set with respect to the center (defined by the tap)
+    legend_right_rel_w: float = 4
+
     # draw key sides
     draw_key_sides: bool = False
 
@@ -160,8 +163,18 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
             }
 
             /* styling for combo tap, and key hold/shifted label text */
-            text.combo, text.hold, text.shifted {
+            text.combo, text.hold, text.shifted, text.left, text.right {
                 font-size: 11px;
+            }
+
+            text.left {
+                text-anchor: start;
+                dominant-baseline: auto;
+            }
+
+            text.right {
+                text-anchor: start;
+                dominant-baseline: auto;
             }
 
             text.hold {
