@@ -1,6 +1,7 @@
 """Module containing class to parse devicetree format ZMK keymaps."""
 
 import re
+from functools import cache
 from itertools import chain
 from pathlib import Path
 from typing import Sequence
@@ -13,6 +14,7 @@ from keymap_drawer.keymap import ComboSpec, KeymapData, LayoutKey
 from keymap_drawer.parse.parse import KeymapParser, ParseError
 
 ZMK_LAYOUTS_PATH = Path(__file__).parent.parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
+ZMK_DEFINES_PATH = Path(__file__).parent.parent.parent / "resources" / "zmk_defines.h"
 
 
 class ZmkKeymapParser(KeymapParser):
@@ -232,8 +234,7 @@ class ZmkKeymapParser(KeymapParser):
             return {}
 
         keyboard_name = Path(file_name).stem
-        with open(ZMK_LAYOUTS_PATH, "rb") as f:
-            keyboard_to_layout_map = yaml.safe_load(f)
+        keyboard_to_layout_map = _get_zmk_layouts()
 
         if (keyboard_layouts := keyboard_to_layout_map.get(keyboard_name)) is None:
             return {}
@@ -256,7 +257,7 @@ class ZmkKeymapParser(KeymapParser):
             in_str,
             file_name,
             self.cfg.preprocess,
-            preamble=self.cfg.zmk_preamble,
+            preamble=self.cfg.zmk_preamble + "\n" + _get_zmk_defines(),
             additional_includes=self.cfg.zmk_additional_includes,
         )
 
@@ -273,3 +274,15 @@ class ZmkKeymapParser(KeymapParser):
         keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
 
         return self._get_physical_layout(file_name, dts), keymap_data
+
+
+@cache
+def _get_zmk_defines() -> str:
+    with open(ZMK_DEFINES_PATH, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+@cache
+def _get_zmk_layouts() -> dict:
+    with open(ZMK_LAYOUTS_PATH, "rb") as f:
+        return yaml.safe_load(f)

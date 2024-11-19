@@ -7,6 +7,7 @@ readme = ["README.md", "KEYMAP_SPEC.md", "CONFIGURATION.md"]
 packages = [{include = "keymap_drawer"}]
 include = [
   "keymap_drawer/py.typed",
+  "resources/zmk_defines.h",
   "resources/zmk_keyboard_layouts.yaml",
   "resources/qmk_keyboard_mappings.yaml",
   "resources/qmk_layouts/*.json"
