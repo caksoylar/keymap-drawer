@@ -159,8 +159,8 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
                 paint-order: stroke;
             }
 
-            /* styling for combo tap, and key hold/shifted label text */
-            text.combo, text.hold, text.shifted {
+            /* styling for combo tap, and key non-tap label text */
+            text.combo, text.hold, text.shifted, text.left, text.right {
                 font-size: 11px;
             }
 
@@ -174,12 +174,20 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
                 dominant-baseline: hanging;
             }
 
+            text.left {
+                text-anchor: start;
+            }
+
+            text.right {
+                text-anchor: end;
+            }
+
             text.layer-activator {
                 text-decoration: underline;
             }
 
             /* styling for hold/shifted label text in combo box */
-            text.combo.hold, text.combo.shifted {
+            text.combo.hold, text.combo.shifted, text.combo.left, text.combo.right {
                 font-size: 8px;
             }
 

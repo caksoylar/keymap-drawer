@@ -117,7 +117,7 @@ _Default:_ `true`
 
 #### `small_pad`
 
-Padding from edge of a key representation to top ("shifted") and bottom ("hold") legends.
+Padding from edge of a key representation to top ("shifted"), bottom ("hold"), "left" and "right" legends.
 
 _Type:_ `float`
 
@@ -125,7 +125,7 @@ _Default:_ `2`
 
 #### `legend_rel_x`, `legend_rel_y`
 
-Position of center ("tap") key legend relative to the center of the key.
+Position of center ("tap") and "left"/"right" key legends relative to the center of the key.
 Can be useful to tweak when `draw_key_sides` is used.
 
 _Type:_ `float`

@@ -153,6 +153,18 @@ class ComboDrawerMixin(UtilsMixin):
             classes=["combo", combo.type, combo.key.type],
             legend_type="shifted",
         )
+        self._draw_legend(
+            p - Point(self.cfg.combo_w / 2 - self.cfg.small_pad, 0),
+            [combo.key.left],
+            classes=["combo", combo.type, combo.key.type],
+            legend_type="left",
+        )
+        self._draw_legend(
+            p + Point(self.cfg.combo_w / 2 - self.cfg.small_pad, 0),
+            [combo.key.right],
+            classes=["combo", combo.type, combo.key.type],
+            legend_type="right",
+        )
         if combo.rotation != 0.0:
             self.out.write("</g>\n")
 

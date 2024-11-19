@@ -8,7 +8,7 @@ from functools import partial
 from itertools import chain
 from typing import Callable, Iterable, Literal
 
-from pydantic import BaseModel, Field, field_validator, model_serializer, model_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator, model_serializer, model_validator
 
 from keymap_drawer.config import Config
 from keymap_drawer.physical_layout import PhysicalLayout, layout_factory
@@ -17,12 +17,15 @@ from keymap_drawer.physical_layout import PhysicalLayout, layout_factory
 class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, extra="forbid"):
     """
     Represents a binding in the keymap, which has a tap property by default and
-    can optionally have hold or shifted properties, or be "held" or be a "ghost" key.
+    can optionally have hold or shifted properties, left or right labels, or be "held" or be a "ghost" key.
     """
 
-    tap: str = Field(alias="t", default="")
-    hold: str = Field(alias="h", default="")
-    shifted: str = Field(alias="s", default="")
+    tap: str = Field(validation_alias=AliasChoices("center", "t"), serialization_alias="t", default="")
+    hold: str = Field(validation_alias=AliasChoices("bottom", "h"), serialization_alias="h", default="")
+    shifted: str = Field(validation_alias=AliasChoices("shifted", "s"), serialization_alias="s", default="")
+    left: str = ""
+    right: str = ""
+
     type: str = ""  # pre-defined types: "held" | "ghost"
 
     @classmethod
@@ -42,13 +45,24 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
     @model_serializer
     def serialize_model(self) -> str | dict[str, str]:
         """Custom serializer to output string-only for simple legends."""
-        if self.hold or self.shifted or self.type:
-            return {k: v for k, v in (("t", self.tap), ("h", self.hold), ("s", self.shifted), ("type", self.type)) if v}
+        if self.hold or self.shifted or self.left or self.right or self.type:
+            return {
+                k: v
+                for k, v in (
+                    ("t", self.tap),
+                    ("h", self.hold),
+                    ("s", self.shifted),
+                    ("left", self.left),
+                    ("right", self.right),
+                    ("type", self.type),
+                )
+                if v
+            }
         return self.tap
 
     def full_serializer(self) -> dict[str, str]:
         """Custom serializer that always outputs a dict."""
-        return {k: v for k in ("tap", "hold", "shifted", "type") if (v := getattr(self, k))}
+        return {k: v for k in ("tap", "hold", "shifted", "left", "right", "type") if (v := getattr(self, k))}
 
     def apply_formatter(self, formatter: Callable[[str], str]) -> None:
         """Add a formatter function (str -> str) to all non-empty fields."""
@@ -58,6 +72,10 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
             self.hold = formatter(self.hold)
         if self.shifted:
             self.shifted = formatter(self.shifted)
+        if self.left:
+            self.left = formatter(self.left)
+        if self.right:
+            self.right = formatter(self.right)
 
 
 class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):

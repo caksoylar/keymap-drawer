@@ -45,7 +45,11 @@ class GlyphMixin:
         """Preprocess all glyphs in the keymap to get their name to SVG mapping."""
 
         def find_key_glyph_names(key: LayoutKey) -> set[str]:
-            return {glyph for field in (key.tap, key.hold, key.shifted) if (glyph := self._legend_to_name(field))}
+            return {
+                glyph
+                for field in (key.tap, key.hold, key.shifted, key.left, key.right)
+                if (glyph := self._legend_to_name(field))
+            }
 
         # find all named glyphs in the keymap
         names = set()
@@ -119,30 +123,43 @@ class GlyphMixin:
         defs += "</defs>/* end glyphs */\n"
         return defs
 
-    def get_glyph_dimensions(self, name: str, legend_type: str) -> tuple[float, float, float]:
+    def get_glyph_dimensions(self, name: str, legend_type: str) -> tuple[float, float, float, float]:
         """Given a glyph name, calculate and return its width, height and y-offset for drawing."""
         view_box = self._view_box_dimensions_re.match(self.name_to_svg[name])
         assert view_box is not None
+        _, _, w, h = (float(v) for v in view_box.groups())
 
-        # set height and y-offset from center
+        # set dimensions and offsets from center
         match legend_type:
             case "tap":
                 height = self.cfg.glyph_tap_size
+                width = w * height / h
+                d_x = 0.5 * width
                 d_y = 0.5 * height
             case "hold":
                 height = self.cfg.glyph_hold_size
+                width = w * height / h
+                d_x = 0.5 * width
                 d_y = height
             case "shifted":
                 height = self.cfg.glyph_shifted_size
+                width = w * height / h
+                d_x = 0.5 * width
                 d_y = 0
+            case "left":
+                height = self.cfg.glyph_shifted_size
+                width = w * height / h
+                d_x = 0
+                d_y = 0.5 * height
+            case "right":
+                height = self.cfg.glyph_shifted_size
+                width = w * height / h
+                d_x = width
+                d_y = 0.5 * height
             case _:
                 raise ValueError("Unsupported legend_type for glyph")
 
-        # calculate final width to preserve aspect ratio
-        _, _, w, h = (float(v) for v in view_box.groups())
-        width = w * height / h
-
-        return width, height, d_y
+        return width, height, d_x, d_y
 
 
 @lru_cache(maxsize=128)

@@ -151,20 +151,22 @@ x x x x       x x x     x x
 This field is an ordered mapping of layer names to a list of `LayoutKey` specs that represent the keys on that layer.
 A `LayoutKey` can be defined with either a string value or with a mapping with the following fields:
 
-| field name (alias) | type  | default value | description                                                                                                                                                                                                                                                                 |
-| ------------------ | ----- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tap (t)`          | `str` | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks[^3]                                                                                                                                                                        |
-| `hold (h)`         | `str` | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                                                                                                                                                    |
-| `shifted (s)`      | `str` | `""`          | the "shifted" action of a key, drawn on the top of the key                                                                                                                                                                                                                  |
-| `type`             | `str` | `""`          | the styling of the key that corresponds to the [SVG class](CONFIGURATION.md#svg_style)[^4]. predefined types are `held` (a red shading to denote held down keys), `ghost` (dashed outline to denote optional keys in a layout), `trans` (lighter text for transparent keys) |
+| field name (aliases) | type  | default value | description                                                                                                                                                                                                                                                                 |
+| ------------------   | ----- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tap (t, center)`    | `str` | `""`          | the tap action of a key, drawn on the center of the key; spaces will be converted to line breaks[^3]                                                                                                                                                                        |
+| `hold (h, bottom)`   | `str` | `""`          | the hold action of a key, drawn on the bottom of the key                                                                                                                                                                                                                    |
+| `shifted (s, top)`   | `str` | `""`          | the "shifted" action of a key, drawn on the top of the key                                                                                                                                                                                                                  |
+| `left`               | `str` | `""`          | left legend, drawn on the left-center of the key                                                                                                                                                                                                                            |
+| `right`              | `str` | `""`          | right legend, drawn on the right-center of the key                                                                                                                                                                                                                          |
+| `type`               | `str` | `""`          | the styling of the key that corresponds to the [SVG class](CONFIGURATION.md#svg_style)[^4]. predefined types are `held` (a red shading to denote held down keys), `ghost` (dashed outline to denote optional keys in a layout), `trans` (lighter text for transparent keys) |
 
 [^3]: You can prevent line breaks by using double spaces `"  "` to denote a single non-breaking space.
-[^4]: Text styling can be overridden in the `svg_extra_style` field under `draw_config` using the `"tap"`, `"hold"` and `"shifted"` CSS classes if desired.
+[^4]: Text styling can be overridden in the `svg_extra_style` field under `draw_config` using the `"tap"`, `"hold"`, `"shifted"`, `"left"` and `"right"` CSS classes if desired.
 
 Using a string value such as `"A"` for a key spec is equivalent to defining a mapping with only the tap field, i.e., `{tap: "A"}`.
-It is meant to be used as a shortcut for keys that do not need `hold` or `type` fields.
+It is meant to be used as a shortcut for keys that do not need any other fields.
 
-You can use the special `$$..$$` syntax to refer to custom SVG glyphs in `tap`/`hold`/`shifted` fields, however note that they cannot be used with other text or glyphs inside the same field value.
+You can use the special `$$..$$` syntax to refer to custom SVG glyphs in `tap`/`hold`/`shifted`/`left`/`right` fields, however note that they cannot be used with other text or glyphs inside the same field value.
 See the [custom glyphs section](README.md#custom-glyphs) for more information.
 
 `layers` field also flattens any lists that are contained in its value: This allows you to semantically divide keys to "rows," if you prefer to do so.

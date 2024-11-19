@@ -9,7 +9,7 @@ from keymap_drawer.config import DrawConfig
 from keymap_drawer.draw.glyph import GlyphMixin
 from keymap_drawer.physical_layout import Point
 
-LegendType = Literal["tap", "hold", "shifted"]
+LegendType = Literal["tap", "hold", "shifted", "left", "right"]
 
 
 class UtilsMixin(GlyphMixin):
@@ -109,11 +109,11 @@ class UtilsMixin(GlyphMixin):
         self.out.write("\n</text>\n")
 
     def _draw_glyph(self, p: Point, name: str, legend_type: LegendType, classes: Sequence[str]) -> None:
-        width, height, d_y = self.get_glyph_dimensions(name, legend_type)
+        width, height, d_x, d_y = self.get_glyph_dimensions(name, legend_type)
 
         classes = [*classes, "glyph", name]
         self.out.write(
-            f'<use href="#{name}" xlink:href="#{name}" x="{round(p.x - (width / 2))}" y="{round(p.y - d_y)}" '
+            f'<use href="#{name}" xlink:href="#{name}" x="{round(p.x - d_x)}" y="{round(p.y - d_y)}" '
             f'height="{height}" width="{width}"{self._to_class_str(classes)}/>\n'
         )
 
