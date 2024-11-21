@@ -133,7 +133,7 @@ Normally each column will be centered vertically, but you can also add modifier 
 These modifiers can be repeated to push further.
 Similarly, you can use `>` or `r` to push a thumb row right by half a key width, or `<` or `l` to push it left.
 
-As an advanced example, notation `2v333+2> 3<<+13332^ 33` will result in a physical layout that looks like below:
+As an advanced example, notation `2v333+2> 3+13332^ 33` will result in a physical layout that looks like below:
 
 ```
   x x x       x x x x   x x
