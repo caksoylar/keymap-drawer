@@ -137,7 +137,7 @@ class ComboDrawerMixin(UtilsMixin):
 
         self._draw_legend(
             p,
-            self._split_text(combo.key.tap, truncate=2),
+            self._split_text(combo.key.tap, truncate=2, line_width=self.cfg.shrink_wide_legends),
             classes=["combo", combo.type, combo.key.type],
             legend_type="tap",
         )

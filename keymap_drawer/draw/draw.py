@@ -72,7 +72,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             )
             self.out.write("</g>\n")
 
-        tap_words = self._split_text(l_key.tap, truncate=3)
+        tap_words = self._split_text(l_key.tap, truncate=3, line_width=self.cfg.shrink_wide_legends)
 
         # auto-adjust vertical alignment up/down if there are two lines and either hold/shifted is present
         shift = 0

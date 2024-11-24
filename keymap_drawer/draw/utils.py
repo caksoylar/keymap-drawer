@@ -1,8 +1,10 @@
 """Module containing lower-level SVG drawing utils, to be used as a mixin."""
 
+import re
 import string
 from html import escape
 from io import StringIO
+from textwrap import TextWrapper
 from typing import Literal, Sequence
 
 from keymap_drawer.config import DrawConfig
@@ -36,10 +38,35 @@ class UtilsMixin(GlyphMixin):
     def _to_class_str(classes: Sequence[str]) -> str:
         return (' class="' + " ".join(c for c in classes if c) + '"') if classes else ""
 
-    @staticmethod
-    def _split_text(text: str, truncate: int = 0) -> list[str]:
+    def _split_text(self, text: str, truncate: int = 0, line_width: int = 0) -> list[str]:
+        if self.legend_is_glyph(text):
+            return [text]
+
         # do not split on double spaces, but do split on single
         lines = [word.replace("\x00", " ") for word in text.replace("  ", "\x00").split()]
+
+        # wrap on word boundaries if a line is too long
+        if line_width > 0 and len(lines) < truncate:
+            tw = TextWrapper(width=line_width, break_long_words=False, break_on_hyphens=False)
+
+            wrapped: list[str] = []
+            for i, line in enumerate(lines):
+                if len(line) > line_width:
+                    wrapped_line = tw._wrap_chunks(re.split(r"(?<!^.)\b", line))  # pylint: disable=protected-access
+
+                    # if we are going to exceed the max line limit, give up here and do not modify lines
+                    new_total_lines = len(wrapped) + len(wrapped_line) - 1 + len(lines) - i
+                    if (diff := new_total_lines - truncate) > 0:
+                        if diff < len(wrapped_line):  # salvage part of this line as much as we can
+                            wrapped += wrapped_line[: -diff - 1] + ["".join(wrapped_line[-diff - 1 :])]
+                        else:
+                            wrapped.append(line)
+                        wrapped += lines[i + 1 :]
+                        break
+                    wrapped += wrapped_line
+                else:
+                    wrapped.append(line)
+            lines = wrapped
 
         # truncate number of lines if requested
         if truncate and len(lines) > truncate:
