@@ -1,5 +1,6 @@
 """Module containing class to parse devicetree format ZMK keymaps."""
 
+import logging
 import re
 from functools import cache
 from itertools import chain
@@ -12,6 +13,8 @@ from keymap_drawer.config import ParseConfig
 from keymap_drawer.dts import DeviceTree
 from keymap_drawer.keymap import ComboSpec, KeymapData, LayoutKey
 from keymap_drawer.parse.parse import KeymapParser, ParseError
+
+logger = logging.getLogger(__name__)
 
 ZMK_LAYOUTS_PATH = Path(__file__).parent.parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
 ZMK_DEFINES_PATH = Path(__file__).parent.parent.parent / "resources" / "zmk_defines.h"
@@ -60,6 +63,7 @@ class ZmkKeymapParser(KeymapParser):
             if new != old:
                 self.raw_binding_map[new] = self.raw_binding_map[old]
                 del self.raw_binding_map[old]
+        logger.debug("updated raw_binding_map: %s", self.raw_binding_map)
 
     def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals
         self, binding: str, current_layer: int | None, key_positions: Sequence[int], no_shifted: bool = False
@@ -150,8 +154,11 @@ class ZmkKeymapParser(KeymapParser):
             return out
 
         self.hold_taps |= get_behavior_bindings("zmk,behavior-hold-tap", 2)
+        logger.debug("found hold-tap bindings: %s", self.hold_taps)
         self.mod_morphs |= get_behavior_bindings("zmk,behavior-mod-morph", 2)
+        logger.debug("found mod-morph bindings: %s", self.mod_morphs)
         self.sticky_keys |= get_behavior_bindings("zmk,behavior-sticky-key", 1)
+        logger.debug("found sticky keys bindings: %s", self.sticky_keys)
 
     def _update_conditional_layers(self, dts: DeviceTree) -> None:
         cl_parents = dts.get_compatible_nodes("zmk,conditional-layers")
@@ -162,6 +169,7 @@ class ZmkKeymapParser(KeymapParser):
             if not (if_layers := node.get_array("if-layers")):
                 raise ParseError(f'Could not parse `if-layers` for conditional layer node "{node.name}"')
             self.conditional_layers[int(then_layer_val[0])] = [int(val) for val in if_layers]
+        logger.debug("found conditional layers: %s", self.conditional_layers)
 
     def _get_layers(self, dts: DeviceTree) -> dict[str, list[LayoutKey]]:
         if not (layer_parents := dts.get_compatible_nodes("zmk,keymap")):
@@ -171,16 +179,18 @@ class ZmkKeymapParser(KeymapParser):
             node for parent in layer_parents for node in parent.children if node.get_string("status") != "reserved"
         ]
         if self.layer_names is None:
-            self.layer_names = [
-                node.get_string("label|display-name") or node.name.removeprefix("layer_").removesuffix("_layer")
-                for node in layer_nodes
-            ]
-            self.update_layer_legends()
+            self.update_layer_names(
+                [
+                    node.get_string("label|display-name") or node.name.removeprefix("layer_").removesuffix("_layer")
+                    for node in layer_nodes
+                ]
+            )
         else:
             assert (l_u := len(self.layer_names)) == (
                 l_p := len(layer_nodes)
             ), f"Length of provided layer name list ({l_u}) does not match the number of parsed layers ({l_p})"
 
+        assert self.layer_names is not None
         layers: dict[str, list[LayoutKey]] = {}
         for layer_ind, node in enumerate(layer_nodes):
             layer_name = self.layer_names[layer_ind]

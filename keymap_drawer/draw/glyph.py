@@ -3,6 +3,7 @@ Module containing class and methods to help with fetching
 and drawing SVG glyphs.
 """
 
+import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache, partial
@@ -17,6 +18,8 @@ from platformdirs import user_cache_dir
 
 from keymap_drawer.config import DrawConfig
 from keymap_drawer.keymap import KeymapData, LayoutKey
+
+logger = logging.getLogger(__name__)
 
 FETCH_WORKERS = 8
 FETCH_TIMEOUT = 10
@@ -54,6 +57,7 @@ class GlyphMixin:
 
         # get the ones defined in draw_config.glyphs
         self.name_to_svg = {name: glyph for name in names if (glyph := self.cfg.glyphs.get(name))}
+        logger.debug("found glyphs %s in draw_config.glyphs", list(self.name_to_svg))
         rest = names - set(self.name_to_svg)
 
         # try to fetch the rest using draw_config.glyph_urls
@@ -146,9 +150,11 @@ def _fetch_svg_url(name: str, url: str, use_local_cache: bool = False) -> str:
     """Get an SVG glyph definition from url, using the local cache for reading and writing if enabled."""
     cache_path = CACHE_GLYPHS_PATH / f"{name.replace('/', '@')}.svg"
     if use_local_cache and cache_path.is_file():
+        logger.debug('found glyph "%s" in local cache', name)
         with open(cache_path, "r", encoding="utf-8") as f:
             return f.read()
 
+    logger.debug('fetching glyph "%s" from %s', name, url)
     try:
         for _ in range(N_RETRY):
             try:
@@ -157,7 +163,7 @@ def _fetch_svg_url(name: str, url: str, use_local_cache: bool = False) -> str:
                     content = f.read().decode("utf-8")
                 break
             except TimeoutError:
-                pass
+                logger.warning("request timed out while trying to fetch SVG from %s", url)
         else:
             raise RuntimeError(f"Failed to fetch SVG in {N_RETRY} tries")
         if use_local_cache:

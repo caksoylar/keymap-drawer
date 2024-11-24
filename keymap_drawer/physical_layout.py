@@ -5,6 +5,7 @@ and rotation.
 """
 
 import json
+import logging
 import re
 from dataclasses import dataclass
 from functools import cache, cached_property, lru_cache
@@ -21,6 +22,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from keymap_drawer.config import Config, ParseConfig
 from keymap_drawer.dts import DeviceTree
+
+logger = logging.getLogger(__name__)
 
 QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
@@ -205,7 +208,8 @@ def layout_factory(
     draw_cfg, parse_cfg = config.draw_config, config.parse_config
 
     if qmk_layout is not None:
-        assert layout_name is None, '"qmk_layout" is deprecated and cannot be used with "layout_name", use the latter'
+        logger.warning('"qmk_layout" is deprecated, please use "layout_name" instead')
+        assert layout_name is None, '"qmk_layout" cannot be used with "layout_name", use the latter'
         layout_name = qmk_layout
 
     if qmk_keyboard or qmk_info_json:
@@ -487,15 +491,18 @@ def _get_qmk_info(qmk_keyboard: str, use_local_cache: bool = False):
             return json.load(f)
 
     if use_local_cache and cache_path.is_file():
+        logger.debug("found keyboard %s in local cache", qmk_keyboard)
         with open(cache_path, "rb") as f:
             return json.load(f)
 
     try:
         if qmk_keyboard.startswith("generic/"):
+            logger.debug("getting generic layout %s from QMK default layouts", qmk_keyboard)
             with urlopen(QMK_DEFAULT_LAYOUTS_URL.format(layout=qmk_keyboard[len("generic/") :])) as f:
                 info = json.load(f)
         else:
             with urlopen(QMK_METADATA_URL.format(keyboard=qmk_keyboard)) as f:
+                logger.debug("getting QMK keyboard layout %s from QMK metadata API", qmk_keyboard)
                 info = json.load(f)["keyboards"][qmk_keyboard]
         if use_local_cache:
             cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -537,6 +544,7 @@ def _parse_dts_layout(dts_in: Path | BytesIO, cfg: ParseConfig) -> QmkLayout:  #
     defined_layouts: dict[str | None, list[str] | None]
     if nodes := dts.get_compatible_nodes("zmk,physical-layout"):
         defined_layouts = {node.label or node.name: node.get_phandle_array("keys") for node in nodes}
+        logger.debug("found these physical layouts in DTS: %s", defined_layouts)
     else:
         raise ValueError('No `compatible = "zmk,physical-layout"` nodes found in DTS layout')
 

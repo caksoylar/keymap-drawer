@@ -4,6 +4,7 @@ keyboard layout definition (either via QMK info files or using a parametrized
 ortho layout), print an SVG representing the keymap to standard output.
 """
 
+import logging
 import sys
 from argparse import ArgumentParser, FileType, Namespace
 from importlib.metadata import version
@@ -11,6 +12,7 @@ from pathlib import Path
 
 import yaml
 
+from keymap_drawer import logger
 from keymap_drawer.config import Config
 from keymap_drawer.draw import KeymapDrawer
 from keymap_drawer.keymap import KeymapData
@@ -101,6 +103,7 @@ def main() -> None:
     """Parse the configuration and print SVG using KeymapDrawer."""
     parser = ArgumentParser(description=__doc__)
     parser.add_argument("-v", "--version", action="version", version=version("keymap-drawer"))
+    parser.add_argument("-d", "--debug", action="store_true")
     parser.add_argument(
         "-c",
         "--config",
@@ -226,6 +229,9 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
 
     config = Config.parse_obj(yaml.safe_load(args.config)) if args.config else Config()
 

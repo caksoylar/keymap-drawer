@@ -8,6 +8,7 @@ tree-sitter-devicetree to run queries to find compatible nodes and extract prope
 Node overrides via node references are supported in a limited capacity.
 """
 
+import logging
 import re
 from io import StringIO
 from itertools import chain
@@ -15,6 +16,8 @@ from itertools import chain
 import tree_sitter_devicetree as ts
 from pcpp.preprocessor import Action, OutputDirective, Preprocessor  # type: ignore
 from tree_sitter import Language, Node, Parser, Tree
+
+logger = logging.getLogger(__name__)
 
 TS_LANG = Language(ts.language())
 
@@ -197,12 +200,19 @@ class DeviceTree:
 
     @staticmethod
     def _preprocess(in_str: str, file_name: str | None = None, additional_includes: list[str] | None = None) -> str:
+        # ignore__has_include(...) in preprocessor ifs because pcpp can't handle them
+        in_str = re.sub(r"__has_include\(.*?\)", "0", in_str)
+
         def include_handler(*args):  # type: ignore
             raise OutputDirective(Action.IgnoreAndPassThrough)
+
+        def on_error_handler(file, line, msg):  # type: ignore
+            logger.warning("preprocessor: %s:%d error: %s", file, line, msg)
 
         preprocessor = Preprocessor()
         preprocessor.line_directive = None
         preprocessor.on_include_not_found = include_handler
+        preprocessor.on_error = on_error_handler
         preprocessor.assume_encoding = "utf-8"
         for path in additional_includes or []:
             preprocessor.add_path(path)

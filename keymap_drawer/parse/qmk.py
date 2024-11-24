@@ -146,8 +146,7 @@ class QmkJsonParser(KeymapParser):
 
         num_layers = len(raw["layers"])
         if self.layer_names is None:
-            self.layer_names = [f"L{ind}" for ind in range(num_layers)]
-            self.update_layer_legends()
+            self.update_layer_names([f"L{ind}" for ind in range(num_layers)])
         else:  # user-provided layer names
             assert (
                 l_u := len(self.layer_names)
@@ -156,6 +155,7 @@ class QmkJsonParser(KeymapParser):
             )
 
         layers: dict[str, list[LayoutKey]] = {}
+        assert self.layer_names is not None
         for layer_ind, layer in enumerate(raw["layers"]):
             layer_name = self.layer_names[layer_ind]
             layers[layer_name] = []

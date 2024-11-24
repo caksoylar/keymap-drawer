@@ -3,6 +3,7 @@ Module containing base parser class to parse keymaps into KeymapData and then du
 Do not use directly, use QmkJsonParser or ZmkKeymapParser instead.
 """
 
+import logging
 import re
 from abc import ABC
 from io import TextIOWrapper
@@ -10,6 +11,8 @@ from typing import Sequence
 
 from keymap_drawer.config import ParseConfig
 from keymap_drawer.keymap import KeymapData, LayoutKey
+
+logger = logging.getLogger(__name__)
 
 
 class ParseError(Exception):
@@ -35,7 +38,7 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         self.layer_legends: list[str] | None = None
         self.virtual_layers = virtual_layers if virtual_layers is not None else []
         if layer_names is not None:
-            self.update_layer_legends()
+            self._update_layer_legends()
         self.base_keymap = base_keymap
         self.layer_activated_from: dict[int, set[tuple[int, bool]]] = {}  # layer to key positions + alternate flags
         self.conditional_layers: dict[int, list[int]] = {}  # then-layer to if-layers mapping
@@ -85,12 +88,25 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
                 fns_str = self.cfg.modifier_fn_map.mod_combiner.format(mod_1=fns_str, mod_2=fn_map[mod])
         return self.cfg.modifier_fn_map.keycode_combiner.format(mods=fns_str, key=key_str)
 
-    def update_layer_legends(self) -> None:
+    def update_layer_names(self, names: list[str]) -> None:
+        """Update layer names to given list, then update legends."""
+        assert self.layer_names is None  # make sure they weren't preset
+        self.layer_names = names
+        logger.debug("updated layer names: %s", self.layer_names)
+
+        self._update_layer_legends()
+
+    def _update_layer_legends(self) -> None:
         """Create layer legends from layer_legend_map in parse_config and inferred/provided layer names."""
         assert self.layer_names is not None
+        for name in self.cfg.layer_legend_map:
+            if name not in self.layer_names + self.virtual_layers:
+                logger.warning('layer name "%s" in parse_config.layer_legend_map not found in keymap layers', name)
+
         self.layer_legends = [
             self.cfg.layer_legend_map.get(name, name) for name in self.layer_names + self.virtual_layers
         ]
+        logger.debug("updated layer legends: %s", self.layer_legends)
 
     def update_layer_activated_from(
         self, from_layers: Sequence[int], to_layer: int, key_positions: Sequence[int]
@@ -137,6 +153,8 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         for then_layer, if_layers in sorted(self.conditional_layers.items()):
             self.update_layer_activated_from(if_layers, then_layer, [])
 
+        logger.debug("layers activated from key positions: %s", self.layer_activated_from)
+
         # assign held keys
         for layer_index, activating_keys in self.layer_activated_from.items():
             for key_idx, is_alternate in activating_keys:
@@ -165,6 +183,7 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
     def parse(self, in_buf: TextIOWrapper) -> dict:
         """Wrapper to call parser on a file handle and do post-processing after firmware-specific parsing."""
         layout, keymap_data = self._parse(in_buf.read(), in_buf.name)
+        logger.debug("inferred physical layout: %s", layout)
 
         if self.base_keymap is not None:
             keymap_data.rebase(self.base_keymap)
