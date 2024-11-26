@@ -337,7 +337,7 @@ in ZMK or `LCTL(KC_V)` in QMK) to given symbols -- set to `null` to disable the 
 
 - **`keycode_combiner`** (type: `str`): Pattern to join modifier functions with the modified keycode, must contain `{mods}` and `{key}`.
 
-  _Default:_ `"{mods}+ {key}"`
+  _Default:_ `"{mods}+{key}"`
 
 - **`mod_combiner`** (type: `str`): Pattern to join multiple modifier function strings, must contain `{mod_1}` and `{mod_2}`.
 

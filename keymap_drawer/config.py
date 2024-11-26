@@ -294,7 +294,7 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         right_alt: str = "AGr"  # Alt/Opt/AltGr
         left_gui: str = "Gui"  # Cmd/Win
         right_gui: str = "Gui"  # Cmd/Win
-        keycode_combiner: str = "{mods}+ {key}"  # pattern to join modifier functions with the modified keycode
+        keycode_combiner: str = "{mods}+{key}"  # pattern to join modifier functions with the modified keycode
         mod_combiner: str = "{mod_1}+{mod_2}"  # pattern to join multiple modifier function strings
         special_combinations: dict[str, str] = {  # special look-up for combinations of mods (mod order is ignored)
             "left_ctrl+left_alt+left_gui+left_shift": "Hyper",
