@@ -13,7 +13,7 @@ from pathlib import Path
 import yaml
 
 from keymap_drawer import logger
-from keymap_drawer.config import Config
+from keymap_drawer.config import Config, DrawConfig
 from keymap_drawer.draw import KeymapDrawer
 from keymap_drawer.keymap import KeymapData
 from keymap_drawer.parse import QmkJsonParser, ZmkKeymapParser
@@ -42,7 +42,7 @@ def draw(args: Namespace, config: Config) -> None:
         layout = yaml_data["layout"]
 
     if custom_config := yaml_data.get("draw_config"):
-        config.draw_config = config.draw_config.model_copy(update=custom_config)
+        config.draw_config = DrawConfig.parse_obj(config.draw_config.model_dump() | custom_config)
 
     drawer = KeymapDrawer(
         config=config,
