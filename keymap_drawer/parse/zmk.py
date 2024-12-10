@@ -175,9 +175,13 @@ class ZmkKeymapParser(KeymapParser):
         if not (layer_parents := dts.get_compatible_nodes("zmk,keymap")):
             raise ParseError('Could not find any keymap nodes with "zmk,keymap" compatible property')
 
-        layer_nodes = [
-            node for parent in layer_parents for node in parent.children if node.get_string("status") != "reserved"
-        ]
+        if not (
+            layer_nodes := [
+                node for parent in layer_parents for node in parent.children if node.get_string("status") != "reserved"
+            ]
+        ):
+            raise ParseError("Could not find any layers under the keymap node")
+
         if self.layer_names is None:
             self.update_layer_names(
                 [
@@ -208,7 +212,21 @@ class ZmkKeymapParser(KeymapParser):
         return layers
 
     def _get_combos(self, dts: DeviceTree) -> list[ComboSpec]:
-        assert self.layer_names is not None
+
+        def parse_layers(layers: list[str], node_name) -> list[str]:
+            assert self.layer_names is not None
+            out: list[str] = []
+            for layer in layers:
+                try:
+                    out.append(self.layer_names[int(layer)])
+                except ValueError as exc:
+                    raise ParseError(f'Cannot parse layer name "{layer}" in combo node "{node_name}"') from exc
+                except IndexError as exc:
+                    raise ParseError(
+                        f'Layer index {int(layer)} specified in combo node "{node_name}" does not exist in keymap'
+                    ) from exc
+            return out
+
         if not (combo_parents := dts.get_compatible_nodes("zmk,combos")):
             return []
         combo_nodes = chain.from_iterable(parent.children for parent in combo_parents)
@@ -220,7 +238,10 @@ class ZmkKeymapParser(KeymapParser):
             if not (key_pos_strs := node.get_array("key-positions")):
                 raise ParseError(f'Could not parse `key-positions` for combo node "{node.name}"')
 
-            key_pos = [int(pos) for pos in key_pos_strs]
+            try:
+                key_pos = [int(pos) for pos in key_pos_strs]
+            except ValueError as exc:
+                raise ParseError(f'Cannot parse key positions "{key_pos_strs}" in combo node "{node.name}"') from exc
 
             try:
                 # ignore current layer for combos
@@ -232,7 +253,7 @@ class ZmkKeymapParser(KeymapParser):
 
             combo = {"k": parsed_key, "p": key_pos}
             if (layers := node.get_array("layers")) and layers[0].lower() != "0xff":
-                combo["l"] = [self.layer_names[int(layer)] for layer in layers]
+                combo["l"] = parse_layers(layers, node.name)
 
             # see if combo had additional properties specified in the config, if so merge them in
             cfg_combo = ComboSpec.normalize_fields(self.cfg.zmk_combos.get(node.name, {}))
