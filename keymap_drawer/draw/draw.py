@@ -57,7 +57,7 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         )
         rotate_str = f" rotate({r})" if r != 0 else ""
         transform_attr = f' transform="translate({round(p.x)}, {round(p.y)}){rotate_str}"'
-        class_str = self._to_class_str(["key", l_key.type, f"keypos-{key_ind}"])
+        class_str = self._to_class_str(["key", l_key.type, f"keypos-{key_ind}", f"key-{escape(l_key.tap)}"])
         self.out.write(f"<g{transform_attr}{class_str}>\n")
 
         self._draw_key(Point(w - 2 * self.cfg.inner_pad_w, h - 2 * self.cfg.inner_pad_h), classes=["key", l_key.type])
