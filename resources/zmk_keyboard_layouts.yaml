@@ -247,6 +247,8 @@ ergotravel:
   default_transform: {qmk_keyboard: ergotravel/rev1}
 ffkb:
   default_transform: {qmk_keyboard: fingerpunch/ffkb}
+forager:
+  default_transform: {qmk_keyboard: forager}
 gatoraid40:
   default_transform: {ortho_layout: {split: true, rows: 3, columns: 6, thumbs: 3, drop_pinky: true}}
 glove80:
