@@ -256,8 +256,7 @@ class ZmkKeymapParser(KeymapParser):
                 combo["l"] = parse_layers(layers, node.name)
 
             # see if combo had additional properties specified in the config, if so merge them in
-            cfg_combo = ComboSpec.normalize_fields(self.cfg.zmk_combos.get(node.name, {}))
-            combos.append(ComboSpec(**(combo | cfg_combo)))
+            combos.append(ComboSpec(**(combo | ComboSpec.normalize_fields(self.cfg.zmk_combos.get(node.name, {})))))
         return combos
 
     def _get_physical_layout(self, file_name: str | None, dts: DeviceTree) -> dict:
@@ -273,11 +272,14 @@ class ZmkKeymapParser(KeymapParser):
         # if no chosen set, use first transform as the default
         if (
             transform := (
-                dts.get_chosen_property("zmk,matrix-transform") or dts.get_chosen_property("zmk,matrix_transform")
+                dts.get_chosen_property("zmk,physical-layout")
+                or dts.get_chosen_property("zmk,matrix-transform")
+                or dts.get_chosen_property("zmk,matrix_transform")
             )
         ) is None:
             return next(iter(keyboard_layouts.values()))
 
+        logger.debug("found selected layout %s in ZMK keymap", transform)
         return keyboard_layouts.get(transform, {})
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:

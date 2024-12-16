@@ -2,12 +2,37 @@
 _corne: &corne
   default_transform: {qmk_keyboard: corne_rotated, layout_name: LAYOUT_split_3x6_3}
   five_column_transform: {qmk_keyboard: corne_rotated, layout_name: LAYOUT_split_3x5_3}
+  foostan_corne_6col_layout: {qmk_keyboard: corne_rotated, layout_name: LAYOUT_split_3x6_3}
+  foostan_corne_5col_layout: {qmk_keyboard: corne_rotated, layout_name: LAYOUT_split_3x5_3}
 _generic_3x5_3: &generic_3x5_3
   default_transform: {qmk_keyboard: obosob/arch_36}
 _ferris: &ferris
   default_transform: {qmk_keyboard: ferris_rotated}
 _generic_60p: &generic_60p
-  default_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, layout_name: LAYOUT_60_ansi}
+  default_transform: {zmk_shared_layout: common/60percent/ansi}
+  layout_60_all1u: {zmk_shared_layout: common/60percent/all1u}
+  layout_60_ansi: {zmk_shared_layout: common/60percent/ansi}
+  layout_60_iso: {zmk_shared_layout: common/60percent/iso}
+  layout_60_hhkb: {zmk_shared_layout: common/60percent/hhkb}
+_generic_65p: &generic_65p
+  default_transform: {zmk_shared_layout: common/65percent/ansi}
+  layout_65_all1u: {zmk_shared_layout: common/65percent/all1u}
+  layout_65_ansi: {zmk_shared_layout: common/65percent/ansi}
+  layout_65_hhkb: {zmk_shared_layout: common/65percent/hhkb}
+  layout_65_iso: {zmk_shared_layout: common/65percent/iso}
+_generic_75p: &generic_75p
+  default_transform: {zmk_shared_layout: common/75percent/ansi}
+  layout_75_all1u: {zmk_shared_layout: common/75percent/all1u}
+  layout_75_ansi: {zmk_shared_layout: common/75percent/ansi}
+  layout_75_iso: {zmk_shared_layout: common/75percent/iso}
+_generic_ortho_4x12: &generic_ortho_4x12
+  layout_ortho_4x12_all1u: {zmk_shared_layout: common/ortho_4x12/all1u}
+  layout_ortho_4x12_1x2u: {zmk_shared_layout: common/ortho_4x12/1x2u}
+  layout_ortho_4x12_2x2u: {zmk_shared_layout: common/ortho_4x12/2x2u}
+_generic_ortho_5x12: &generic_ortho_5x12
+  layout_ortho_5x12_all1u: {zmk_shared_layout: common/ortho_5x12/all1u}
+  layout_ortho_5x12_1x2u: {zmk_shared_layout: common/ortho_5x12/1x2u}
+  layout_ortho_5x12_2x2u: {zmk_shared_layout: common/ortho_5x12/2x2u}
 _pinky_cluster_34: &pinky_cluster_34
   default_transform: {qmk_keyboard: clog}
 _hummingbird_splay: &hummingbird_splay
@@ -17,18 +42,12 @@ _hummingbird_splay: &hummingbird_splay
 bdn9: &bdn9
   null: {qmk_keyboard: keebio/bdn9/rev2}
 bdn9_rev2: *bdn9
-#bt60: *generic_60p  # these boards seem to have extra keys, hard to find matching layouts
-#bt60_v1: *generic_60p
-#bt60_v1_hs: *generic_60p
-bt60_v2:  # missing a couple transforms
-  ansi_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, layout_name: LAYOUT_60_ansi}
-  iso_transform: {qmk_keyboard: 1upkeyboards/1up60rgb, layout_name: LAYOUT_60_iso}
-bt65_v1:  # missing a couple transforms
-  ansi_transform: {qmk_keyboard: wilba_tech/wt65_d, layout_name: LAYOUT_65_ansi}
-  iso_transform: {qmk_keyboard: wilba_tech/wt65_d, layout_name: LAYOUT_65_iso}
-bt75_v1:  # missing a couple transforms
-  ansi_transform: {qmk_keyboard: kbdfans/kbd75/rev2, layout_name: LAYOUT_75_ansi}
-  iso_transform: {qmk_keyboard: kbdfans/kbd75/rev2, layout_name: LAYOUT_75_iso}
+bt60: *generic_60p
+bt60_v1: *generic_60p  # doesn't quite match, has an extra key on bottom row right
+bt60_v1_hs: *generic_60p
+bt60_v2: *generic_60p
+bt65_v1: *generic_65p
+bt75_v1: *generic_75p
 corne-ish_zen: *corne
 corneish_zen: *corne
 corneish_zen_v1: *corne
@@ -38,16 +57,17 @@ dz60rgb: &dz60rgb
 dz60rgb_rev1: *dz60rgb
 ferris: *ferris
 ferris_rev02: *ferris
-kbdfans_tofu65: &kbdfans_tofu65
-  default_transform: {qmk_keyboard: tada68, layout_name: LAYOUT_65_ansi}
-kbdfans_tofu65_v2: *kbdfans_tofu65
+kbdfans_tofu65: *generic_65p
+kbdfans_tofu65_v2: *generic_65p
 nice60: *generic_60p
 planck: &planck
+  <<: *generic_ortho_4x12
   layout_grid_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_ortho_4x12}
   layout_mit_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_1x2uC}
   layout_2x2u_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_2x2u}
 planck_rev6: *planck
 preonic: &preonic
+  <<: *generic_ortho_5x12
   layout_grid_transform: {qmk_keyboard: preonic/rev3, layout_name: LAYOUT_ortho_5x12}
   layout_mit_transform: {qmk_keyboard: preonic/rev3, layout_name: LAYOUT_preonic_1x2uC}
   layout_2x2u_transform: {qmk_keyboard: preonic/rev3, layout_name: LAYOUT_preonic_2x2u}
@@ -64,16 +84,14 @@ bfo9000:
   default_transform: {qmk_keyboard: keebio/bfo9000}
 boardsource3x4:
   null: {qmk_keyboard: boardsource/3x4}
-boardsource5x12:
-  null: {qmk_keyboard: boardsource/5x12}
+boardsource5x12: *generic_ortho_5x12
 chalice:
   default_transform: {qmk_keyboard: chalice, layout_name: LAYOUT_default}
   splitbs_transform: {qmk_keyboard: chalice, layout_name: LAYOUT_split_bs}
 clog: *pinky_cluster_34
 clueboard_california:
   null: {qmk_keyboard: clueboard/california}
-contra:
-  null: {qmk_keyboard: contra}
+contra: *generic_ortho_4x12
 corne: *corne
 cradio: *ferris
 crbn:
@@ -99,10 +117,17 @@ jian:
   default_transform: {qmk_keyboard: jian/rev2}
   crkbd_transform: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x6_3}
   five_column_transform: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x5_3}
+  kgoh_jian_full_layout: {qmk_keyboard: jian/rev2}
+  kgoh_jian_6col_layout: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x6_3}
+  kgoh_jian_5col_layout: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x5_3}
 jiran:
-  default_transform: {qmk_keyboard: jiran/rev2}
+  joran_transform: {qmk_keyboard: jiran/rev2}
+  ladniy_jiran_full_layout: {qmk_keyboard: jiran/rev2}
   jian_transform: {qmk_keyboard: jian/rev2}
   crkbd_transform: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x6_3}
+  default_transform: {qmk_keyboard: jiran/rev2}
+  kgoh_jian_full_layout: {qmk_keyboard: jian/rev2}
+  kgoh_jian_6col_layout: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x6_3}
 jorne: &jorne
   default_transform: {qmk_keyboard: jorne/rev1}
   crkbd_transform: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x6_3}
@@ -112,6 +137,8 @@ knob_goblin:  # this has some empty spots that are not removed through a matrix 
 kyria: &kyria
   default_transform: {qmk_keyboard: splitkb/kyria/rev1}
   five_column_transform: {qmk_keyboard: splitkb/kyria/rev1, layout_name: LAYOUT_split_3x5_5} # non-existent layout
+  splitkb_kyria_6col_layout: {qmk_keyboard: splitkb/kyria/rev1}
+  splitkb_kyria_5col_layout: {qmk_keyboard: splitkb/kyria/rev1, layout_name: LAYOUT_split_3x5_5} # non-existent layout
 kyria_rev2: *kyria
 kyria_rev3: *kyria
 leeloo:
@@ -135,7 +162,10 @@ pancake:
   null: {qmk_keyboard: spaceman/pancake/rev1/promicro, layout_name: LAYOUT_ortho_4x12}
 qaz: &qaz
   default_transform: {qmk_keyboard: tominabox1/qaz}
-quefrency:
+  split_big_bar_layout: {qmk_keyboard: zmk.qaz, layout_name: split_big_bar_layout}
+  split_bar_layout: {qmk_keyboard: zmk.qaz, layout_name: split_bar_layout}
+  big_bar_layout: {qmk_keyboard: zmk.qaz, layout_name: big_bar_layout}
+quefrency:  # this doesn't match, 70 keys vs. 72
   default_transform: {qmk_keyboard: keebio/quefrency/rev2, layout_name: LAYOUT_65}
 redox:
   default_transform: {qmk_keyboard: redox/rev1/base}
@@ -249,6 +279,7 @@ le_chiff_ble:
 levinson:
   default_transform: {qmk_keyboard: keebio/levinson/rev3}
 lpgalaxy_blank_slate:
+  <<: *generic_ortho_4x12
   ortho_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_ortho_4x12}
   mit_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_1x2uC}
   dual_2u_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_2x2u}
@@ -301,6 +332,9 @@ technikable:
   ortho_transform: {qmk_keyboard: technikable, layout_name: LAYOUT_technikable_4x12}
   mit_transform: {qmk_keyboard: technikable, layout_name: LAYOUT_technikable_1x2uC}
   dual_2u_transform: {qmk_keyboard: technikable, layout_name: LAYOUT_technikable_2x2u}
+  technikable_ortho_layout: {qmk_keyboard: technikable, layout_name: LAYOUT_technikable_4x12}
+  technikable_mit_layout: {qmk_keyboard: technikable, layout_name: LAYOUT_technikable_1x2uC}
+  technikable_dual_2u_layout: {qmk_keyboard: technikable, layout_name: LAYOUT_technikable_2x2u}
 tipper_tf: *ferris
 tornblue:
   default_transform: {qmk_keyboard: torn}

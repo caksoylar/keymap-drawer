@@ -28,6 +28,9 @@ logger = logging.getLogger(__name__)
 QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
 QMK_DEFAULT_LAYOUTS_URL = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/layouts/default/{layout}/info.json"
+ZMK_SHARED_LAYOUTS_URL = (
+    "https://raw.githubusercontent.com/zmkfirmware/zmk/refs/heads/main/app/dts/layouts/{layout}.dtsi"
+)
 CACHE_LAYOUTS_PATH = Path(user_cache_dir("keymap-drawer", False)) / "qmk_layouts"
 QMK_MAPPINGS_PATH = Path(__file__).parent.parent / "resources" / "qmk_keyboard_mappings.yaml"
 
@@ -185,9 +188,10 @@ class PhysicalLayout(BaseModel):
         return PhysicalLayout(keys=[k - min_pt for k in self.keys])
 
 
-def layout_factory(
+def layout_factory(  # pylint: disable=too-many-locals
     config: Config,
     qmk_keyboard: str | None = None,
+    zmk_shared_layout: str | None = None,
     qmk_info_json: Path | BytesIO | None = None,
     dts_layout: Path | BytesIO | None = None,
     layout_name: str | None = None,
@@ -197,11 +201,14 @@ def layout_factory(
 ) -> PhysicalLayout:
     """Create and return a physical layout, as determined by the combination of arguments passed."""
     if (
-        sum(arg is not None for arg in (qmk_keyboard, qmk_info_json, dts_layout, ortho_layout, cols_thumbs_notation))
+        sum(
+            arg is not None
+            for arg in (qmk_keyboard, zmk_shared_layout, qmk_info_json, dts_layout, ortho_layout, cols_thumbs_notation)
+        )
         != 1
     ):
         raise ValueError(
-            'Please provide exactly one of "qmk_keyboard", "qmk_info_json", "dts_layout", "ortho_layout" '
+            'Please provide exactly one of "qmk_keyboard", "zmk_shared_layout", "qmk_info_json", "dts_layout", "ortho_layout" '
             'or "cpt_spec" specs for physical layout'
         )
 
@@ -230,6 +237,9 @@ def layout_factory(
             layouts = {name: val["layout"] for name, val in qmk_info["layouts"].items()}
 
         return QmkLayout(layouts=layouts).generate(layout_name=layout_name, key_size=draw_cfg.key_h)
+    if zmk_shared_layout is not None:
+        fetched = _get_zmk_shared_layout(zmk_shared_layout, draw_cfg.use_local_cache)
+        return _parse_dts_layout(fetched, parse_cfg).generate(layout_name=None, key_size=draw_cfg.key_h)
     if dts_layout is not None:
         return _parse_dts_layout(dts_layout, parse_cfg).generate(layout_name=layout_name, key_size=draw_cfg.key_h)
     if ortho_layout is not None:
@@ -477,7 +487,7 @@ def _map_qmk_keyboard(qmk_keyboard: str) -> str:
 
 
 @lru_cache(maxsize=128)
-def _get_qmk_info(qmk_keyboard: str, use_local_cache: bool = False):
+def _get_qmk_info(qmk_keyboard: str, use_local_cache: bool = False) -> dict:
     """
     Get a QMK info.json file from either self-maintained folder of layouts,
     local file cache if enabled, or from QMK keyboards metadata API.
@@ -516,12 +526,37 @@ def _get_qmk_info(qmk_keyboard: str, use_local_cache: bool = False):
         ) from exc
 
 
-def _parse_dts_layout(dts_in: Path | BytesIO, cfg: ParseConfig) -> QmkLayout:  # pylint: disable=too-many-locals
+@lru_cache(maxsize=128)
+def _get_zmk_shared_layout(zmk_shared_layout: str, use_local_cache: bool = False) -> bytes:
+    cache_path = CACHE_LAYOUTS_PATH / f"zmk.{zmk_shared_layout.replace('/', '@')}.dtsi"
+    if use_local_cache and cache_path.is_file():
+        logger.debug("found ZMK shared layout %s in local cache", zmk_shared_layout)
+        with open(cache_path, "rb") as f:
+            return f.read()
+    try:
+        with urlopen(ZMK_SHARED_LAYOUTS_URL.format(layout=zmk_shared_layout)) as f:
+            logger.debug("getting ZMK shared layout %s from Github ZMK repo", zmk_shared_layout)
+            layout = f.read()
+        if use_local_cache:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(cache_path, "wb") as f_out:
+                f_out.write(layout)
+        return layout
+    except HTTPError as exc:
+        raise ValueError(
+            f"ZMK shared layout '{zmk_shared_layout}' not found, please make sure you specify an existing layout "
+            "(hint: check from https://github.com/zmkfirmware/zmk/tree/main/app/dts/layouts)"
+        ) from exc
+
+
+def _parse_dts_layout(dts_in: Path | BytesIO | bytes, cfg: ParseConfig) -> QmkLayout:  # pylint: disable=too-many-locals
     if isinstance(dts_in, Path):
         with open(dts_in, "r", encoding="utf-8") as f:
             in_str, file_name = f.read(), str(dts_in)
-    else:  # BytesIO
+    elif isinstance(dts_in, BytesIO):
         in_str, file_name = dts_in.read().decode("utf-8"), None
+    else:  # bytes
+        in_str, file_name = dts_in.decode("utf-8"), None
 
     dts = DeviceTree(
         in_str,
