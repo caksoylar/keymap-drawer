@@ -291,7 +291,7 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         left_shift: str = "Sft"
         right_shift: str = "Sft"
         left_alt: str = "Alt"  # Alt/Opt
-        right_alt: str = "AGr"  # Alt/Opt/AltGr
+        right_alt: str = "AltGr"  # Alt/Opt/AltGr
         left_gui: str = "Gui"  # Cmd/Win
         right_gui: str = "Gui"  # Cmd/Win
         keycode_combiner: str = "{mods}+{key}"  # pattern to join modifier functions with the modified keycode

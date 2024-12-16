@@ -333,7 +333,7 @@ in ZMK or `LCTL(KC_V)` in QMK) to given symbols -- set to `null` to disable the 
 - **`left_ctrl`**, **`right_ctrl`**, **`left_shift`**, **`right_shift`**, **`left_alt`**, **`right_alt`**, **`left_gui`**, **`right_gui`** (type: `str`):
   Mapping of each modifier to their corresponding display forms.
 
-  _Default:_ `"Ctl"`, `"Ctl"`, `"Sft"`, `"Sft"`, `"Alt"`, `"AGr"`, `"Gui"`, `"Gui"`
+  _Default:_ `"Ctl"`, `"Ctl"`, `"Sft"`, `"Sft"`, `"Alt"`, `"AltGr"`, `"Gui"`, `"Gui"`
 
 - **`keycode_combiner`** (type: `str`): Pattern to join modifier functions with the modified keycode, must contain `{mods}` and `{key}`.
 
