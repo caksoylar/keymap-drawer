@@ -1,6 +1,6 @@
 [project]
 name = "keymap-drawer"
-version = "0.19.0"
+version = "0.20.0"
 description = "A module and CLI tool to help parse and draw keyboard layouts."
 authors = [{name = "Cem Aksoylar", email = "caksoylar@gmail.com"}]
 readme = "README.md"
