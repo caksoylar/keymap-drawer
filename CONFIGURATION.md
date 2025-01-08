@@ -405,8 +405,8 @@ _Default:_ `"#define KEYMAP_DRAWER"`
 #### `zmk_additional_includes`
 
 A list of paths to add as search paths to the preprocessor for `#include` directives.
-This can be needed if you use Zephyr modules such as [`zmk-helpers`](https://github.com/urob/zmk-helpers/tree/v2) since they require augmenting the search path.
-Also used for parsing DTS format physical layouts specified with `--dts-layout`.
+This can be needed if you use Zephyr modules such as [`zmk-helpers`](https://github.com/urob/zmk-helpers/blob/main/docs/keymap_drawer.md) since they require augmenting the search path.
+Also used when parsing DTS format physical layouts specified with `--dts-layout`.
 
 _Type:_ `list[str]`
 
