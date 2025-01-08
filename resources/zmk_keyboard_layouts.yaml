@@ -146,7 +146,7 @@ leeloo:
 lily58: &lily58
   default_transform: {qmk_keyboard: lily58_rotated}
 lotus58:
-  default_transform: {qmk_keyboard: tweetydabird/lotus58/elite_c}  # might have a key order mismatch
+  default_transform: {qmk_keyboard: lotus58_rotated}
 m60: *generic_60p
 microdox: &microdox
   default_transform: {qmk_keyboard: boardsource/microdox/v2}
