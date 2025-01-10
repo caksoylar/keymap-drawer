@@ -51,4 +51,4 @@ jobs:
 
       - name: Deptry
         run: poetry run deptry .
-        if: false # success() || failure()
+        if: success() || failure()

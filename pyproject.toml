@@ -5,7 +5,7 @@ description = "A module and CLI tool to help parse and draw keyboard layouts."
 authors = [{name = "Cem Aksoylar", email = "caksoylar@gmail.com"}]
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<4.0"
 dependencies = [
     "pydantic (>=2.0.0,<3.0.0)",
     "pcpp (>=1.30,<2.0)",
@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["mypy", "pylint", "black", "pylint-pydantic", "types-pyyaml", "deptry", "hjson"]
+dev = ["mypy", "pylint", "black", "pylint-pydantic", "types-pyyaml", "deptry (>=0.22.0)", "hjson"]
 lsp = ["python-lsp-server"]
 
 [project.scripts]
@@ -58,3 +58,6 @@ line-length = 120
 src_paths = ["keymap_drawer"]
 profile = "black"
 line_length = 120
+
+[tool.deptry]
+pep621_dev_dependency_groups = ["dev", "lsp"]
