@@ -342,6 +342,8 @@ tornblue:
   default_transform: {qmk_keyboard: torn}
 totem:
   default_transform: {qmk_keyboard: totem}
+tsuru:
+  default_transform: {qmk_keyboard: tsuru}
 untitled:
   default_transform: {ortho_layout: {split: true, rows: 4, columns: 6, thumbs: 5}}
 urchin: *ferris
