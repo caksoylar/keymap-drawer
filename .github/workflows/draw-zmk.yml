@@ -112,7 +112,7 @@ jobs:
         if: inputs.west_config_path != ''
         run: |
           west init -l ${{ inputs.west_config_path }}
-          west config --local manifest.project-filter " -zmk"
+          west config --local manifest.project-filter " -zmk,-zephyr"
           west update --fetch-opt=--filter=tree:0
 
       - name: Draw keymaps
