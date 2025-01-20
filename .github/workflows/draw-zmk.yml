@@ -117,56 +117,74 @@ jobs:
 
       - name: Draw keymaps
         id: draw
+        continue-on-error: ${{ !inputs.fail_on_error }}
         run: |
           get_args() {
               local keyboard=$2
+              local output=()
+
               eval set -- "$1"
               for arg; do
                   local key=${arg%%:*}
                   local val=${arg#*:}
                   if [ "$key" = "$keyboard" ]; then
-                      echo "$val"
+                      output+=("$val")
                       break
                   fi
               done
+              echo "${output[@]}"
           }
 
           shopt -s extglob
-          declare -a DRAWINGS
+
+          artifacts=()
           error_occurred=0
           mkdir -p "${{ inputs.output_folder }}"
 
           config_path="${{ inputs.config_path }}"
           [ -e "$config_path" ] && config_arg=(-c "$config_path") || config_arg=()
-          echo "INFO: using config args: ${config_arg[@]}"
+          echo "INFO: using config args:" "${config_arg[@]}"
+
           for keymap_file in ${{ inputs.keymap_patterns }}; do
               keyboard=$(basename -s .keymap "$keymap_file")
               echo "INFO: drawing for $keyboard"
 
-              parse_args=$(get_args "${{ inputs.parse_args }}" "$keyboard")
-              echo "INFO:   got extra parse args: $parse_args"
-              draw_args=$(get_args "${{ inputs.draw_args }}" "$keyboard")
-              echo "INFO:   got extra draw args: $draw_args"
+              IFS=" " read -r -a parse_args <<< "$(get_args "${{ inputs.parse_args }}" "$keyboard")"
+              echo "INFO:   got extra parse args:" "${parse_args[@]}"
+              IFS=" " read -r -a  draw_args <<< "$(get_args "${{ inputs.draw_args }}"  "$keyboard")"
+              echo "INFO:   got extra draw args:" "${draw_args[@]}"
 
               json_path="${{ inputs.json_path }}"
-              if [ -f "$json_path/${keyboard}.json" ]; then
+              if [ -n "$json_path" ] && [ -f "$json_path/${keyboard}.json" ]; then
                   echo "INFO:   found $json_path/${keyboard}.json";
-                  draw_args+=" -j $json_path/${keyboard}.json"
+                  draw_args+=(-j "$json_path/${keyboard}.json")
               fi
 
-              keymap "${config_arg[@]}" parse -z "$keymap_file" $parse_args >"${{ inputs.output_folder }}/$keyboard.yaml" \
-              && keymap "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" $draw_args >"${{ inputs.output_folder }}/$keyboard.svg" \
-              || {
-                  echo "ERROR: parsing or drawing failed for $keyboard!"
-                  error_occurred=1
-              }
-              DRAWINGS+=(\"${{ inputs.output_folder }}/$keyboard.yaml\" \"${{ inputs.output_folder }}/$keyboard.svg\")
-          done
-          IFS=','
-          echo "DRAWINGS=[${DRAWINGS[*]}]" >> $GITHUB_OUTPUT
-          unset IFS
+              tmp_yaml=$(mktemp)
+              tmp_svg=$(mktemp)
 
-          if [ "${{ inputs.fail_on_error }}" == "true" ] && [ $error_occurred -eq 1 ]; then
+              if keymap "${config_arg[@]}" parse -z "$keymap_file" "${parse_args[@]}" >"$tmp_yaml"; then
+                  mv "$tmp_yaml" "${{ inputs.output_folder }}/$keyboard.yaml"
+                  artifacts+=("${{ inputs.output_folder }}/$keyboard.yaml")
+              else
+                  echo "ERROR: parsing failed for $keyboard!"
+                  error_occurred=1
+                  continue
+              fi
+
+              if keymap "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" "${draw_args[@]}" >"$tmp_svg"; then
+                  mv "$tmp_svg" "${{ inputs.output_folder }}/$keyboard.svg"
+                  artifacts+=("${{ inputs.output_folder }}/$keyboard.svg")
+              else
+                  echo "ERROR: drawing failed for $keyboard!"
+                  error_occurred=1
+              fi
+          done
+
+          joined_artifacts=$(printf '"%s", ' "${artifacts[@]}")
+          printf 'artifacts=[%s]\n' "${joined_artifacts%, }" >> "$GITHUB_OUTPUT"
+
+          if [ $error_occurred -eq 1 ]; then
               exit 1
           fi
 
@@ -198,5 +216,13 @@ jobs:
         with:
           name: '${{ inputs.artifact_name }}'
           path: |
-            ${{ join(fromJSON(steps.draw.outputs.DRAWINGS), '
+            ${{ join(fromJSON(steps.draw.outputs.artifacts), '
             ') }}
+
+      - name: Check job success
+        if: ${{ !inputs.fail_on_error }}
+        run: |
+          if [ "${{ steps.draw.outcome }}" == "failure" ]; then
+            echo "The draw step failed for some keymaps, please check the logs of that step above!"
+            exit 1
+          fi
