@@ -74,6 +74,11 @@ on:
         default: false
         required: false
         type: boolean
+      debug_mode:
+        description: 'Enable debug mode'
+        default: false
+        required: false
+        type: boolean
     outputs:
       drawings:
         description: 'Archive with keymap in YAML and drawing in SVG formats'
@@ -119,6 +124,8 @@ jobs:
         id: draw
         continue-on-error: ${{ !inputs.fail_on_error }}
         run: |
+          [ "${{ inputs.debug_mode }}" == "true" ] && set -x
+
           get_args() {
               local keyboard=$2
               local output=()
@@ -145,6 +152,8 @@ jobs:
           [ -e "$config_path" ] && config_arg=(-c "$config_path") || config_arg=()
           echo "INFO: using config args:" "${config_arg[@]}"
 
+          [ "${{ inputs.debug_mode }}" == "true" ] && debug_arg="-d" || debug_arg=""
+
           for keymap_file in ${{ inputs.keymap_patterns }}; do
               keyboard=$(basename -s .keymap "$keymap_file")
               echo "INFO: drawing for $keyboard"
@@ -163,7 +172,7 @@ jobs:
               tmp_yaml=$(mktemp)
               tmp_svg=$(mktemp)
 
-              if keymap "${config_arg[@]}" parse -z "$keymap_file" "${parse_args[@]}" >"$tmp_yaml"; then
+              if keymap "$debug_arg" "${config_arg[@]}" parse -z "$keymap_file" "${parse_args[@]}" >"$tmp_yaml"; then
                   mv "$tmp_yaml" "${{ inputs.output_folder }}/$keyboard.yaml"
                   artifacts+=("${{ inputs.output_folder }}/$keyboard.yaml")
               else
@@ -172,7 +181,7 @@ jobs:
                   continue
               fi
 
-              if keymap "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" "${draw_args[@]}" >"$tmp_svg"; then
+              if keymap "$debug_arg" "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" "${draw_args[@]}" >"$tmp_svg"; then
                   mv "$tmp_svg" "${{ inputs.output_folder }}/$keyboard.svg"
                   artifacts+=("${{ inputs.output_folder }}/$keyboard.svg")
               else
