@@ -172,7 +172,7 @@ jobs:
               tmp_yaml=$(mktemp)
               tmp_svg=$(mktemp)
 
-              if keymap "$debug_arg" "${config_arg[@]}" parse -z "$keymap_file" "${parse_args[@]}" >"$tmp_yaml"; then
+              if keymap $debug_arg "${config_arg[@]}" parse -z "$keymap_file" "${parse_args[@]}" >"$tmp_yaml"; then
                   mv "$tmp_yaml" "${{ inputs.output_folder }}/$keyboard.yaml"
                   artifacts+=("${{ inputs.output_folder }}/$keyboard.yaml")
               else
@@ -181,7 +181,7 @@ jobs:
                   continue
               fi
 
-              if keymap "$debug_arg" "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" "${draw_args[@]}" >"$tmp_svg"; then
+              if keymap $debug_arg "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" "${draw_args[@]}" >"$tmp_svg"; then
                   mv "$tmp_svg" "${{ inputs.output_folder }}/$keyboard.svg"
                   artifacts+=("${{ inputs.output_folder }}/$keyboard.svg")
               else
