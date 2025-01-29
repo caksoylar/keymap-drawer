@@ -24,9 +24,17 @@ def draw(args: Namespace, config: Config) -> None:
     yaml_data = yaml.safe_load(args.keymap_yaml)
     assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
 
-    if args.qmk_keyboard or args.qmk_info_json or args.dts_layout or args.ortho_layout or args.cols_thumbs_notation:
+    if (  # pylint: disable=too-many-boolean-expressions
+        args.qmk_keyboard
+        or args.zmk_keyboard
+        or args.qmk_info_json
+        or args.dts_layout
+        or args.ortho_layout
+        or args.cols_thumbs_notation
+    ):
         layout = {
             "qmk_keyboard": args.qmk_keyboard,
+            "zmk_keyboard": args.zmk_keyboard,
             "qmk_info_json": args.qmk_info_json,
             "dts_layout": args.dts_layout,
             "layout_name": args.layout_name,
@@ -36,7 +44,7 @@ def draw(args: Namespace, config: Config) -> None:
     else:
         assert "layout" in yaml_data, (
             "A physical layout needs to be specified either via "
-            "--qmk-keyboard/--qmk-info-json/--dts-layout/--ortho-layout/--cols-thumbs-notation, "
+            "--qmk-keyboard/--zmk-keyboard/--qmk-info-json/--dts-layout/--ortho-layout/--cols-thumbs-notation, "
             'or in a "layout" field in the keymap_yaml'
         )
         layout = yaml_data["layout"]
@@ -126,6 +134,11 @@ def main() -> None:
         "--qmk-keyboard",
         help="Name of the keyboard in QMK to fetch info.json containing the physical layout info, "
         "including revision if any",
+    )
+    info_srcs.add_argument(
+        "-z",
+        "--zmk-keyboard",
+        help="Name of the keyboard in ZMK, to look up physical layout for",
     )
     info_srcs.add_argument(
         "-d",

@@ -3,26 +3,35 @@
 This folder contains resource/"data" files used by `keymap-drawer`. In particular:
 
 - [`zmk_keyboard_layouts.yaml`](zmk_keyboard_layouts.yaml): Contains a mapping of ZMK keyboard names (the part of the filename `<keyboard>.keymap`) to a mapping
-  of `matrix-transform` to [physical layout specs](../KEYMAP_SPEC.md#layout). For example:
+  of `physical-layout` to [physical layout specs](../KEYMAP_SPEC.md#layout). For example:
   ```yaml
   planck:
     layout_grid_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_ortho_4x12}
     layout_mit_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_1x2uC}
     layout_2x2u_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_2x2u}
   ```
-  Above maps each of the three matrix transforms that are defined in the
+  Above maps each of the three physical layouts that are defined in the
   [ZMK `planck` config](https://github.com/zmkfirmware/zmk/blob/main/app/boards/arm/planck/planck_rev6.dts) to a corresponding QMK
-  keyboard+layout. When `keymap-drawer` parses a `planck.keymap`, it first searches for a matrix transform selected under a `chosen` node, e.g.:
+  keyboard+layout.
+
+  When `keymap parse` parses a `planck.keymap`, it first searches for a ZMK physical layout (or matrix transform, for backwards compatibility)
+  selected under a `chosen` node, e.g.:
   ```dts
   / {
       chosen {
-          zmk,matrix-transform = &layout_2x2u_transform;
+          zmk,physical-layout = &layout_ortho_4x12_2x2u;
+
+          // or, equivalently:
+          // zmk,matrix-transform = &layout_2x2u_transform;
       };
       ...
   };
   ```
-  Then it outputs the value corresponding to that keyboard/matrix transform pair as the physical layout spec. If no matrix transform is
-  selected in the keymap, which is the most frequent scenario, the first transform is assumed to be the default and its value is used.
+  Then it outputs the value corresponding to that keyboard/physical layout pair as the physical layout spec: `{zmk_keyboard: planck, layout_name: LAYOUT_ortho_4x12}`.
+  If there is no layout selected in the keymap (which is the most frequent scenario), `layout_name` will be omitted.
+
+  `keymap draw` will then look up and replace the physical layout spec with the corresponding entry in this file.
+  If there is no `layout_name`, the first entry is assumed to be the default and its value is used.
 
 - [`qmk_layouts`](qmk_layouts/) folder: This folder contains QMK layout definitions in a pared-down `info.json` format, that either don't
   exist in the QMK keyboards API because they aren't present in the official QMK repo, or they are improved versions of existing
