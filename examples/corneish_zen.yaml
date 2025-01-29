@@ -1,7 +1,7 @@
 # parsed and then tweaked from https://github.com/LOWPROKB/zmk-config-zen-2/blob/main/config/corneish_zen.keymap
 layout:
-  qmk_keyboard: corne_rotated
-  layout_name: LAYOUT_split_3x6_3
+  zmk_keyboard: corneish_zen
+  layout_name: foostan_corne_6col_layout
 layers:
   QWERTY:
     - ["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Bspace"]
