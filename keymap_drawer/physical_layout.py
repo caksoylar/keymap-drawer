@@ -12,7 +12,7 @@ from functools import cache, cached_property, lru_cache
 from io import BytesIO
 from math import cos, pi, sin, sqrt
 from pathlib import Path
-from typing import ClassVar, Literal
+from typing import ClassVar, Literal, TypedDict, Unpack
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
@@ -33,6 +33,19 @@ ZMK_SHARED_LAYOUTS_URL = (
 )
 CACHE_LAYOUTS_PATH = Path(user_cache_dir("keymap-drawer", False)) / "qmk_layouts"
 QMK_MAPPINGS_PATH = Path(__file__).parent.parent / "resources" / "qmk_keyboard_mappings.yaml"
+
+
+class PhysicalLayoutSpecs(TypedDict, total=False):
+    """List of properties that can be used to specify a physical layout."""
+    qmk_keyboard: str
+    zmk_keyboard: str
+    zmk_shared_layout: str
+    qmk_info_json: Path | BytesIO
+    dts_layout: Path | BytesIO
+    layout_name: str
+    qmk_layout: str
+    ortho_layout: dict
+    cols_thumbs_notation: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,38 +201,25 @@ class PhysicalLayout(BaseModel):
         return PhysicalLayout(keys=[k - min_pt for k in self.keys])
 
 
-def layout_factory(  # pylint: disable=too-many-locals
-    config: Config,
-    qmk_keyboard: str | None = None,
-    zmk_shared_layout: str | None = None,
-    qmk_info_json: Path | BytesIO | None = None,
-    dts_layout: Path | BytesIO | None = None,
-    layout_name: str | None = None,
-    qmk_layout: str | None = None,
-    ortho_layout: dict | None = None,
-    cols_thumbs_notation: str | None = None,
-) -> PhysicalLayout:
+def layout_factory(config: Config, **specs: Unpack[PhysicalLayoutSpecs]) -> PhysicalLayout:
     """Create and return a physical layout, as determined by the combination of arguments passed."""
-    if (
-        sum(
-            arg is not None
-            for arg in (qmk_keyboard, zmk_shared_layout, qmk_info_json, dts_layout, ortho_layout, cols_thumbs_notation)
-        )
-        != 1
-    ):
+    if sum(val is not None for spec, val in specs.items()) != 1:
         raise ValueError(
-            'Please provide exactly one of "qmk_keyboard", "zmk_shared_layout", "qmk_info_json", "dts_layout", "ortho_layout" '
+            'Please provide exactly one of "qmk_keyboard", "zmk_keyboard", "zmk_shared_layout", "qmk_info_json", "dts_layout", "ortho_layout" '
             'or "cpt_spec" specs for physical layout'
         )
 
     draw_cfg, parse_cfg = config.draw_config, config.parse_config
 
-    if qmk_layout is not None:
+    layout_name: str | None
+    if specs.get("qmk_layout") is not None:
         logger.warning('"qmk_layout" is deprecated, please use "layout_name" instead')
-        assert layout_name is None, '"qmk_layout" cannot be used with "layout_name", use the latter'
-        layout_name = qmk_layout
+        assert specs.get("layout_name") is None, '"qmk_layout" cannot be used with "layout_name", use the latter'
+        layout_name = specs["qmk_layout"]
+    else:
+        layout_name = specs.get("layout_name")
 
-    if qmk_keyboard or qmk_info_json:
+    if (qmk_keyboard := specs.get("qmk_keyboard")) or (qmk_info_json := specs.get("qmk_info_json")):
         if qmk_keyboard:
             qmk_info = _get_qmk_info(qmk_keyboard, draw_cfg.use_local_cache)
         else:  # qmk_info_json
@@ -237,15 +237,21 @@ def layout_factory(  # pylint: disable=too-many-locals
             layouts = {name: val["layout"] for name, val in qmk_info["layouts"].items()}
 
         return QmkLayout(layouts=layouts).generate(layout_name=layout_name, key_size=draw_cfg.key_h)
-    if zmk_shared_layout is not None:
+
+    # if (zmk_keyboard := specs.get("zmk_keyboard")) is not None:
+    #     return layout_factory(config, **_map_zmk_layout(zmk_keyboard, layout_name))
+
+    if (zmk_shared_layout := specs.get("zmk_shared_layout")) is not None:
         fetched = _get_zmk_shared_layout(zmk_shared_layout, draw_cfg.use_local_cache)
         return _parse_dts_layout(fetched, parse_cfg).generate(layout_name=None, key_size=draw_cfg.key_h)
-    if dts_layout is not None:
+
+    if (dts_layout := specs.get("dts_layout")) is not None:
         return _parse_dts_layout(dts_layout, parse_cfg).generate(layout_name=layout_name, key_size=draw_cfg.key_h)
-    if ortho_layout is not None:
+
+    if (ortho_layout := specs.get("ortho_layout")) is not None:
         return OrthoLayout(**ortho_layout).generate(draw_cfg.key_w, draw_cfg.key_h, draw_cfg.split_gap)
 
-    assert cols_thumbs_notation is not None
+    assert (cols_thumbs_notation := specs.get("cols_thumbs_notation")) is not None
     return CPTLayout(spec=cols_thumbs_notation).generate(draw_cfg.key_w, draw_cfg.key_h, draw_cfg.split_gap)
 
 
@@ -288,6 +294,8 @@ class OrthoLayout(BaseModel):
 
     def generate(self, key_w: float, key_h: float, split_gap: float) -> PhysicalLayout:
         """Generate a list of PhysicalKeys from given ortho specifications."""
+        logger.debug("generating OrthoLayout-based physical layout for spec %s", self.model_dump())
+
         nrows = self.rows
         if not isinstance(self.thumbs, int):
             nrows -= 1
@@ -403,6 +411,8 @@ class CPTLayout(BaseModel):
 
     def generate(self, key_w: float, key_h: float, split_gap: float) -> PhysicalLayout:
         """Generate a list of PhysicalKeys from given CPT specification."""
+        logger.debug("generating CPT-based physical layout for spec %s", self.spec)
+
         parts = [match.groupdict() for part in self._split_spec(self.spec) if (match := self.part_pattern.match(part))]
         max_rows = max(int(char) for part in parts for char in (part["a_l"] or part["a_r"]) if char.isdigit())
 
@@ -444,6 +454,7 @@ class QmkLayout(BaseModel):
 
     def generate(self, layout_name: str | None, key_size: float) -> PhysicalLayout:
         """Generate a sequence of PhysicalKeys from QmkKeys."""
+        logger.debug("generating QMK-based physical layout for layout name %s", layout_name)
         assert self.layouts, "QmkLayout.layouts cannot be empty"
         if layout_name is not None:
             assert layout_name in self.layouts, (
