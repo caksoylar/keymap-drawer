@@ -204,6 +204,17 @@ class PhysicalLayoutGenerator(BaseModel, arbitrary_types_allowed=True):
     cols_thumbs_notation: str | None = None
 
     @model_validator(mode="after")
+    def handle_file_overrides(self):
+        """Allow certain spec combinations where one overrides the other."""
+        if self.qmk_info_json and self.qmk_keyboard:
+            logger.warning("qmk_info_json is overriding qmk_keyboard specification")
+            self.qmk_keyboard = None
+        if self.dts_layout and self.zmk_keyboard:
+            logger.warning("dts_layout is overriding zmk_keyboard specification")
+            self.zmk_keyboard = None
+        return self
+
+    @model_validator(mode="after")
     def check_specs(self):
         """Check that exactly one layout type is specified."""
         if (
@@ -491,7 +502,7 @@ class QmkLayout(BaseModel):
         assert self.layouts, "QmkLayout.layouts cannot be empty"
         if layout_name is not None:
             assert layout_name in self.layouts, (
-                f'Could not find layout "{layout_name}" in QMK info.json, '
+                f'Could not find layout "{layout_name}" in available physical layouts, '
                 f"available options are: {list(self.layouts)}"
             )
             chosen_layout = self.layouts[layout_name]
