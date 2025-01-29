@@ -33,7 +33,7 @@ This folder contains resource/"data" files used by `keymap-drawer`. In particula
   `keymap draw` will then look up and replace the physical layout spec with the corresponding entry in this file.
   If there is no `layout_name`, the first entry is assumed to be the default and its value is used.
 
-- [`qmk_layouts`](qmk_layouts/) folder: This folder contains QMK layout definitions in a pared-down `info.json` format, that either don't
+- [`extra_layouts`](extra_layouts/) folder: This folder contains QMK layout definitions in a pared-down `info.json` format, that either don't
   exist in the QMK keyboards API because they aren't present in the official QMK repo, or they are improved versions of existing
   layouts (such as `corne_rotated`, which contains rotated thumb keys unlike the official QMK layout).
 
@@ -44,7 +44,7 @@ This folder contains resource/"data" files used by `keymap-drawer`. In particula
   `qmk_keyboard` value. If the key/field ends with a trailing slash, it matches as a prefix. Otherwise it looks for an exact match.
 
   This is used to prefer certain physical layout definitions over others: For instance all Corne variants are mapped to use
-  the `qmk_layouts/corne_rotated.json` file instead of the QMK default layout for `crkbd/rev1`.
+  the `extra_layouts/corne_rotated.json` file instead of the QMK default layout for `crkbd/rev1`.
   This look-up and consequent replacement happens during drawing -- it is transparent to the user and it cannot be prevented.
 
 ## Contributing
@@ -56,6 +56,6 @@ of your own design, it might be better for you to use the [`qmk_info_json` optio
 For adding new keyboards to `zmk_keyboard_layouts.yaml`, make note of the existing organization and place the new keyboard accordingly. Reference one of the
 existing YAML anchors if you are mapping to the same physical layout as others.
 
-Adding new layouts to `qmk_layouts/` should be done only after making sure that there isn't a keyboard with the same layout in the official QMK repo that
+Adding new layouts to `extra_layouts/` should be done only after making sure that there isn't a keyboard with the same layout in the official QMK repo that
 can be referenced. If adding a new file, please make sure the formatting and contents is consistent with the existing files. Note the remarks for the
 expected schema and tips for creating new layouts in the keymap spec's [layout section](../KEYMAP_SPEC.md#layout).

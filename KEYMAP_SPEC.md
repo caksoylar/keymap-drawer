@@ -36,7 +36,7 @@ Following physical layout parameters can be specified either in the command line
 - **`qmk_keyboard`** (equivalent to `-k`/`--qmk-keyboard` on the command line):
   Specifies the keyboard name to use with QMK `info.json` format layout definition, retrieved from following sources in order of preference:
 
-  - `<keyboard>.json` (with `/`'s in `<keyboard>` replaced by `@`) under [`resources/qmk_layouts`](/resources/qmk_layouts/), if it exists
+  - `<keyboard>.json` (with `/`'s in `<keyboard>` replaced by `@`) under [`resources/extra_layouts`](/resources/extra_layouts/), if it exists
   - [QMK keyboard metadata API](https://docs.qmk.fm/#/configurator_architecture?id=keyboard-metadata) that [QMK Configurator](https://config.qmk.fm) also uses
 
   _Example:_ `layout: {qmk_keyboard: crkbd/rev1}`
