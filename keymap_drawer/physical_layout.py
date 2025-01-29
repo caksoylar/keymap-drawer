@@ -25,7 +25,7 @@ from keymap_drawer.dts import DeviceTree
 
 logger = logging.getLogger(__name__)
 
-QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
+QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "extra_layouts"
 ZMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
 QMK_DEFAULT_LAYOUTS_URL = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/layouts/default/{layout}/info.json"
