@@ -26,6 +26,7 @@ from keymap_drawer.dts import DeviceTree
 logger = logging.getLogger(__name__)
 
 QMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "qmk_layouts"
+ZMK_LAYOUTS_PATH = Path(__file__).parent.parent / "resources" / "zmk_keyboard_layouts.yaml"
 QMK_METADATA_URL = "https://keyboards.qmk.fm/v1/keyboards/{keyboard}/info.json"
 QMK_DEFAULT_LAYOUTS_URL = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/layouts/default/{layout}/info.json"
 ZMK_SHARED_LAYOUTS_URL = (
@@ -263,8 +264,13 @@ class PhysicalLayoutGenerator(BaseModel, arbitrary_types_allowed=True):
 
             return QmkLayout(layouts=layouts).generate(layout_name=layout_name, key_size=draw_cfg.key_h)
 
-        # if self.zmk_keyboard is not None:
-        #     return PhysicalLayoutGenerator(config, **_map_zmk_layout(self.zmk_keyboard, layout_name)).generate()
+        if self.zmk_keyboard is not None:
+            try:
+                return PhysicalLayoutGenerator(
+                    config=self.config, **_map_zmk_layout(self.zmk_keyboard, self.layout_name)
+                ).generate()
+            except ValueError as exc:
+                raise ValueError('A physical layout for zmk_keyboard "{self.zmk_keyboard}" could not be found') from exc
 
         if self.zmk_shared_layout is not None:
             fetched = _get_zmk_shared_layout(self.zmk_shared_layout, draw_cfg.use_local_cache)
@@ -505,6 +511,26 @@ class QmkLayout(BaseModel):
                 for k in chosen_layout
             ]
         ).normalize()
+
+
+def _map_zmk_layout(zmk_keyboard: str, layout_name: str | None) -> dict[str, str | None]:
+    @cache
+    def _get_zmk_layouts() -> dict:
+        with open(ZMK_LAYOUTS_PATH, "rb") as f:
+            return yaml.safe_load(f)
+
+    keyboard_to_layout_map = _get_zmk_layouts()
+
+    if (keyboard_layouts := keyboard_to_layout_map.get(zmk_keyboard)) is None:
+        logger.debug("found no ZMK layout mapping for %s, output same qmk_keyboard value", zmk_keyboard)
+        return {"qmk_keyboard": zmk_keyboard, "layout_name": layout_name}
+
+    if layout_name is None:
+        out = next(iter(keyboard_layouts.values()))
+    else:
+        out = keyboard_layouts.get(layout_name, {})
+    logger.debug("found ZMK layout mapping for %s, returning look-up value: %s", zmk_keyboard, out)
+    return out
 
 
 def _map_qmk_keyboard(qmk_keyboard: str) -> str:
