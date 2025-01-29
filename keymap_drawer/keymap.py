@@ -11,7 +11,7 @@ from typing import Callable, Iterable, Literal
 from pydantic import AliasChoices, BaseModel, Field, field_validator, model_serializer, model_validator
 
 from keymap_drawer.config import Config
-from keymap_drawer.physical_layout import PhysicalLayout, layout_factory
+from keymap_drawer.physical_layout import PhysicalLayout, PhysicalLayoutGenerator
 
 
 class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, extra="forbid"):
@@ -235,7 +235,7 @@ class KeymapData(BaseModel):
             return vals
         if isinstance(vals["layout"], PhysicalLayout):  # already provided a valid object
             return vals
-        vals["layout"] = layout_factory(config=vals["config"], **vals["layout"])
+        vals["layout"] = PhysicalLayoutGenerator(config=vals["config"], **vals["layout"]).generate()
         return vals
 
     @model_validator(mode="after")
