@@ -244,7 +244,7 @@ class KeymapData(BaseModel):
         for combo in self.combos:
             assert self.layout is None or all(
                 pos < len(self.layout) for pos in combo.key_positions
-            ), f"Combo positions exceed number of keys for combo '{combo}'"
+            ), f"Combo positions ({combo.key_positions}) exceed number of keys ({len(self.layout)}) for combo '{combo}'"
             assert not combo.layers or all(
                 l in self.layers for l in combo.layers
             ), f"One of the layer names for combo '{combo}' is not found in the layer definitions"
@@ -254,7 +254,9 @@ class KeymapData(BaseModel):
     def check_dimensions(self):
         """Validate that physical layout and layers have the same number of keys."""
         if self.layout is None:  # only check self-consistency for no-layout mode
-            assert len(set(len(layer) for layer in self.layers.values())) == 1, "Number of keys differ between layers"
+            if len(set(len(layer) for layer in self.layers.values())) != 1:
+                counts = {layer_name: len(layer) for layer_name, layer in self.layers.items()}
+                raise AssertionError(f"Number of keys differ between layers. Key counts found: {counts}")
             return self
         for name, layer in self.layers.items():
             assert len(layer) == len(self.layout), (
