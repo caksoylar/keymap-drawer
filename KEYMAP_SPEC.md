@@ -22,15 +22,15 @@ draw_config: # config overrides for drawing, optional
 ## `layout`
 
 This field provides information about the physical layout of the keyboard, i.e., the location and sizes of individual keys.
-`keymap-drawer` understands three types of physical layout descriptions, with corresponding sub-fields under the `layout` field.
+`keymap-drawer` understands different types of physical layout descriptions, with corresponding sub-fields under the `layout` field.
 
-### QMK `info.json` specification
+> #### ℹ️ CLI+keymap YAML specification
+>
+> If the physical layout parameters are specified in both command line and under the `layout` section, the former will take precedence.
 
-This is the [official QMK format](https://docs.qmk.fm/#/reference_info_json?id=layout-format) for physical key descriptions
-that every `info.json` file in the QMK firmware repository uses. `keymap-drawer` only uses the `x`, `y`, `r`, `rx` and `ry` fields.
-Note that `keymap-editor` utilizes [the same format](https://github.com/nickcoutsos/keymap-editor/wiki/Defining-keyboard-layouts) for `info.json`.
-QMK spec also lets you specify multiple "layouts" per keyboard corresponding to different layout macros to support physical variations.
+### Keyboard aliases
 
+You can specify physical layouts using keyboard names, if they are available in the set of sources `keymap-drawer` uses.
 Following physical layout parameters can be specified either in the command line or under this field definition as key-value pairs:
 
 - **`qmk_keyboard`** (equivalent to `-k`/`--qmk-keyboard` on the command line):
@@ -41,19 +41,29 @@ Following physical layout parameters can be specified either in the command line
 
   _Example:_ `layout: {qmk_keyboard: crkbd/rev1}`
 
+- **`zmk_keyboard`** (equivalent to `-z`/`--zmk-keyboard` on the command line):
+  Specifies a ZMK keyboard name, which is typically the basename of the keymap file name `<keyboard>.keymap`.
+  This value gets converted internally using [a look-up table](resources/zmk_keyboard_layouts.yaml) to a different layout type such as `qmk_keyboard` or `ortho_layout`,
+  taking into account `layout_name` field if specified.
+  If the value of the field isn't found in the conversion mapping, it will fall back to using `qmk_keyboard` with the same value.
+
+  _Example:_ `layout: {zmk_keyboard: corne}`
+
+**Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for `qmk_keyboard` values and `layout_name`s (see below) you can use with it, and preview the physical layout.
+
+### QMK `info.json` specification
+
+This is the [official QMK format](https://docs.qmk.fm/#/reference_info_json?id=layout-format) for physical key descriptions
+that every `info.json` file in the QMK firmware repository uses. `keymap-drawer` only uses the `x`, `y`, `r`, `rx` and `ry` fields.
+Note that `keymap-editor` utilizes [the same format](https://github.com/nickcoutsos/keymap-editor/wiki/Defining-keyboard-layouts) for `info.json`.
+QMK spec also lets you specify multiple "layouts" per keyboard corresponding to different layout macros to support physical variations.
+
+QMK `info.json`-like physical layout files can be specified either in the command line or under this field definition as a key-value pair:
+
 - **`qmk_info_json`** (equivalent to `-j`/`--qmk-info-json` on the command line):
   Specifies the path to a local QMK format `info.json` file to use (exclusive with `qmk_keyboard`).
 
   _Example:_ `layout: {qmk_info_json: my_special_layout.json}`
-
-- **`layout_name`** (equivalent to `-l`/`--layout-name` on the command line):
-  This argument is shared with the ZMK `dts_layout` below and when used with either of above two options,
-  it specifies the layout macro to be used among the ones defined in the QMK info file.
-  Defaults to first one specified if not used, should be used alongside one of the above three options.
-
-  _Example:_ `layout: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x5_3}`
-
-**Hint**: You can use the [QMK Configurator](https://config.qmk.fm/) to search for `qmk_keyboard` and `layout_name` values, and preview the physical layout.
 
 You can create your own physical layout definitions in QMK format to use with `keymap-drawer`, which accepts JSONs with the official schema that
 has layouts listed under the `layout` key, or one that directly consists of a list of key specs as a shortcut. The best way to generate one is to use
@@ -67,29 +77,28 @@ PCBs using the "Import" tool.[^1]
     For this reason it is recommended to explicitly specify `rx`, `ry` fields if `r` is specified. You might also want to omit the fields
     besides `x`, `y`, `r`, `rx` and `ry` in your final JSON since they won't be used by `keymap-drawer`.
 
-### ZMK physical layout specification
+### ZMK devicetree physical layout specification
 
 This is the [official ZMK format](https://zmk.dev/docs/development/hardware-integration/physical-layouts) for specifying physical layouts,
 which are written in devicetree syntax and typically included in keyboard definitions.
 It lets you specify multiple "layouts" per keyboard corresponding to different devicetree nodes to support physical variations, similar to QMK format.
 The fields to specify each layout are described in the docs linked.
 
-In addition, `keymap-drawer` understands a [known list of ZMK keyboard names](resources/zmk_keyboard_layouts.yaml) such as `corne` or `cradio`.
-
 ZMK physical layouts can be specified via either in the command line or under this field definition as key-value pairs:
-
-- **`zmk_keyboard`** (equivalent to `-z`/`--zmk-keyboard` on the command line):
-  Specifies a ZMK keyboard name, which is typically the basename of the keymap file name `<keyboard>.keymap`.
-  This value [internally gets converted](resources/zmk_keyboard_layouts.yaml) to a different layout type such as `qmk_keyboard` or `ortho_layout`,
-  taking into account `layout_name` field if specified.
-  If the value of the field isn't found in the conversion mapping, it will look for a `qmk_keyboard` with the same value.
-
-  _Example:_ `layout: {zmk_keyboard: corne}`
 
 - **`dts_layout`** (equivalent to `-d`/`--dts-layout` on the command line):
   Specifies the path to a local devicetree file containing ZMK physical layouts.
 
   _Example:_ `layout: {dts_layout: my_keyboard-layouts.dtsi}`
+
+**Hint**: The physical layout you specify is independent of the firmware that your keymap originates from.
+For example, after parsing a ZMK keymap you can specify a layout using `qmk_keyboard`, as long as the physical layout is compatible with
+the keymap YAML generated by the parse.
+
+### Layout name
+
+Above physical layout specification (`qmk_keyboard`, `zmk_keyboard`, `qmk_info_json`, `dts_layout`) can define multiple physical layouts at once.
+You can choose among the ones they define using the `layout_name` field, such as to select the 5 column variant of a 6 column split keyboard.
 
 - **`layout_name`** (equivalent to `-l`/`--layout-name` on the command line):
   This argument is shared with the QMK options and when used with `zmk_keyboard` or `dts_layout`, specifies a ZMK physical layout
@@ -98,9 +107,8 @@ ZMK physical layouts can be specified via either in the command line or under th
 
   _Example:_ `layout: {zmk_keyboard: corne, layout_name: foostan_corne_5col_layout}`
 
-**Hint**: The physical layout you specify is independent of the firmware that your keymap originates from.
-For example, after parsing a ZMK keymap you can specify a layout using `qmk_keyboard`, as long as the physical layout is compatible with
-the keymap YAML generated by the parse.
+  _Example:_ `layout: {qmk_keyboard: crkbd/rev1, layout_name: LAYOUT_split_3x5_3}`
+
 
 ### Parametrized ortholinear layout specification
 
@@ -155,10 +163,6 @@ x x x x     x x x x x   x x
 x x x x       x x x     x x
      x x    x x x
 ```
-
-> #### ℹ️ CLI+keymap YAML specification
->
-> If the physical layout parameters are specified in both command line and under the `layout` section, the former will take precedence.
 
 ## `layers`
 
@@ -249,3 +253,4 @@ draw_config:
   combo_h: 22
   combo_w: 24
 ```
+
