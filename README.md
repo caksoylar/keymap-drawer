@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img alt="keymap-drawer logo" src="/site/logo.svg" max-width="100%"/>
+  <img alt="keymap-drawer logo" src="https://caksoylar.github.io/keymap-drawer/logo.svg" max-width="100%"/>
 </h1>
 
 [![PyPI version](https://img.shields.io/pypi/v/keymap-drawer.svg)](https://pypi.org/project/keymap-drawer/)
@@ -9,8 +9,8 @@ Parse QMK & ZMK keymaps and draw them in vector graphics (SVG) format, with supp
 Available as a [command-line tool](#command-line-tool-installation) or a [web application](https://caksoylar.github.io/keymap-drawer).
 
 <div align="center">
-  <a href="/examples/showcase.yaml">
-    <img alt="Example keymap visualization" src="/site/showcase.svg"/>
+  <a href="examples/showcase.yaml">
+    <img alt="Example keymap visualization" src="https://caksoylar.github.io/keymap-drawer/showcase.svg"/>
   </a>
 </div>
 
@@ -39,7 +39,7 @@ Below instructions mostly apply for the web interface, where subcommands and opt
 
 ### Command-line tool installation
 
-The recommended way to install `keymap-drawer` is through [pipx](https://pypa.github.io/pipx/), which sets up an isolated environment and installs the application with a single command:
+The recommended way to install `keymap-drawer` is through [pipx](https://pipx.pypa.io), which sets up an isolated environment and installs the application with a single command:
 
 ```sh
 pipx install keymap-drawer
