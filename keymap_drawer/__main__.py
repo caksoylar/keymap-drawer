@@ -25,16 +25,24 @@ def draw(args: Namespace, config: Config) -> None:
     assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
 
     cli_layout = {
-        "qmk_keyboard": args.qmk_keyboard,
-        "zmk_keyboard": args.zmk_keyboard,
-        "qmk_info_json": args.qmk_info_json,
-        "dts_layout": args.dts_layout,
-        "layout_name": args.layout_name,
-        "ortho_layout": args.ortho_layout,
-        "cols_thumbs_notation": args.cols_thumbs_notation,
+        k: v
+        for k, v in (
+            ("qmk_keyboard", args.qmk_keyboard),
+            ("zmk_keyboard", args.zmk_keyboard),
+            ("qmk_info_json", args.qmk_info_json),
+            ("dts_layout", args.dts_layout),
+            ("ortho_layout", args.ortho_layout),
+            ("cols_thumbs_notation", args.cols_thumbs_notation),
+        )
+        if v is not None
     }
     keymap_layout = yaml_data.get("layout", {})
-    layout = keymap_layout | {k: v for k, v in cli_layout.items() if v is not None}
+
+    layout = {"layout_name": keymap_layout.get("layout_name")} | cli_layout if cli_layout else keymap_layout
+    if args.layout_name:
+        layout["layout_name"] = args.layout_name
+
+    logger.debug("final physical layout spec for draw: %s", layout)
 
     assert layout, (
         "A physical layout needs to be specified either via "
