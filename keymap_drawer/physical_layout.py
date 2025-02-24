@@ -245,6 +245,10 @@ class PhysicalLayoutGenerator(BaseModel, arbitrary_types_allowed=True):
             logger.warning('"qmk_layout" is deprecated, please use "layout_name" instead')
             assert self.layout_name is None, '"qmk_layout" cannot be used with "layout_name", use the latter'
             self.layout_name = self.qmk_layout
+        if self.layout_name is not None and (self.ortho_layout is not None or self.cols_thumbs_notation is not None):
+            logger.warning(
+                '"layout_name" cannot be used with "ortho_layout" or "cols_thumbs_notation", will be ignored'
+            )
         return self
 
     def generate(self) -> PhysicalLayout:
