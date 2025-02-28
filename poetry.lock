@@ -615,6 +615,21 @@ pylint = ">2.0,<4.0"
 pylint-plugin-utils = "*"
 
 [[package]]
+name = "pyparsing"
+version = "3.2.1"
+description = "pyparsing module - Classes and methods to define and execute parsing grammars"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "pyparsing-3.2.1-py3-none-any.whl", hash = "sha256:506ff4f4386c4cec0590ec19e6302d3aedb992fdc02c761e90416f158dacf8e1"},
+    {file = "pyparsing-3.2.1.tar.gz", hash = "sha256:61980854fd66de3a90028d679a954d5f2623e83144b5afe5ee86f43d762e5f0a"},
+]
+
+[package.extras]
+diagrams = ["jinja2", "railroad-diagrams"]
+
+[[package]]
 name = "python-dotenv"
 version = "1.0.1"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -1028,4 +1043,4 @@ lsp = ["python-lsp-server"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "471b2fd84e65b41618cf87c62990c151b438eb5a2fd680eacc7f7f9b23b873b4"
+content-hash = "5ff72723d28cf050c6a6c4287285537d0d25836dfcef9b9077679530b340b53f"

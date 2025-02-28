@@ -205,6 +205,7 @@ class KanataKeymapParser(KeymapParser):
         self._get_aliases_vars(nodes)
 
         layers = self._get_layers(defsrc, nodes)
+        layers = self.append_virtual_layers(layers)
         combos = self._get_combos(nodes)
         layers = self.add_held_keys(layers)
         keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
