@@ -1,5 +1,6 @@
 """Module containing class to parse devicetree format ZMK keymaps."""
 
+import logging
 from itertools import chain, islice
 from pathlib import Path
 from typing import Sequence
@@ -22,7 +23,7 @@ _DEFSRC_60 = [
 ]
 # fmt: on
 DEFSRC_TO_POS = {key: pos for pos, key in enumerate(_DEFSRC_60)}
-PHYSICAL_LAYOUT = {"qmk_keyboard": "1upkeyboards/1up60rgb", "qmk_layout": "LAYOUT_60_ansi"}
+PHYSICAL_LAYOUT = {"qmk_keyboard": "1upkeyboards/1up60rgb", "layout_name": "LAYOUT_60_ansi"}
 
 
 class KanataKeymapParser(KeymapParser):
@@ -36,6 +37,7 @@ class KanataKeymapParser(KeymapParser):
         columns: int | None,
         base_keymap: KeymapData | None = None,
         layer_names: list[str] | None = None,
+        virtual_layers: list[str] | None = None,
     ):
         super().__init__(config, columns, base_keymap, layer_names)
         self.aliases: dict[str, str | pp.ParseResults] = {}
@@ -52,7 +54,7 @@ class KanataKeymapParser(KeymapParser):
         if file_path is None:
             return parsed
         includes = [node[1] for node in parsed if isinstance(node, pp.ParseResults) and node[0] == "include"]
-        logger.debug("found kanata include files: %s", includes)
+        logger.debug("found include files: %s", includes)
         for include in includes[::-1]:
             with open(file_path.parent / Path(include), encoding="utf-8") as f:
                 parsed = cls._parse_cfg(f.read(), None) + parsed
@@ -148,7 +150,6 @@ class KanataKeymapParser(KeymapParser):
 
     def _get_layers(self, defsrc: list[str], nodes: list[pp.ParseResults]) -> dict[str, list[LayoutKey]]:
         layer_nodes = {node[1]: node[2:] for node in nodes if node[0] == "deflayer"}
-        logger.debug("found layer nodes: %s", layer_nodes)
         self.update_layer_names(list(layer_nodes))
 
         layers: dict[str, list[LayoutKey]] = {}
