@@ -10,6 +10,7 @@ from keymap_drawer.config import ParseConfig
 from keymap_drawer.keymap import ComboSpec, KeymapData, LayoutKey
 from keymap_drawer.parse.parse import KeymapParser, ParseError
 
+logger = logging.getLogger(__name__)
 
 # fmt: off
 _DEFSRC_60 = [
@@ -51,6 +52,7 @@ class KanataKeymapParser(KeymapParser):
         if file_path is None:
             return parsed
         includes = [node[1] for node in parsed if isinstance(node, pp.ParseResults) and node[0] == "include"]
+        logger.debug("found kanata include files: %s", includes)
         for include in includes[::-1]:
             with open(file_path.parent / Path(include), encoding="utf-8") as f:
                 parsed = cls._parse_cfg(f.read(), None) + parsed
@@ -66,12 +68,14 @@ class KanataKeymapParser(KeymapParser):
         try:
             defalias = list(chain.from_iterable(node[1:] for node in nodes if node[0] == "defalias"))
             self.aliases = {defalias[k]: defalias[k + 1] for k in range(0, len(defalias), 2)}
+            logger.debug("found aliases: %s", self.aliases)
         except StopIteration:
             pass
 
         try:
             defvar = list(chain.from_iterable(node[1:] for node in nodes if node[0] == "defvar"))
             self.vars = {defvar[k]: defvar[k + 1] for k in range(0, len(defvar), 2)}
+            logger.debug("found vars: %s", self.vars)
         except StopIteration:
             pass
 
@@ -144,8 +148,8 @@ class KanataKeymapParser(KeymapParser):
 
     def _get_layers(self, defsrc: list[str], nodes: list[pp.ParseResults]) -> dict[str, list[LayoutKey]]:
         layer_nodes = {node[1]: node[2:] for node in nodes if node[0] == "deflayer"}
-        # print(layer_nodes)
-        self.layer_names = list(layer_nodes)
+        logger.debug("found layer nodes: %s", layer_nodes)
+        self.update_layer_names(list(layer_nodes))
 
         layers: dict[str, list[LayoutKey]] = {}
         for layer_ind, (layer_name, layer) in enumerate(layer_nodes.items()):
@@ -162,7 +166,7 @@ class KanataKeymapParser(KeymapParser):
 
     def _get_combos(self, nodes: list[pp.ParseResults]) -> list[ComboSpec]:
         try:
-            chords_node = next(node[1:] for node in nodes if node[0] == "defchordsv2-experimental")
+            chords_node = next(node[1:] for node in nodes if node[0] in ("defchordsv2", "defchordsv2-experimental"))
         except StopIteration:
             return []
 
