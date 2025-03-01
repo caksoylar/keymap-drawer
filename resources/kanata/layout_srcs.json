@@ -1,0 +1,86 @@
+[
+    {
+        "physical_layout": {"qmk_keyboard": "generic/60_ansi"},
+        "defsrc": [
+            "grv", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "bspc",
+            "tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\",
+            "caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "ret",
+            "lshift", "z", "x", "c", "v", "b", "n", "m", "⸴", ".", "/", "rsft",
+            "lctl", "lmet", "lalt", "spc", "ralt", "rmet", "comp", "rctl"
+        ]
+    },
+    {
+        "physical_layout": {"qmk_keyboard": "generic/60_iso"},
+        "defsrc": [
+            "grv", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "bspc",
+            "tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]",
+            "caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\\", "ret",
+            "lshift", "nubs", "z", "x", "c", "v", "b", "n", "m", "⸴", ".", "/", "rsft",
+            "lctl", "lmet", "lalt", "spc", "ralt", "rmet", "comp", "rctl"
+        ]
+    },
+    {
+        "physical_layout": {"qmk_keyboard": "generic/65_ansi"},
+        "defsrc": [
+            "grv", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "bspc", "home",
+            "tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\", "pgup",
+            "caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "ret", "pgdn",
+            "lshift", "z", "x", "c", "v", "b", "n", "m", "⸴", ".", "/", "rsft", "up", "end",
+            "lctl", "lmet", "lalt", "spc", "ralt", "rmet", "rctl", "lft", "down", "rght"
+        ]
+    },
+    {
+        "physical_layout": {"qmk_keyboard": "generic/65_iso"},
+        "defsrc": [
+            "grv", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "bspc", "home",
+            "tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "pgup",
+            "caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\\", "ret", "pgdn",
+            "lshift", "nubs", "z", "x", "c", "v", "b", "n", "m", "⸴", ".", "/", "rsft", "up", "end",
+            "lctl", "lmet", "lalt", "spc", "ralt", "rmet", "rctl", "lft", "down", "rght"
+        ]
+    },
+    {
+        "physical_layout": {"qmk_keyboard": "generic/tkl_ansi"},
+        "defsrc": [
+            "esc", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "prtsc", "scrlck", "pause",
+            "grv", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "bspc", "ins", "home", "pgup",
+            "tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\", "del", "end", "pgdn",
+            "caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "ret",
+            "lshift", "z", "x", "c", "v", "b", "n", "m", "⸴", ".", "/", "rsft", "up",
+            "lctl", "lmet", "lalt", "spc", "ralt", "rmet", "comp",  "rctl", "lft", "down", "rght"
+        ]
+    },
+    {
+        "physical_layout": {"qmk_keyboard": "generic/tkl_iso"},
+        "defsrc": [
+            "esc", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "prtsc", "scrlck", "pause",
+            "grv", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "bspc", "ins", "home", "pgup",
+            "tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "del", "end", "pgdn",
+            "caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\\", "ret",
+            "lshift", "nubs", "z", "x", "c", "v", "b", "n", "m", "⸴", ".", "/", "rsft", "up",
+            "lctl", "lmet", "lalt", "spc", "ralt", "rmet", "comp", "rctl", "lft", "down", "rght"
+        ]
+    },
+    {
+        "physical_layout": {"qmk_keyboard": "generic/fullsize_ansi"},
+        "defsrc": [
+            "esc", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "prtsc", "scrlck", "pause",
+            "grv", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "bspc", "ins", "home", "pgup", "nlck", "kp/", "kp*", "kp-",
+            "tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\", "del", "end", "pgdn", "kp7", "kp8", "kp9", "kp+",
+            "caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "ret", "kp4", "kp5", "kp6",
+            "lshift", "z", "x", "c", "v", "b", "n", "m", "⸴", ".", "/", "rsft", "up", "kp1", "kp2", "kp3", "kprt",
+            "lctl", "lmet", "lalt", "spc", "ralt", "rmet", "comp",  "rctl", "lft", "down", "rght", "kp0", "kp."
+        ]
+    },
+    {
+        "physical_layout": {"qmk_keyboard": "generic/fullsize_iso"},
+        "defsrc": [
+            "esc", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "prtsc", "scrlck", "pause",
+            "grv", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "bspc", "ins", "home", "pgup", "nlck", "kp/", "kp*", "kp-",
+            "tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "del", "end", "pgdn", "kp7", "kp8", "kp9", "kp+",
+            "caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\\", "ret", "kp4", "kp5", "kp6",
+            "lshift", "nubs", "z", "x", "c", "v", "b", "n", "m", "⸴", ".", "/", "rsft", "up", "kp1", "kp2", "kp3", "kprt",
+            "lctl", "lmet", "lalt", "spc", "ralt", "rmet", "comp", "rctl", "lft", "down", "rght", "kp0", "kp."
+        ]
+    }
+]

@@ -13,7 +13,8 @@ dependencies = [
     "platformdirs ~= 4.0",
     "pydantic-settings ~= 2.2",
     "tree-sitter ~= 0.24",
-    "tree-sitter-devicetree ~= 0.14"
+    "tree-sitter-devicetree ~= 0.14",
+    "pyparsing ~= 3.2"
 ]
 
 [project.optional-dependencies]

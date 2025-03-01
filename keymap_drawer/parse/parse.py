@@ -23,6 +23,7 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
     """Abstract base class for parsing firmware keymap representations."""
 
     _modifier_fn_to_std: dict[str, list[str]]
+    _modifier_fn_re: re.Pattern | None = None
 
     def __init__(
         self,
@@ -44,9 +45,10 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         self.conditional_layers: dict[int, list[int]] = {}  # then-layer to if-layers mapping
         self.trans_key = LayoutKey.from_key_spec(self.cfg.trans_legend)
         self.raw_binding_map = self.cfg.raw_binding_map.copy()
-        self._modifier_fn_re = re.compile(
-            "(" + "|".join(re.escape(mod) for mod in self._modifier_fn_to_std) + r") *\( *(.*) *\)"
-        )
+        if self._modifier_fn_re is None:
+            self._modifier_fn_re = re.compile(
+                "(" + "|".join(re.escape(mod) for mod in self._modifier_fn_to_std) + r") *\( *(.*) *\)"
+            )
         if (mod_map := self.cfg.modifier_fn_map) is not None:
             self._mod_combs_lookup = {
                 frozenset(mods.split("+")): val for mods, val in mod_map.special_combinations.items()
@@ -60,6 +62,8 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
             return keycode, []
 
         def strip_modifiers(keycode: str, current_mods: list[str] | None = None) -> tuple[str, list[str]]:
+            assert self._modifier_fn_re is not None
+
             if current_mods is None:
                 current_mods = []
             if not (m := self._modifier_fn_re.fullmatch(keycode)):

@@ -2,5 +2,6 @@
 
 from .qmk import QmkJsonParser
 from .zmk import ZmkKeymapParser
+from .kanata import KanataKeymapParser
 
-__all__ = ["QmkJsonParser", "ZmkKeymapParser"]
+__all__ = ["QmkJsonParser", "ZmkKeymapParser", "KanataKeymapParser"]
