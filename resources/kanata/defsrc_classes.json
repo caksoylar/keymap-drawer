@@ -47,7 +47,7 @@
     ["b", "KeyB"],
     ["n", "KeyN"],
     ["m", "KeyM"],
-    ["⸴", "Comma", "comm"],
+    ["⸴", ",", "Comma", "comm"],
     [".", "Period", "．"],
     ["/", "Slash", "⁄"],
     ["\\", "Backslash", "bksl", "⧵", "＼", "yen"],

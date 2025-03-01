@@ -209,7 +209,10 @@ def main() -> None:
         "-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=FileType("rt", encoding="utf-8")
     )
     keymap_srcs.add_argument(
-        "-k", "--kanata-keymap", help="Path to Kanata *.cfg to parse", type=FileType("rt", encoding="utf-8")
+        "-k",
+        "--kanata-keymap",
+        help="Path to Kanata *.cfg to parse (experimental!)",
+        type=FileType("rt", encoding="utf-8"),
     )
     parse_p.add_argument(
         "-b",
