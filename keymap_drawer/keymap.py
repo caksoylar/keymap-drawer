@@ -217,6 +217,7 @@ class KeymapData(BaseModel):
     @classmethod
     def parse_layers(cls, val) -> dict[str, list[LayoutKey]]:
         """Parse each key on layer from its key spec, flattening the spec if it contains sublists."""
+        assert val, "No layers found"
         return {
             layer_name: [
                 val if isinstance(val, LayoutKey) else LayoutKey.from_key_spec(val)
