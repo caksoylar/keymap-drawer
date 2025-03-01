@@ -136,15 +136,10 @@ class KanataKeymapParser(KeymapParser):
             alt_key = recurse(binding[2])
             return LayoutKey(tap=main_key.tap, hold=main_key.hold, shifted=alt_key.tap)
         if binding[0] == "multi":
-            binds = [recurse(bind).tap for bind in binding[1:4]]
-            if len(binding) > 4:
-                binds[-1] = "…"
-            return LayoutKey(tap=" +".join(binds))
+            return LayoutKey(tap="+".join(recurse(bind).tap for bind in binding[1:]))
         if binding[0] == "macro":
             binds = [recurse(bind).tap for bind in binding[1:4]]
-            if len(binding) > 4:
-                binds[-1] = "…"
-            return LayoutKey(tap="macro " + "  ".join(binds))
+            return LayoutKey(tap="macro " + "  ".join(recurse(bind).tap for bind in binding[1:]))
 
         return LayoutKey(tap=binding_str)
 
