@@ -16,7 +16,7 @@ from keymap_drawer import logger
 from keymap_drawer.config import Config, DrawConfig
 from keymap_drawer.draw import KeymapDrawer
 from keymap_drawer.keymap import KeymapData
-from keymap_drawer.parse import QmkJsonParser, ZmkKeymapParser
+from keymap_drawer.parse import KanataKeymapParser, QmkJsonParser, ZmkKeymapParser
 
 
 def draw(args: Namespace, config: Config) -> None:
@@ -84,7 +84,7 @@ def parse(args: Namespace, config: Config) -> None:
             layer_names=args.layer_names,
             virtual_layers=args.virtual_layers,
         ).parse(args.qmk_keymap_json)
-    else:
+    elif args.zmk_keymap:
         parsed = ZmkKeymapParser(
             config.parse_config,
             args.columns,
@@ -92,6 +92,14 @@ def parse(args: Namespace, config: Config) -> None:
             layer_names=args.layer_names,
             virtual_layers=args.virtual_layers,
         ).parse(args.zmk_keymap)
+    else:
+        parsed = KanataKeymapParser(
+            config.parse_config,
+            args.columns,
+            base_keymap=base,
+            layer_names=args.layer_names,
+            virtual_layers=args.virtual_layers,
+        ).parse(args.kanata_keymap)
 
     yaml.safe_dump(parsed, args.output, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
 
@@ -199,6 +207,12 @@ def main() -> None:
     )
     keymap_srcs.add_argument(
         "-z", "--zmk-keymap", help="Path to ZMK *.keymap to parse", type=FileType("rt", encoding="utf-8")
+    )
+    keymap_srcs.add_argument(
+        "-k",
+        "--kanata-keymap",
+        help="Path to Kanata *.cfg to parse (experimental!)",
+        type=FileType("rt", encoding="utf-8"),
     )
     parse_p.add_argument(
         "-b",
