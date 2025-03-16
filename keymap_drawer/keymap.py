@@ -84,7 +84,8 @@ class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
     and layers that it is present on.
     """
 
-    key_positions: list[int] = Field(alias="p")
+    key_positions: list[int] = Field(alias="p", default=[])
+    trigger_keys: list[LayoutKey] = Field(alias="tk", default=[])
     key: LayoutKey = Field(alias="k")
     layers: list[str] = Field(alias="l", default=[])
     align: Literal["mid", "top", "bottom", "left", "right"] = Field(alias="a", default="mid")
@@ -109,17 +110,38 @@ class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
             spec_dict["k"] = LayoutKey.from_key_spec(key_spec)
         return spec_dict
 
+    @model_validator(mode="after")
+    def validate_trigger_spec(self):
+        """Make sure either positions or trigger keys are specified."""
+        assert (not self.key_positions and self.trigger_keys) or (
+            self.key_positions and not self.trigger_keys
+        ), "Need to specify exactly one of `key_positions` or `trigger_keys` for combo"
+        return self
+
     @field_validator("key", mode="before")
     @classmethod
     def get_key(cls, val) -> LayoutKey:
         """Parse each key from its key spec."""
         return val if isinstance(val, LayoutKey) else LayoutKey.from_key_spec(val)
 
+    @field_validator("trigger_keys", mode="before")
+    @classmethod
+    def get_trigger_keys(cls, val) -> list[LayoutKey]:
+        """Parse each trigger key from its key spec."""
+        return [item if isinstance(item, LayoutKey) else LayoutKey.from_key_spec(item) for item in val]
+
     @field_validator("key_positions")
     @classmethod
     def validate_positions(cls, val) -> list[str]:
         """Make sure each combo has at least two positions."""
-        assert len(val) >= 2, f"Need at least two key positions for combo but got {val}"
+        assert not val or len(val) >= 2, f"Need at least two key positions for combo but got {val}"
+        return val
+
+    @field_validator("key_positions")
+    @classmethod
+    def validate_trigger_keys(cls, val) -> list[str]:
+        """Make sure each combo has at least two trigger keys."""
+        assert not val or len(val) >= 2, f"Need at least two trigger keys for combo but got {val}"
         return val
 
 
@@ -132,6 +154,35 @@ class KeymapData(BaseModel):
     # None-values only for use while parsing, i.e. no-layout mode
     layout: PhysicalLayout | None = None
     config: Config | None = None
+
+    def _resolve_key_positions_from_trigger_keys(self, combo: ComboSpec) -> None:
+        assert combo.trigger_keys
+        for layer in combo.layers if combo.layers else list(self.layers):
+            # try full legend match
+            matches = [
+                next(
+                    (ind for ind, layer_key in enumerate(self.layers[layer]) if key == layer_key),
+                    None,
+                )
+                for key in combo.trigger_keys
+            ]
+            if all(ind is not None for ind in matches):
+                combo.key_positions = matches  # type: ignore
+                return
+
+            # try matching by only tap legend
+            matches = [
+                next(
+                    (ind for ind, layer_key in enumerate(self.layers[layer]) if key == LayoutKey(tap=layer_key.tap)),
+                    None,
+                )
+                for key in combo.trigger_keys
+            ]
+            if all(ind is not None for ind in matches):
+                combo.key_positions = matches  # type: ignore
+                return
+
+        raise ValueError(f'Cannot find matching key positions in the layers for trigger keys "{combo.trigger_keys}"')
 
     def get_combos_per_layer(self, layers: Iterable[str] | None = None) -> dict[str, list[ComboSpec]]:
         """Return a mapping of layer names to combos that are present on that layer, if they aren't drawn separately."""
@@ -241,8 +292,11 @@ class KeymapData(BaseModel):
 
     @model_validator(mode="after")
     def check_combos(self):
-        """Validate combo positions are legitimate ones we can draw."""
+        """Resolve trigger keys if specified then validate combo positions are legitimate ones we can draw."""
         for combo in self.combos:
+            if combo.trigger_keys:
+                self._resolve_key_positions_from_trigger_keys(combo)
+
             assert self.layout is None or all(
                 pos < len(self.layout) for pos in combo.key_positions
             ), f"Combo positions ({combo.key_positions}) exceed number of keys ({len(self.layout)}) for combo '{combo}'"
