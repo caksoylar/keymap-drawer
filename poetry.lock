@@ -1036,4 +1036,4 @@ lsp = ["python-lsp-server"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "18371afab2e3144e8c9359b8235e4d59f7bea0b4ac1f6566301c1dd372086f94"
+content-hash = "da09f61bb828bbab13e07b230c1f371ea309593c5d7c20399607ad32a4dd49e8"
