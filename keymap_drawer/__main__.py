@@ -56,7 +56,7 @@ def draw(args: Namespace, config: Config) -> None:
     drawer = KeymapDrawer(
         config=config,
         out=args.output,
-        layers=yaml_data["layers"],
+        layers=yaml_data.get("layers", {}),
         layout=layout,
         combos=yaml_data.get("combos", []),
     )
@@ -72,7 +72,9 @@ def parse(args: Namespace, config: Config) -> None:
     """Call the appropriate parser for given args and dump YAML keymap representation to stdout."""
     if args.base_keymap:
         yaml_data = yaml.safe_load(args.base_keymap)
-        base = KeymapData(layers=yaml_data["layers"], combos=yaml_data.get("combos", []), layout=None, config=None)
+        base = KeymapData(
+            layers=yaml_data.get("layers", {}), combos=yaml_data.get("combos", []), layout=None, config=None
+        )
     else:
         base = None
 

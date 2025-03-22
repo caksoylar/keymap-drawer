@@ -191,30 +191,8 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         ghost_keys: Sequence[int] | None = None,
     ) -> None:
         """Print SVG code representing the keymap."""
-        layers = deepcopy(self.keymap.layers)
-        if draw_layers:
-            assert all(l in layers for l in draw_layers), "Some layer names selected for drawing are not in the keymap"
-            layers = {name: layer for name, layer in layers.items() if name in draw_layers}
-
-        if keys_only:
-            combos_per_layer: dict[str, list[ComboSpec]] = {}
-        else:
-            combos_per_layer = self.keymap.get_combos_per_layer(layers)
-
-        if combos_only:
-            layers = {
-                name: [LayoutKey() for _ in range(len(self.layout))]
-                for name, combos in combos_per_layer.items()
-                if combos
-            }
-
-        if ghost_keys:
-            for key_position in ghost_keys:
-                assert (
-                    0 <= key_position < len(self.layout)
-                ), "Some key positions for `ghost_keys` are negative or too large for the layout"
-                for layer in layers.values():
-                    layer[key_position].type = "ghost"
+        # get final set of layers and combos per layer given the drawing options
+        layers, combos_per_layer = _resolve_layers_combos(self.keymap, draw_layers, keys_only, combos_only, ghost_keys)
 
         self.layer_names = set(layers)
 
@@ -257,3 +235,42 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             self.print_footer(Point(board_w, board_h))
 
         self.output_stream.write("</svg>\n")
+
+
+def _resolve_layers_combos(
+    keymap: KeymapData,
+    draw_layers: Sequence[str] | None = None,
+    keys_only: bool = False,
+    combos_only: bool = False,
+    ghost_keys: Sequence[int] | None = None,
+) -> tuple[dict[str, list[LayoutKey]], dict[str, list[ComboSpec]]]:
+    layers = deepcopy(keymap.layers)
+    if draw_layers:
+        assert all(l in layers for l in draw_layers), "Some layer names selected for drawing are not in the keymap"
+        layers = {name: layer for name, layer in layers.items() if name in draw_layers}
+
+    if keys_only:
+        combos_per_layer: dict[str, list[ComboSpec]] = {}
+    elif not layers:
+        combos_per_layer = {"Combos": keymap.combos}
+    else:
+        combos_per_layer = keymap.get_combos_per_layer(layers)
+
+    assert keymap.layout is not None
+
+    if combos_only or not layers:
+        layers = {
+            name: [LayoutKey() for _ in range(len(keymap.layout))]
+            for name, combos in combos_per_layer.items()
+            if combos
+        }
+
+    if ghost_keys:
+        for key_position in ghost_keys:
+            assert (
+                0 <= key_position < len(keymap.layout)
+            ), "Some key positions for `ghost_keys` are negative or too large for the layout"
+            for layer in layers.values():
+                layer[key_position].type = "ghost"
+
+    return layers, combos_per_layer

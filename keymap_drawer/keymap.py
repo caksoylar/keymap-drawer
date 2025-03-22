@@ -148,7 +148,7 @@ class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
 class KeymapData(BaseModel):
     """Represents all data pertaining to a keymap, including layers, combos and physical layout."""
 
-    layers: dict[str, list[LayoutKey]]
+    layers: dict[str, list[LayoutKey]] = {}
     combos: list[ComboSpec] = []
 
     # None-values only for use while parsing, i.e. no-layout mode
@@ -268,7 +268,6 @@ class KeymapData(BaseModel):
     @classmethod
     def parse_layers(cls, val) -> dict[str, list[LayoutKey]]:
         """Parse each key on layer from its key spec, flattening the spec if it contains sublists."""
-        assert val, "No layers found"
         return {
             layer_name: [
                 val if isinstance(val, LayoutKey) else LayoutKey.from_key_spec(val)
@@ -291,6 +290,12 @@ class KeymapData(BaseModel):
         return vals
 
     @model_validator(mode="after")
+    def check_valid(self):
+        """Check if there are any valid fields to use."""
+        assert self.layers or self.combos, "No layers or combos found, nothing to draw"
+        return self
+
+    @model_validator(mode="after")
     def check_combos(self):
         """Resolve trigger keys if specified then validate combo positions are legitimate ones we can draw."""
         for combo in self.combos:
@@ -309,7 +314,7 @@ class KeymapData(BaseModel):
     def check_dimensions(self):
         """Validate that physical layout and layers have the same number of keys."""
         if self.layout is None:  # only check self-consistency for no-layout mode
-            if len(set(len(layer) for layer in self.layers.values())) != 1:
+            if len(set(len(layer) for layer in self.layers.values())) > 1:
                 counts = {layer_name: len(layer) for layer_name, layer in self.layers.items()}
                 raise AssertionError(f"Number of keys differ between layers. Key counts found: {counts}")
             return self
