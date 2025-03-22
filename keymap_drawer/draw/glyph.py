@@ -83,13 +83,13 @@ class GlyphMixin:
             if ":" in name:  # templated source:ID format
                 source, glyph_id = name.split(":", maxsplit=1)
                 if templated_url := self.cfg.glyph_urls.get(source):
-                    if source == "phosphor":  # special case to handle variants
-                        assert "/" in glyph_id, "phosphor glyphs should be in `$$phosphor:<type>/<id>$$` format"
-                        ph_type, ph_id = glyph_id.split("/", maxsplit=1)
-                        ph_type = ph_type.lower()
-                        glyph_id = f"{ph_type}/{ph_id}"
-                        if ph_type != "regular":
-                            glyph_id += f"-{ph_type}"
+                    if source in ("phosphor", "fa"):  # special case to handle variants
+                        assert "/" in glyph_id, "phosphor/fa glyphs should be in `$$<source>:<type>/<id>$$` format"
+                        sub_type, sub_id = glyph_id.split("/", maxsplit=1)
+                        sub_type = sub_type.lower()
+                        glyph_id = f"{sub_type}/{sub_id}"
+                        if source == "phosphor" and sub_type != "regular":
+                            glyph_id += f"-{sub_type}"
                     urls.append(templated_url.format(glyph_id))
             if url := self.cfg.glyph_urls.get(name):  # source only
                 urls.append(url)

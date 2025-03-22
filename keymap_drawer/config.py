@@ -269,6 +269,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
             "mdil": "https://raw.githubusercontent.com/Pictogrammers/MaterialDesignLight/master/svg/{}.svg",
             "material": "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/{}/default/48px.svg",
             "phosphor": "https://unpkg.com/@phosphor-icons/core/assets/{}.svg",
+            "fa": "https://unpkg.com/@fortawesome/fontawesome-free/svgs/{}.svg",
         },
     )
 
