@@ -30,6 +30,9 @@ on:
       draw_args:
         description: "Map of keyboard names to extra `keymap draw` args, e.g. `corne:'-k corne_rotated -l LAYOUT_split_3x5_3'`"
         type: string
+      extra_keymap_yaml:
+        description: "Map of keyboard names to extra keymap YAMLs to be passed to `keymap draw` after the parsed one, e.g. `corne:'keymap-drawer/extra_combos.yaml'`"
+        type: string
       commit_message:
         description: 'Commit message for updated images. Ignored if `amend_commit` is `true`.'
         type: string
@@ -142,10 +145,12 @@ jobs:
               keyboard=$(basename -s .keymap "$keymap_file")
               echo "INFO: drawing for $keyboard"
 
-              IFS=" " read -r -a parse_args <<< "$(get_args "${{ inputs.parse_args }}" "$keyboard")"
-              echo "INFO:   got extra parse args:" "${parse_args[@]}"
-              IFS=" " read -r -a  draw_args <<< "$(get_args "${{ inputs.draw_args }}"  "$keyboard")"
-              echo "INFO:   got extra draw args:" "${draw_args[@]}"
+              IFS=" " read -r -a parse_args        <<< "$(get_args "${{ inputs.parse_args }}" "$keyboard")"
+              echo "INFO:   got extra parse args:"       "${parse_args[@]}"
+              IFS=" " read -r -a draw_args         <<< "$(get_args "${{ inputs.draw_args }}" "$keyboard")"
+              echo "INFO:   got extra draw args:"        "${draw_args[@]}"
+              IFS=" " read -r -a extra_keymap_yaml <<< "$(get_args "${{ inputs.extra_keymap_yaml }}" "$keyboard")"
+              echo "INFO:   got extra keymap YAML args:" "${extra_keymap_yaml[@]}"
 
               json_path="${{ inputs.json_path }}"
               if [ -n "$json_path" ] && [ -f "$json_path/${keyboard}.json" ]; then
@@ -165,7 +170,7 @@ jobs:
                   continue
               fi
 
-              if keymap $debug_arg "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" "${draw_args[@]}" >"$tmp_svg"; then
+              if keymap $debug_arg "${config_arg[@]}" draw "${{ inputs.output_folder }}/$keyboard.yaml" "${extra_keymap_yaml[@]}" "${draw_args[@]}" >"$tmp_svg"; then
                   mv "$tmp_svg" "${{ inputs.output_folder }}/$keyboard.svg"
                   artifacts+=("${{ inputs.output_folder }}/$keyboard.svg")
               else

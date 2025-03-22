@@ -19,10 +19,20 @@ from keymap_drawer.keymap import KeymapData
 from keymap_drawer.parse import KanataKeymapParser, QmkJsonParser, ZmkKeymapParser
 
 
+def _merge_keymaps(base: dict, new: dict) -> dict:
+    return {
+        "layout": base.get("layout", {}) or new.get("layout", {}),  # override layout
+        "layers": base.get("layers", {}) | new.get("layers", {}),  # merge layers
+        "combos": base.get("combos", []) + new.get("combos", []),  # append combos
+        "draw_config": base.get("draw_config", {}) | new.get("draw_config", {}),  # merge config
+    }
+
+
 def draw(args: Namespace, config: Config) -> None:
     """Draw the keymap in SVG format to stdout."""
-    yaml_data = yaml.safe_load(args.keymap_yaml)
-    assert "layers" in yaml_data, 'Keymap needs to be specified via the "layers" field in keymap_yaml'
+    yaml_data: dict[str, dict] = {}
+    for yaml_arg in args.keymap_yaml:
+        yaml_data = _merge_keymaps(yaml_data, yaml.safe_load(yaml_arg))
 
     cli_layout = {
         k: v
@@ -189,8 +199,9 @@ def main() -> None:
     draw_p.add_argument(
         "keymap_yaml",
         help='YAML file (or stdin for "-") containing keymap definition with layers and (optionally) combos, '
-        "see README for schema",
+        "see README for schema. Can specify multiple files, which are merged together before drawing",
         type=FileType("rt", encoding="utf-8"),
+        nargs="+",
     )
     draw_p.add_argument(
         "-o",
