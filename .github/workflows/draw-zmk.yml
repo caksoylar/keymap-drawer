@@ -6,83 +6,60 @@ on:
     inputs:
       keymap_patterns:
         description: 'Path specification for keymaps to be parsed'
-        default: 'config/*.keymap'
-        required: false
         type: string
+        default: 'config/*.keymap'
       config_path:
         description: 'Path to the keymap-drawer configuration file, ignored if non-existent'
-        default: 'keymap_drawer.config.yaml'
-        required: false
         type: string
+        default: 'keymap_drawer.config.yaml'
       west_config_path:
         description: 'Path to the folder containing west.yml, e.g. `config`. Set to empty to skip fetching modules from west.yml'
-        default: 'config'
-        required: false
         type: string
+        default: 'config'
       output_folder:
         description: 'Output folder for SVG and YAML files'
-        default: 'keymap-drawer'
-        required: false
         type: string
+        default: 'keymap-drawer'
       json_path:
         description: 'Path containing <keymap>.json physical layout description files, ignored if non-existent'
-        default: 'config'
-        required: false
         type: string
+        default: 'config'
       parse_args:
         description: "Map of keyboard names to extra `keymap parse` args, e.g. `corne:'--layer-names Def Lwr Rse Fun'`"
-        default: ''
-        required: false
         type: string
       draw_args:
         description: "Map of keyboard names to extra `keymap draw` args, e.g. `corne:'-k corne_rotated -l LAYOUT_split_3x5_3'`"
-        default: ''
-        required: false
         type: string
       commit_message:
         description: 'Commit message for updated images. Ignored if `amend_commit` is `true`.'
-        default: 'keymap-drawer render'
-        required: false
         type: string
+        default: 'keymap-drawer render'
       amend_commit:
         description: 'Whether to amend the last commit instead of creating a new one. Make sure you understand the implications of rewriting the branch history if you use this option!'
-        default: false
-        required: false
         type: boolean
       install_branch:
         description: 'Install keymap-drawer from a git branch, use empty to install from a pypi release obeying `install_version` (default)'
-        default: ''
-        required: false
         type: string
       install_repo:
         description: 'Install keymap-drawer from a different git remote, primarily for testing changes using a keymap-drawer fork. Ignored if `install_branch` is unset/empty.'
-        default: 'https://github.com/caksoylar/keymap-drawer.git'
-        required: false
         type: string
+        default: 'https://github.com/caksoylar/keymap-drawer.git'
       install_version:
         description: 'Install keymap-drawer from pypi using the specified version, use empty for latest pypi release (default)'
-        default: ''
-        required: false
         type: string
       destination:
         description: 'Add the output files to a commit, as artifacts or both, values: `commit`, `artifact`, `both`'
-        default: 'commit'
-        required: false
         type: string
+        default: 'commit'
       artifact_name:
         description: 'Name of the produced artifact containing SVG and YAML outputs. Ignored if `destination` is `commit`.'
-        default: 'drawings'
-        required: false
         type: string
+        default: 'drawings'
       fail_on_error:
         description: 'Fail the action if an error occurs during parse/draw'
-        default: false
-        required: false
         type: boolean
       debug_mode:
         description: 'Enable debug mode'
-        default: false
-        required: false
         type: boolean
     outputs:
       drawings:
