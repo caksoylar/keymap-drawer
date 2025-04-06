@@ -285,7 +285,9 @@ class PhysicalLayoutGenerator(BaseModel, arbitrary_types_allowed=True):
                     config=self.config, **_map_zmk_layout(self.zmk_keyboard, self.layout_name)
                 ).generate()
             except ValueError as exc:
-                raise ValueError('A physical layout for zmk_keyboard "{self.zmk_keyboard}" could not be found') from exc
+                raise ValueError(
+                    f'A physical layout for zmk_keyboard "{self.zmk_keyboard}" could not be found'
+                ) from exc
 
         if self.zmk_shared_layout is not None:
             fetched = _get_zmk_shared_layout(self.zmk_shared_layout, draw_cfg.use_local_cache)
