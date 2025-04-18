@@ -1,4 +1,4 @@
-"""Module containing class to parse devicetree format ZMK keymaps."""
+"""Module containing class to parse Kanata keymaps."""
 
 import json
 import logging
@@ -59,7 +59,7 @@ class KanataKeymapParser(KeymapParser):
         parsed = (
             pp.nested_expr("(", ")")
             .ignore(";;" + pp.SkipTo(pp.lineEnd))
-            .ignore("#|" + pp.SkipTo("|#"))
+            .ignore("#|" + pp.SkipTo("|#", include=True))
             .parse_string("(" + cfg_str + ")")[0]
         )
         if file_path is None:
@@ -127,12 +127,12 @@ class KanataKeymapParser(KeymapParser):
         def recurse(new_binding):
             return self._str_to_key(new_binding, current_layer, key_positions)
 
-        if isinstance(binding, str) and binding.startswith("@"):
-            binding = self.aliases.get(binding[1:], binding)
-        if isinstance(binding, str) and binding.startswith("$"):
-            binding = self.vars.get(binding[1:], binding)
 
         if isinstance(binding, str):
+            if binding.startswith("@") and (mapped := self.aliases.get(binding.lstrip("@"), False)):
+                return recurse(mapped)
+            if binding.startswith("$") and (mapped := self.vars.get(binding.lstrip("$"), False)):
+                return recurse(mapped)
             if binding in ("_", "‗", "≝"):
                 return LayoutKey.from_key_spec(self.cfg.trans_legend)
             if binding in ("XX", "✗", "∅", "•"):
@@ -232,7 +232,7 @@ class KanataKeymapParser(KeymapParser):
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
         """
-        Parse a ZMK keymap with its content and path and return the layout spec and KeymapData to be dumped to YAML.
+        Parse a Kanata keymap with its content and path and return the layout spec and KeymapData to be dumped to YAML.
         """
         nodes = self._parse_cfg(in_str, Path(file_name) if file_name else None)
 
