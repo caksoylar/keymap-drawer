@@ -2,7 +2,7 @@
 
 import json
 import logging
-from itertools import chain, islice
+from itertools import batched, chain
 from pathlib import Path
 from typing import Iterable, Sequence
 
@@ -127,7 +127,6 @@ class KanataKeymapParser(KeymapParser):
         def recurse(new_binding):
             return self._str_to_key(new_binding, current_layer, key_positions)
 
-
         if isinstance(binding, str):
             if binding.startswith("@") and (mapped := self.aliases.get(binding.lstrip("@"), False)):
                 return recurse(mapped)
@@ -177,34 +176,54 @@ class KanataKeymapParser(KeymapParser):
         assert self.defsrc_indices is not None
         assert self.defsrc_to_pos is not None
 
+        layer_names = [
+            node[1] if node[0] == "deflayer" else node[1][0] for node in nodes if node[0] in ("deflayer", "deflayermap")
+        ]
         layer_nodes = {node[1]: node[2:] for node in nodes if node[0] == "deflayer"}
-        self.update_layer_names(list(layer_nodes))
+        layermap_nodes = {node[1][0]: node[2:] for node in nodes if node[0] == "deflayermap"}
 
-        layers: dict[str, list[LayoutKey]] = {}
-        for layer_ind, (layer_name, layer) in enumerate(layer_nodes.items()):
-            layers[layer_name] = [LayoutKey() for _ in range(len(self.defsrc_to_pos))]
-            for key_pos, layer_key in zip(self.defsrc_indices, layer):
+        self.update_layer_names(layer_names)
+
+        def create_from_deflayer(ind: int, name: str, keys: list[pp.ParseResults]) -> list[LayoutKey]:
+            assert self.defsrc_indices is not None
+            assert self.defsrc_to_pos is not None
+            layer = [LayoutKey() for _ in range(len(self.defsrc_to_pos))]
+            for key_pos, key in zip(self.defsrc_indices, keys):
                 try:
-                    layers[layer_name][key_pos] = self._str_to_key(layer_key, layer_ind, [key_pos])
+                    layer[key_pos] = self._str_to_key(key, ind, [key_pos])
                 except Exception as err:
                     raise ParseError(
-                        f'Could not parse keycode "{layer_key}" in layer "{layer_name}" with exception "{err}"'
+                        f'Could not parse keycode "{key}" in layer "{name}" with exception "{err}"'
                     ) from err
+            return layer
+
+        def create_from_deflayermap(ind: int, name: str, mappings: list[pp.ParseResults]) -> list[LayoutKey]:
+            assert self.defsrc_to_pos is not None
+            default_action = LayoutKey()
+            layer: list[LayoutKey | None] = [None for _ in range(len(self.defsrc_to_pos))]
+            for input_elt, action_elt in batched(mappings, 2):
+                try:
+                    match input_elt:
+                        case "_" | "__" | "___":
+                            logger.warning('"_", "__" and "___" in deflayermap are not distinguished at the moment')
+                            default_action = self._str_to_key(action_elt, ind, [])
+                        case _:
+                            assert isinstance(input_elt, str)
+                            key_pos = self.defsrc_to_pos[self._canonicalize_defsrc(input_elt)]
+                            layer[key_pos] = self._str_to_key(action_elt, ind, [key_pos])
+                except Exception as err:
+                    raise ParseError(
+                        f'Could not parse action element "{action_elt}" in layermap "{name}" with exception "{err}"'
+                    ) from err
+            return [default_action.copy() if key is None else key for key in layer]
+
+        layers: dict[str, list[LayoutKey]] = {}
+        for layer_ind, layer_name in enumerate(layer_names):
+            if layer_keys := layer_nodes.get(layer_name):  # deflayer node
+                layers[layer_name] = create_from_deflayer(layer_ind, layer_name, layer_keys)
+            else:  # deflayermap node
+                layers[layer_name] = create_from_deflayermap(layer_ind, layer_name, layermap_nodes[layer_name])
         return layers
-
-    @staticmethod
-    def _get_raw_combo_nodes(nodes: list[pp.ParseResults]) -> list[tuple[(str | pp.ParseResults), ...]]:
-        try:
-            chords_node = next(node[1:] for node in nodes if node[0] in ("defchordsv2", "defchordsv2-experimental"))
-        except StopIteration:
-            return []
-
-        def batched(iterable, n):
-            it = iter(iterable)
-            while batch := tuple(islice(it, n)):
-                yield batch
-
-        return list(batched(chords_node, 5))
 
     def _get_combos(self, raw_combo_nodes: list[tuple[(str | pp.ParseResults), ...]]) -> list[ComboSpec]:
         assert self.layer_names is not None
@@ -236,16 +255,22 @@ class KanataKeymapParser(KeymapParser):
         """
         nodes = self._parse_cfg(in_str, Path(file_name) if file_name else None)
 
-        if any(node[1:] for node in nodes if node[0] == "deflayermap"):
-            logger.warning("deflayermap is not currently supported")
-
-        if any(node[1:] for node in nodes if node[0] == "deflocalkeys"):
+        if any(node for node in nodes if node[0] == "deflocalkeys"):
             logger.warning("deflocalkeys is not currently supported")
 
         defsrc = next(node[1:] for node in nodes if node[0] == "defsrc")
-        raw_combo_nodes = self._get_raw_combo_nodes(nodes)
+        raw_combo_nodes = list(
+            chain.from_iterable(
+                batched(node[1:], 5) for node in nodes if node[0] in ("defchordsv2", "defchordsv2-experimental")
+            )
+        )
+        deflayermap_srcs = chain.from_iterable(node[2::2] for node in nodes if node[0] == "deflayermap")
 
-        self._find_physical_layout(defsrc, set(pos for combo_def in raw_combo_nodes for pos in combo_def[0]))
+        self._find_physical_layout(
+            defsrc,
+            {pos for combo_def in raw_combo_nodes for pos in combo_def[0]}
+            | {pos for pos in deflayermap_srcs if pos not in ("_", "__", "___")},
+        )
         assert self.physical_layout is not None
 
         self._get_aliases_vars(nodes)
