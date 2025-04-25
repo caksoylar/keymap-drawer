@@ -5,7 +5,7 @@ description = "A module and CLI tool to help parse and draw keyboard layouts."
 authors = [{name = "Cem Aksoylar", email = "caksoylar@gmail.com"}]
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.12,<4.0"
 dependencies = [
     "pydantic ~= 2.0",
     "pcpp ~= 1.30",

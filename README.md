@@ -283,7 +283,7 @@ If you use `keymap-drawer`, tag your Github repo with the [`keymap-drawer` topic
 
 ## Development
 
-This project requires Python 3.10+ and uses [Poetry](https://python-poetry.org/) for packaging.
+This project requires Python 3.12+ and uses [Poetry](https://python-poetry.org/) for packaging.
 
 To get started, [install Poetry](https://python-poetry.org/docs/#installation), clone this repo, then install dependencies with the `poetry` command:
 
