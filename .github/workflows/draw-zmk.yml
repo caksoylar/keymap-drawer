@@ -129,7 +129,19 @@ jobs:
               echo "${output[@]}"
           }
 
-          shopt -s extglob
+          check_for_layout_args() {
+              local args=("$@")
+
+              for val in "-j" "--qmk-info-json" "-k" "--qmk-keyboard" "-z" "--zmk-keyboard" "-d" "--dts-layout" "--ortho-layout" "-n" "--cols-thumbs-notation"; do
+                  for item in "${args[@]}"; do
+                      if [ "$val" = "$item" ]; then return 0; fi
+                  done
+              done
+
+              return 1
+          }
+
+          shopt -s nullglob extglob
 
           artifacts=()
           error_occurred=0
@@ -153,9 +165,17 @@ jobs:
               echo "INFO:   got extra keymap YAML args:" "${extra_keymap_yaml[@]}"
 
               json_path="${{ inputs.json_path }}"
-              if [ -n "$json_path" ] && [ -f "$json_path/${keyboard}.json" ]; then
+              if check_for_layout_args "${draw_args[@]}"; then
+                  echo "INFO:   found layout specifiers in draw args"
+              elif [ -n "$json_path" ] && [ -f "$json_path/${keyboard}.json" ]; then
                   echo "INFO:   found $json_path/${keyboard}.json";
                   draw_args+=(-j "$json_path/${keyboard}.json")
+              else
+                  dts_candidates=({,config/}boards/*/*/${keyboard}-layout{,s}.dtsi)
+                  if [ ${#dts_candidates[@]} -gt 0 ]; then
+                      echo "INFO:   found ${dts_candidates[0]}";
+                      draw_args+=(-d "${dts_candidates[0]}")
+                  fi
               fi
 
               tmp_yaml=$(mktemp)
