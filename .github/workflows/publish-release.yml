@@ -88,7 +88,7 @@ jobs:
           gh release create
           '${{ github.ref_name }}'
           --title '${{ github.ref_name }}'
-          --discussion-category "Announcements"
+          --discussion-category "announcements"
           --notes-from-tag
       - name: Upload artifact signatures to GitHub Release
         env:
