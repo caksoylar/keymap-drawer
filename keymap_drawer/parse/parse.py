@@ -162,7 +162,12 @@ class KeymapParser(ABC):  # pylint: disable=too-many-instance-attributes
         # assign held keys
         for layer_index, activating_keys in self.layer_activated_from.items():
             for key_idx, is_alternate in activating_keys:
-                key = layers[self.layer_names[layer_index]][key_idx]
+                try:
+                    key = layers[self.layer_names[layer_index]][key_idx]
+                except IndexError:
+                    logger.warning("skipped assigning held key in index %d due to wrong layer length", key_idx)
+                    continue
+
                 if is_alternate and "held" in key.type:  # do not override primary held with alternate
                     continue
 
