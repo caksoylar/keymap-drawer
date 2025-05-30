@@ -57,7 +57,7 @@ class KanataKeymapParser(KeymapParser):
     @classmethod
     def _parse_cfg(cls, cfg_str: str, file_path: Path | None) -> list[pp.ParseResults]:
         parsed = (
-            pp.nested_expr("(", ")")
+            pp.nested_expr("(", ")", ignore_expr=None)
             .ignore(";;" + pp.SkipTo(pp.lineEnd))
             .ignore("#|" + pp.SkipTo("|#", include=True))
             .parse_string("(" + cfg_str + ")")[0]
