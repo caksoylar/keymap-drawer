@@ -33,19 +33,21 @@ It also decouples the physical keyboard layout from the keymap (i.e., layer and 
 ## Table of Contents
 
 - [Usage](#usage)
-  * [Try it as a web application](#try-it-as-a-web-application)
-  * [Command-line tool installation](#command-line-tool-installation)
-  * [Bootstrapping your keymap representation](#bootstrapping-your-keymap-representation)
-  * [Tweaking the produced keymap representation](#tweaking-the-produced-keymap-representation)
-  * [Producing the SVG](#producing-the-svg)
+  - [Try it as a web application](#try-it-as-a-web-application)
+  - [Command-line tool installation](#command-line-tool-installation)
+  - [Bootstrapping your keymap representation](#bootstrapping-your-keymap-representation)
+  - [Tweaking the produced keymap representation](#tweaking-the-produced-keymap-representation)
+  - [Producing the SVG](#producing-the-svg)
 - [Customization](#customization)
 - [Miscellanea](#miscellanea)
-  * [Custom SVG glyphs](#custom-svg-glyphs)
-  * [Automated drawing workflow](#automated-drawing-workflow)
+  - [Custom SVG glyphs](#custom-svg-glyphs)
+  - [Automated drawing workflow](#automated-drawing-workflow)
+  - [ZMK locale headers](#zmk-locale-headers)
+  - [Using with zmk-helpers](#using-with-zmk-helpers)
 - [Community](#community)
-  * [Tools](#tools)
-  * [Examples](#examples)
-  * [Related projects](#related-projects)
+  - [Tools](#tools)
+  - [Examples](#examples)
+  - [Related projects](#related-projects)
 - [Development](#development)
 - [Questions? Feedback?](#questions-feedback)
 
@@ -281,6 +283,36 @@ jobs:
 >
 > You should understand the implications of rewriting history if you amend a commit that has already been published.
 > See [remarks](https://git-scm.com/docs/git-rebase#_recovering_from_upstream_rebase) in `git-rebase` documentation.
+
+### ZMK locale headers
+
+If you use locale headers via [`zmk-locales`](https://github.com/joelspadin/zmk-locales) module or [`zmk-locale-generator`](https://github.com/joelspadin/zmk-locale-generator),
+you might want to preserve the keycode names without the locale prefix for `keymap-drawer` to parse.
+
+To do that, follow these two steps:
+
+1. Put the locale header `#include` in a define guard so it isn't processed by `keymap-drawer`:
+
+   ```c
+   #ifndef KEYMAP_DRAWER
+   #include "keys_de.h"
+   #endif
+   ```
+
+   This step should not be necessary if you use `zmk-locales` as a module, like `#include <locale/keys_de.h>`.
+
+2. Remove the locale prefix from the keycodes, so that they can be converted easier using [`zmk_keycode_map`](CONFIGURATION.md#zmk_keycode_map).
+   This can be done via the `zmk_remove_keycode_prefix` [configuration option](CONFIGURATION.md#zmk_remove_keycode_prefix):
+
+   ```yaml
+   parse_config:
+     zmk_remove_keycode_prefix: ["DE_"]
+   ```
+
+### Using with zmk-helpers
+
+Using [`zmk-helpers`](https://github.com/urob/zmk-helpers) will break the parsing of ZMK keymaps by default.
+Check out [this document](https://github.com/urob/zmk-helpers/blob/main/docs/keymap_drawer.md) that describes the configuration setting needed to enable parsing.
 
 ## Community
 
