@@ -1,7 +1,7 @@
 # Configuration options
 
 This page details the configuration options available for parsing and drawing, which can be provided to the CLI or can be set in the web UI in the "Configuration" box.
-Also see the [customization section](README.md#configuration) in the README for usage.
+Also see the [customization section](README.md#customization) in the README for usage.
 
 ## Draw Configuration
 
