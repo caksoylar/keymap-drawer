@@ -4,18 +4,21 @@ This folder contains resource/"data" files used by `keymap-drawer`. In particula
 
 - [`zmk_keyboard_layouts.yaml`](zmk_keyboard_layouts.yaml): Contains a mapping of ZMK keyboard names (the part of the filename `<keyboard>.keymap`) to a mapping
   of `physical-layout` to [physical layout specs](../PHYSICAL_LAYOUTS.md). For example:
+
   ```yaml
   planck:
-    layout_grid_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_ortho_4x12}
-    layout_mit_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_1x2uC}
-    layout_2x2u_transform: {qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_2x2u}
+    layout_grid_transform: { qmk_keyboard: planck/rev6, layout_name: LAYOUT_ortho_4x12 }
+    layout_mit_transform: { qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_1x2uC }
+    layout_2x2u_transform: { qmk_keyboard: planck/rev6, layout_name: LAYOUT_planck_2x2u }
   ```
+
   Above maps each of the three physical layouts that are defined in the
   [ZMK `planck` config](https://github.com/zmkfirmware/zmk/blob/main/app/boards/arm/planck/planck_rev6.dts) to a corresponding QMK
   keyboard+layout.
 
   When `keymap parse` parses a `planck.keymap`, it first searches for a ZMK physical layout (or matrix transform, for backwards compatibility)
   selected under a `chosen` node, e.g.:
+
   ```dts
   / {
       chosen {
@@ -27,6 +30,7 @@ This folder contains resource/"data" files used by `keymap-drawer`. In particula
       ...
   };
   ```
+
   Then it outputs the value corresponding to that keyboard/physical layout pair as the physical layout spec: `{zmk_keyboard: planck, layout_name: LAYOUT_ortho_4x12}`.
   If there is no layout selected in the keymap (which is the most frequent scenario), `layout_name` will be omitted.
 

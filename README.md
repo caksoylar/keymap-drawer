@@ -30,6 +30,25 @@ See examples in [the live web demo](https://caksoylar.github.io/keymap-drawer) f
 Compared to to visual editors like [KLE](http://www.keyboard-layout-editor.com/), `keymap-drawer` takes a more programmatic approach.
 It also decouples the physical keyboard layout from the keymap (i.e., layer and combo definitions) and provides the tooling to bootstrap it quickly from existing firmware configuration.
 
+## Table of Contents
+
+- [Usage](#usage)
+  * [Try it as a web application](#try-it-as-a-web-application)
+  * [Command-line tool installation](#command-line-tool-installation)
+  * [Bootstrapping your keymap representation](#bootstrapping-your-keymap-representation)
+  * [Tweaking the produced keymap representation](#tweaking-the-produced-keymap-representation)
+  * [Producing the SVG](#producing-the-svg)
+- [Customization](#customization)
+- [Miscellanea](#miscellanea)
+  * [Custom SVG glyphs](#custom-svg-glyphs)
+  * [Automated drawing workflow](#automated-drawing-workflow)
+- [Community](#community)
+  * [Tools](#tools)
+  * [Examples](#examples)
+  * [Related projects](#related-projects)
+- [Development](#development)
+- [Questions? Feedback?](#questions-feedback)
+
 ## Usage
 
 ### Try it as a web application
@@ -155,7 +174,9 @@ KEYMAP_raw_binding_map='{"&bootloader": "BOOT"}' keymap parse -z zmk-config/conf
 Drawing parameters that are specified in the `draw_config` field can also be overridden in [the keymap YAML](KEYMAP_SPEC.md#draw_config).
 Using this you can preserve your style customizations along with your keymap in a single file.
 
-## Custom SVG Glyphs
+## Miscellanea
+
+### Custom SVG glyphs
 
 `keymap-drawer` can also use SVG glyphs for legends, in addition to plain or unicode text. The easiest way to do this is
 to use the `$$source:id$$` notation [certain `source`s](CONFIGURATION.md#glyph_urls), which will automatically fetch
@@ -198,7 +219,7 @@ layers:
     - ["", "$$vol_up$$", "", "", ""]
 ```
 
-## Setting up an automated drawing workflow
+### Automated drawing workflow
 
 If you use a [ZMK config repo](https://zmk.dev/docs/user-setup), you can set up an automated workflow that parses and draws your keymaps, then commits the YAML parse outputs and produced SVGs to your repo.
 To do that you can add a new workflow to your repo at `.github/workflows/draw-keymaps.yml` that refers to the reusable `keymap-drawer` [workflow](.github/workflows/draw-zmk.yml):
@@ -229,9 +250,10 @@ jobs:
       draw_args: ""   # map of extra args to pass to `keymap draw`, e.g. "corne:'-k corne_rotated' cradio:'-k paroxysm'"
 ```
 
-### Modifying the workflow-generated commit
+#### Modifying the workflow-generated commit
 
-The workflow will add the generated SVG and keymap representation YAML files to the `output_folder`, and generate a new commit with commit message "keymap-drawer render" by default. You can modify this commit message with the `commit_message` input param, e.g.:
+The workflow will add the generated SVG and keymap representation YAML files to the `output_folder`, and generate a new commit with commit message "keymap-drawer render" by default.
+You can modify this commit message with the `commit_message` input param, e.g.:
 
 ```yaml
 jobs:
@@ -243,7 +265,8 @@ jobs:
       # …other inputs
 ```
 
-Alternatively, you can choose to amend the triggering commit instead of generating a new one by using the `amend_commit: true` option. In this case the triggering commit's message will be used by default, and the `commit_message` input will be ignored. E.g.:
+Alternatively, you can choose to amend the triggering commit instead of generating a new one by using the `amend_commit: true` option.
+In this case the triggering commit's message will be used by default, and the `commit_message` input will be ignored. E.g.:
 
 ```yaml
 jobs:
@@ -256,7 +279,8 @@ jobs:
 
 > #### ⚠️ Rewriting history
 >
-> You should understand the implications of rewriting history if you amend a commit that has already been published. See [remarks](https://git-scm.com/docs/git-rebase#_recovering_from_upstream_rebase) in `git-rebase` documentation.
+> You should understand the implications of rewriting history if you amend a commit that has already been published.
+> See [remarks](https://git-scm.com/docs/git-rebase#_recovering_from_upstream_rebase) in `git-rebase` documentation.
 
 ## Community
 
@@ -267,6 +291,7 @@ Below are a few tools and example usages from the community that might be inspir
 - [YellowAfterlife's Vial To Keymap Drawer](https://yal-tools.github.io/vial-to-keymap-drawer/): Parser to convert Vial .vil files to keymap YAMLs
 - [jbarr21's `keymap-display`](https://github.com/jbarr21/keymap-display): Uses a [converter script](https://github.com/jbarr21/keymap-display/blob/main/scripts/json2yaml) to convert QMK `keymap.c` to a keymap YAML
 - [hnaderi's fork](https://github.com/hnaderi/keymap-drawer): Contains an example [Dockerfile](https://github.com/hnaderi/keymap-drawer/blob/main/Dockerfile) and publishes unofficial [Docker images](https://github.com/hnaderi/keymap-drawer/blob/main/README.md#using-docker)
+- [mnesarco's `zkeymap`)(https://github.com/mnesarco/zkeymap): Defines a DSL to generate ZMK keymaps, can also output `keymap-drawer` SVGs
 
 ### Examples
 
@@ -280,6 +305,14 @@ Below are a few tools and example usages from the community that might be inspir
 - [crides's Fissure write-up](https://github.com/crides/fissure): Custom physical layout with non-square keys and unique SVG styling
 
 If you use `keymap-drawer`, tag your Github repo with the [`keymap-drawer` topic](https://github.com/topics/keymap-drawer) and it will show up for anyone else searching for it!
+
+### Related projects
+
+- [@nickcoutsos's ZMK keymap editor](https://github.com/nickcoutsos/keymap-editor)
+- [The original `keymap`](https://github.com/callum-oakley/keymap/)
+- [@jbarr21's keymap parser](https://github.com/jbarr21/keymap-display)
+- [@leiserfg's ZMK parser](https://github.com/leiserfg/zmk-config/tree/master/parser)
+- [Keymapviz](https://github.com/yskoht/keymapviz)
 
 ## Development
 
@@ -303,11 +336,3 @@ The source code for the Streamlit app lives in the [`keymap-drawer-web`](https:/
 ## Questions? Feedback?
 
 If you have any questions on usage or feedback for new or existing features, please check out the [Discussions tab](https://github.com/caksoylar/keymap-drawer/discussions) and feel free to create a new one!
-
-## Related projects
-
-- [@nickcoutsos's ZMK keymap editor](https://github.com/nickcoutsos/keymap-editor)
-- [The original `keymap`](https://github.com/callum-oakley/keymap/)
-- [@jbarr21's keymap parser](https://github.com/jbarr21/keymap-display)
-- [@leiserfg's ZMK parser](https://github.com/leiserfg/zmk-config/tree/master/parser)
-- [Keymapviz](https://github.com/yskoht/keymapviz)
