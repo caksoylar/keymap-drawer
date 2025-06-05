@@ -323,7 +323,7 @@ Below are a few tools and example usages from the community that might be inspir
 - [YellowAfterlife's Vial To Keymap Drawer](https://yal-tools.github.io/vial-to-keymap-drawer/): Parser to convert Vial .vil files to keymap YAMLs
 - [jbarr21's `keymap-display`](https://github.com/jbarr21/keymap-display): Uses a [converter script](https://github.com/jbarr21/keymap-display/blob/main/scripts/json2yaml) to convert QMK `keymap.c` to a keymap YAML
 - [hnaderi's fork](https://github.com/hnaderi/keymap-drawer): Contains an example [Dockerfile](https://github.com/hnaderi/keymap-drawer/blob/main/Dockerfile) and publishes unofficial [Docker images](https://github.com/hnaderi/keymap-drawer/blob/main/README.md#using-docker)
-- [mnesarco's `zkeymap`)(https://github.com/mnesarco/zkeymap): Defines a DSL to generate ZMK keymaps, can also output `keymap-drawer` SVGs
+- [mnesarco's `zkeymap`](https://github.com/mnesarco/zkeymap): Defines a DSL to generate ZMK keymaps, can also output `keymap-drawer` SVGs
 
 ### Examples
 
