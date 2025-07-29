@@ -128,9 +128,9 @@ class UtilsMixin(GlyphMixin):
     def _draw_textblock(self, p: Point, words: Sequence[str], classes: Sequence[str], shift: float = 0) -> None:
         words = [self._truncate_word(word) for word in words]
         self.out.write(f'<text x="{round(p.x)}" y="{round(p.y)}"{self._to_class_str(classes)}>\n')
-        dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift) / 2)
+        dy_0 = (len(words) - 1) * (self.cfg.line_spacing * (1 + shift / 2) / 2)
         scaling = self._get_scaling(max(len(w) for w in words))
-        self.out.write(f'<tspan x="{round(p.x)}" dy="-{dy_0}em"{scaling}>{escape(words[0])}</tspan>')
+        self.out.write(f'<tspan x="{round(p.x)}" dy="-{round(dy_0, 2)}em"{scaling}>{escape(words[0])}</tspan>')
         for word in words[1:]:
             self.out.write(f'<tspan x="{round(p.x)}" dy="{self.cfg.line_spacing}em"{scaling}>{escape(word)}</tspan>')
         self.out.write("\n</text>\n")
