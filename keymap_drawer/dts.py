@@ -15,7 +15,7 @@ from itertools import chain
 
 import tree_sitter_devicetree as ts
 from pcpp.preprocessor import Action, OutputDirective, Preprocessor  # type: ignore
-from tree_sitter import Language, Node, Parser, Tree
+from tree_sitter import Language, Node, Parser, Query, QueryCursor, Tree
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +115,10 @@ class DeviceTree:
 
     _custom_data_header = "__keymap_drawer_data__"
 
+    _root_query = Query(TS_LANG, '(document (node name: (identifier) @nodename (#eq? @nodename "/")) @rootnode)')
+    _override_query = Query(TS_LANG, "(document (node name: (reference label: (identifier))) @overridenode)")
+    _chosen_query = Query(TS_LANG, '(node name: (identifier) @nodename (#eq? @nodename "chosen")) @chosennode')
+
     def __init__(
         self,
         in_str: str,
@@ -144,55 +148,25 @@ class DeviceTree:
         self.override_nodes = [DTNode(node, self.ts_buffer) for node in self._find_override_ts_nodes(tree)]
         self.chosen_nodes = [DTNode(node, self.ts_buffer) for node in self._find_chosen_ts_nodes(tree)]
 
-    @staticmethod
-    def _find_root_ts_nodes(tree: Tree) -> list[Node]:
+    @classmethod
+    def _find_root_ts_nodes(cls, tree: Tree) -> list[Node]:
         return sorted(
-            TS_LANG.query(
-                """
-                (document
-                  (node
-                    name: (identifier) @nodename
-                    (#eq? @nodename "/")
-                  ) @rootnode
-                )
-                """
-            )
-            .captures(tree.root_node)
-            .get("rootnode", []),
+            QueryCursor(cls._root_query).captures(tree.root_node).get("rootnode", []),
             key=lambda node: node.start_byte,
         )
 
-    @staticmethod
-    def _find_override_ts_nodes(tree: Tree) -> list[Node]:
+    @classmethod
+    def _find_override_ts_nodes(cls, tree: Tree) -> list[Node]:
         return sorted(
-            TS_LANG.query(
-                """
-                (document
-                  (node
-                    name: (reference
-                      label: (identifier)
-                    )
-                  ) @overridenode
-                )
-                """
-            )
-            .captures(tree.root_node)
-            .get("overridenode", []),
+            QueryCursor(cls._override_query).captures(tree.root_node).get("overridenode", []),
             key=lambda node: node.start_byte,
         )
 
-    @staticmethod
-    def _find_chosen_ts_nodes(tree: Tree) -> list[Node]:
+    @classmethod
+    def _find_chosen_ts_nodes(cls, tree: Tree) -> list[Node]:
         return sorted(
-            TS_LANG.query(
-                """
-                (node
-                  name: (identifier) @nodename
-                  (#eq? @nodename "chosen")
-                ) @chosennode
-                """
-            )
-            .set_max_start_depth(2)
+            QueryCursor(cls._chosen_query)
+            .set_max_start_depth(2)  # type: ignore
             .captures(tree.root_node)
             .get("chosennode", []),
             key=lambda node: node.start_byte,
@@ -225,13 +199,15 @@ class DeviceTree:
 
     def get_compatible_nodes(self, compatible_value: str) -> list[DTNode]:
         """Return a list of nodes that have the given compatible value."""
-        query = TS_LANG.query(
-            rf"""
-            (node
-              (property name: (identifier) @prop value: (string_literal) @propval)
-              (#eq? @prop "compatible") (#eq? @propval "\"{compatible_value}\"")
-            ) @node
-            """
+        query = QueryCursor(
+            Query(
+                TS_LANG,
+                rf"""
+                (node (property name: (identifier) @prop value: (string_literal) @propval)
+                  (#eq? @prop "compatible") (#eq? @propval "\"{compatible_value}\"")
+                ) @node
+                """,
+            )
         )
         nodes = chain.from_iterable(query.captures(node).get("node", []) for node in self.root_nodes)
         return sorted(
