@@ -171,7 +171,7 @@ jobs:
                   echo "INFO:   found $json_path/${keyboard}.json";
                   draw_args+=(-j "$json_path/${keyboard}.json")
               else
-                  dts_candidates=({,config/}boards/*/*/${keyboard}-layout{,s}.dtsi)
+                  dts_candidates=({,*/}boards/*/*/${keyboard}-layout{,s}.dtsi)
                   if [ ${#dts_candidates[@]} -gt 0 ]; then
                       echo "INFO:   found ${dts_candidates[0]}";
                       draw_args+=(-d "${dts_candidates[0]}")
