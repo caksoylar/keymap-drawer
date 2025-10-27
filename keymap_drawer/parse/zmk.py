@@ -2,6 +2,7 @@
 
 import logging
 import re
+from dataclasses import dataclass
 from functools import cache
 from itertools import chain
 from pathlib import Path
@@ -33,6 +34,14 @@ class ZmkKeymapParser(KeymapParser):
         "RA": ["right_alt"],
         "RG": ["right_gui"],
     }
+
+    @dataclass(slots=True, frozen=True)
+    class Singleton:
+        """Simple container for temporarily representing a combo with single key position."""
+
+        position: int
+        layers: list[str]
+        key: LayoutKey
 
     def __init__(
         self,
@@ -210,7 +219,7 @@ class ZmkKeymapParser(KeymapParser):
                 raise ParseError(f'Could not parse `bindings` property under layer node "{node.name}"')
         return layers
 
-    def _get_combos(self, dts: DeviceTree) -> list[ComboSpec]:
+    def _get_combos(self, dts: DeviceTree) -> tuple[list[ComboSpec], list[Singleton]]:
 
         def parse_layers(layers: list[str], node_name) -> list[str]:
             assert self.layer_names is not None
@@ -227,36 +236,43 @@ class ZmkKeymapParser(KeymapParser):
             return out
 
         if not (combo_parents := dts.get_compatible_nodes("zmk,combos")):
-            return []
+            return [], []
         combo_nodes = chain.from_iterable(parent.children for parent in combo_parents)
 
         combos = []
+        singletons = []
         for node in combo_nodes:
             if not (bindings := node.get_phandle_array("bindings")):
                 raise ParseError(f'Could not parse `bindings` for combo node "{node.name}"')
             if not (key_pos_strs := node.get_array("key-positions")):
                 raise ParseError(f'Could not parse `key-positions` for combo node "{node.name}"')
 
+            combo: dict = {}
             try:
-                key_pos = [int(pos) for pos in key_pos_strs]
+                combo["p"] = [int(pos) for pos in key_pos_strs]
             except ValueError as exc:
                 raise ParseError(f'Cannot parse key positions "{key_pos_strs}" in combo node "{node.name}"') from exc
 
             try:
                 # ignore current layer for combos
-                parsed_key = self._str_to_key(bindings[0], None, key_pos, no_shifted=True)
+                combo["k"] = self._str_to_key(bindings[0], None, combo["p"], no_shifted=True)
             except Exception as err:
                 raise ParseError(
                     f'Could not parse binding "{bindings[0]}" in combo node "{node.name}" with exception "{err}"'
                 ) from err
 
-            combo = {"k": parsed_key, "p": key_pos}
             if (layers := node.get_array("layers")) and layers[0].lower() != "0xff":
                 combo["l"] = parse_layers(layers, node.name)
 
             # see if combo had additional properties specified in the config, if so merge them in
-            combos.append(ComboSpec(**(combo | ComboSpec.normalize_fields(self.cfg.zmk_combos.get(node.name, {})))))
-        return combos
+            combo |= ComboSpec.normalize_fields(self.cfg.zmk_combos.get(node.name, {}))
+
+            if len(combo["p"]) == 1:
+                logger.warning("found a single key ZMK combo %s, it will override layer keys for that position", combo)
+                singletons.append(self.Singleton(position=combo["p"][0], layers=combo["l"], key=combo["k"]))
+            else:
+                combos.append(ComboSpec(**combo))
+        return combos, singletons
 
     def _get_physical_layout(self, file_name: str | None, dts: DeviceTree) -> dict[str, str]:
         if not file_name:
@@ -271,6 +287,14 @@ class ZmkKeymapParser(KeymapParser):
         )  # None if none is found
         logger.debug("inferred ZMK keyboard name %s and layout %s", keyboard_name, layout_name)
         return {"zmk_keyboard": keyboard_name} | ({"layout_name": layout_name} if layout_name else {})
+
+    def _add_singleton_combos(
+        self, layers: dict[str, list[LayoutKey]], singletons: list[Singleton]
+    ) -> dict[str, list[LayoutKey]]:
+        for singleton in reversed(singletons):
+            for layer in singleton.layers:
+                layers[layer][singleton.position] = singleton.key
+        return layers
 
     def _parse(self, in_str: str, file_name: str | None = None) -> tuple[dict, KeymapData]:
         """
@@ -291,7 +315,8 @@ class ZmkKeymapParser(KeymapParser):
         self._update_conditional_layers(dts)
         layers = self._get_layers(dts)
         layers = self.append_virtual_layers(layers)
-        combos = self._get_combos(dts)
+        combos, singletons = self._get_combos(dts)
+        layers = self._add_singleton_combos(layers, singletons)
         layers = self.add_held_keys(layers)
 
         keymap_data = KeymapData(layers=layers, combos=combos, layout=None, config=None)
