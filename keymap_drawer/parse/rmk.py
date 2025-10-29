@@ -348,6 +348,12 @@ class RmkKeymapParser(KeymapParser):
                             if 0 <= layer_idx < len(self.layer_names):
                                 combo["l"] = [self.layer_names[layer_idx]]
                         
+                        # Apply combo configuration from rmk_combos if specified
+                        # Use 'name' field if present, otherwise fall back to 'output'
+                        combo_key = combo_data.get("name", output)
+                        if combo_name_config := self.cfg.rmk_combos.get(combo_key):
+                            combo = combo | ComboSpec.normalize_fields(combo_name_config)
+                        
                         combos.append(ComboSpec(**combo))
                     except Exception as err:
                         logger.warning(f'Could not parse combo output "{output}": {err}')
