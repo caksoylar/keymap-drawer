@@ -4,7 +4,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/keymap-drawer.svg)](https://pypi.org/project/keymap-drawer/)
 
-Parse QMK & ZMK keymaps and draw them in vector graphics (SVG) format, with support for visualizing hold-taps and combos that are commonly used with smaller keyboards.
+Parse QMK, RMK & ZMK keymaps and draw them in vector graphics (SVG) format, with support for visualizing hold-taps and combos that are commonly used with smaller keyboards.
 
 Available as a [command-line tool](#command-line-tool-installation) or a [web application](https://caksoylar.github.io/keymap-drawer).
 
@@ -20,7 +20,7 @@ Available as a [command-line tool](#command-line-tool-installation) or a [web ap
   - Uses a human-editable YAML format for specifying the keymap
   - Non-adjacent or 3+ key combos can be visualized by specifying its positioning relative to the keys, with automatically drawn dendrons to keys
   - Alternatively, output a separate diagram per combo if you have tricky key position combinations
-- **Bootstrap** the YAML representation by automatically **parsing** QMK or ZMK keymap files
+- **Bootstrap** the YAML representation by automatically **parsing** QMK, RMK or ZMK keymap files
 - Arbitrary **physical keyboard layouts** (with rotated keys!) supported, along with parametrized ortho layouts
 - Both parsing and drawing are **customizable** with a config file
 - Use **custom SVG icons** for legends, in addition to unicode text
@@ -82,7 +82,7 @@ See [the development section](#development) for instructions to install from sou
 
 ### Bootstrapping your keymap representation
 
-**`keymap parse`** command helps to parse an existing QMK or ZMK keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
+**`keymap parse`** command helps to parse an existing QMK, RMK or ZMK keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
 `-c`/`--columns` is an optional parameter that specifies the total number of columns in the keymap to better reorganize output layers.
 
 - **QMK**: Only json-format keymaps are supported, which can be exported from [QMK Configurator](https://config.qmk.fm/), converted from `keymap.c` via [`qmk c2json`](https://docs.qmk.fm/#/cli_commands?id=qmk-c2json), or from a VIA backup json via [`qmk via2json`](https://docs.qmk.fm/#/cli_commands?id=qmk-via2json):
@@ -97,6 +97,14 @@ See [the development section](#development) for instructions to install from sou
 
   Due to current limitations of the `keymap.json` format, combos and `#define`'d layer names will not be present in the parsing output.
   However you can manually specify layer names using the layer names parameter, e.g. `keymap parse --layer-names Base Sym Nav ...`.
+
+- **RMK**: `keyboard.toml` files are used for parsing. 
+
+  ```sh
+  keymap parse -c 10 -r ~/rmk/keyboard.toml  >sweep_keymap.yaml
+  ```
+
+  Currently combos, hold-taps, sticky keys and layer names can be determined via parsing.
 
 - **ZMK**: `.keymap` files are used for parsing. These will be preprocessed similar to the ZMK build system, so `#define`'s and `#include`s will be expanded.
 
@@ -144,7 +152,8 @@ And you are done! You can view the output SVG on your browser or use a tool like
 >
 > If you like you can override the layout specification on the command line.
 > For instance you can provide a QMK keyboard name with `-k`/`--qmk-keyboard` and layout with `-l`/`--layout-name`,
-> or an ortho layout with `--ortho-layout` (using YAML syntax for the value) or `-n`/`--cols-thumbs-notation`.
+> or an ortho layout with `--ortho-layout` (using YAML syntax for the value) or `-n`/`--cols-thumbs-notation`. 
+> Or, use `-j`/`--qmk-info-json` with the `info.json` generated from your `*.kicad_pcb` by clicking `import` [here](https://nickcoutsos.github.io/keymap-layout-tools/).
 > See `keymap draw --help` for details.
 
 ## Customization
@@ -335,6 +344,7 @@ Below are a few tools and example usages from the community that might be inspir
 - [possumvibes's keymap](https://github.com/possumvibes/keyboard-layout): Separate layer and combo diagrams
 - [infused-kim's ZMK config](https://github.com/infused-kim/zmk-config): Defines a script to [tweak the keymap](https://github.com/infused-kim/zmk-config/blob/main/keymap_img/keymap_img_adjuster.py) between parsing and drawing
 - [crides's Fissure write-up](https://github.com/crides/fissure): Custom physical layout with non-square keys and unique SVG styling
+- [sessile](https://github.com/willpuckett/sessile) RMK example replete with [Github Action](https://github.com/willpuckett/sessile/blob/main/.github/workflows/keymap.yml)
 - [My ZMK config](https://github.com/caksoylar/zmk-config): ...in case you are curious how I use keymap-drawer
 
 If you use `keymap-drawer`, tag your Github repo with the [`keymap-drawer` topic](https://github.com/topics/keymap-drawer) and it will show up for anyone else searching for it!
