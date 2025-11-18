@@ -488,6 +488,11 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # e.g. {"combo_esc": {"align": "top", "offset": 0.5}}
     zmk_combos: dict[str, dict] = {}
 
+    # additional combo fields for a given combo output in the RMK keymap,
+    # e.g. {"$": {"draw_separate": true}, "Escape": {"draw_separate": true}}
+    # Combos are identified by their 'output' value (the key that gets produced)
+    rmk_combos: dict[str, dict] = {}
+
     # prepend this to ZMK keymaps before processing to customize parsing output
     zmk_preamble: str = "#define KEYMAP_DRAWER"
 
