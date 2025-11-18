@@ -209,6 +209,12 @@ zodiark:
 adv360: &adv360
   default_transform: {qmk_keyboard: adv360}
 adv360pro: *adv360
+agar_mini: &agar_mini
+  layout_all: {qmk_keyboard: kbdfans/agar_mini, layout_name: layout_all}
+  layout1: {qmk_keyboard: kbdfans/agar_mini, layout_name: layout1}
+  matrix_transform_all: {qmk_keyboard: kbdfans/agar_mini, layout_name: layout_all}
+  matrix_transform_1: {qmk_keyboard: kbdfans/agar_mini, layout_name: layout1}
+agar_mini_ble: *agar_mini
 ahokore: *generic_3x5_3
 arch36: *generic_3x5_3
 bad_wings: &bad_wings
