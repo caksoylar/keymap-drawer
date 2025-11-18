@@ -4,7 +4,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/keymap-drawer.svg)](https://pypi.org/project/keymap-drawer/)
 
-Parse QMK, RMK & ZMK keymaps and draw them in vector graphics (SVG) format, with support for visualizing hold-taps and combos that are commonly used with smaller keyboards.
+Parse QMK, ZMK, RMK or Kanata keymaps and draw them in vector graphics (SVG) format, with support for visualizing hold-taps and combos that are commonly used with smaller keyboards.
 
 Available as a [command-line tool](#command-line-tool-installation) or a [web application](https://caksoylar.github.io/keymap-drawer).
 
@@ -82,7 +82,7 @@ See [the development section](#development) for instructions to install from sou
 
 ### Bootstrapping your keymap representation
 
-**`keymap parse`** command helps to parse an existing QMK, RMK or ZMK keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
+**`keymap parse`** command helps to parse an existing QMK, ZMK, RMK or Kanata keymap file into the keymap YAML representation the `draw` command uses to generate SVGs.
 `-c`/`--columns` is an optional parameter that specifies the total number of columns in the keymap to better reorganize output layers.
 
 - **QMK**: Only json-format keymaps are supported, which can be exported from [QMK Configurator](https://config.qmk.fm/), converted from `keymap.c` via [`qmk c2json`](https://docs.qmk.fm/#/cli_commands?id=qmk-c2json), or from a VIA backup json via [`qmk via2json`](https://docs.qmk.fm/#/cli_commands?id=qmk-via2json):
@@ -153,7 +153,6 @@ And you are done! You can view the output SVG on your browser or use a tool like
 > If you like you can override the layout specification on the command line.
 > For instance you can provide a QMK keyboard name with `-k`/`--qmk-keyboard` and layout with `-l`/`--layout-name`,
 > or an ortho layout with `--ortho-layout` (using YAML syntax for the value) or `-n`/`--cols-thumbs-notation`. 
-> Or, use `-j`/`--qmk-info-json` with the `info.json` generated from your `*.kicad_pcb` by clicking `import` [here](https://nickcoutsos.github.io/keymap-layout-tools/).
 > See `keymap draw --help` for details.
 
 ## Customization

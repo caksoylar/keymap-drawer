@@ -164,7 +164,7 @@ class RmkKeymapParser(KeymapParser):
         # Second pass: process the keys now that layer names are set
         for layer_config in layer_configs:
             if "keys" not in layer_config:
-                raise ParseError(f"Layer '{layer_config['name']}' missing keys")
+                raise ParseError(f"Layer '{layer_config['name']}' missing `keys` field")
                 
             layer_name = layer_config["name"]
             keys_str = layer_config["keys"].strip()
