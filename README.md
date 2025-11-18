@@ -98,14 +98,6 @@ See [the development section](#development) for instructions to install from sou
   Due to current limitations of the `keymap.json` format, combos and `#define`'d layer names will not be present in the parsing output.
   However you can manually specify layer names using the layer names parameter, e.g. `keymap parse --layer-names Base Sym Nav ...`.
 
-- **RMK**: `keyboard.toml` files are used for parsing. 
-
-  ```sh
-  keymap parse -c 10 -r ~/rmk/keyboard.toml  >sweep_keymap.yaml
-  ```
-
-  Currently combos, hold-taps, sticky keys and layer names can be determined via parsing.
-
 - **ZMK**: `.keymap` files are used for parsing. These will be preprocessed similar to the ZMK build system, so `#define`'s and `#include`s will be expanded.
 
   ```sh
@@ -114,6 +106,14 @@ See [the development section](#development) for instructions to install from sou
 
   Currently combos, hold-taps, mod-morphs, sticky keys and layer names can be determined via parsing.
   For layer names, the value of the `display-name` property will take precedence over the layer's node name if provided.
+
+- **RMK**: `keyboard.toml` files are used for parsing. 
+
+  ```sh
+  keymap parse -c 10 -r ~/rmk/keyboard.toml  >sweep_keymap.yaml
+  ```
+
+  Currently combos, hold-taps, sticky keys and layer names can be determined via parsing.
 
 As an alternative to parsing, you can also check out the [examples](examples/) to find a layout similar to yours to use as a starting point.
 

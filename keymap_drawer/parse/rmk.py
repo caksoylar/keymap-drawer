@@ -81,12 +81,12 @@ class RmkKeymapParser(KeymapParser):
             if no_shifted:
                 mapped.shifted = ""
             if mods:
-                mapped.apply_formatter(lambda k: self.format_modified_keys(k, mods))
+                mapped.apply_formatter(lambda key: self.format_modified_keys(key, mods))
             return mapped
 
         # Handle empty/transparent keys
         if not binding or binding == "__":
-            return LayoutKey()
+            return self.trans_key
 
         # Parse the binding
         if "(" in binding and binding.endswith(")"):
