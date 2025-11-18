@@ -636,6 +636,8 @@ def _parse_dts_layout(dts_in: Path | BytesIO | bytes, cfg: ParseConfig) -> QmkLa
             in_str, file_name = f.read(), str(dts_in)
     elif isinstance(dts_in, BytesIO):
         in_str, file_name = dts_in.read().decode("utf-8"), None
+    elif isinstance(dts_in, str):
+        in_str, file_name = dts_in, None
     else:  # bytes
         in_str, file_name = dts_in.decode("utf-8"), None
 
