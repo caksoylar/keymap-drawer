@@ -402,7 +402,10 @@ class RmkKeymapParser(KeymapParser):
                 # Use 'name' field if present, otherwise fall back to 'output'
                 combo_key = combo_data.get("name", output)
                 if combo_name_config := self.cfg.rmk_combos.get(combo_key):
-                    combo = combo | ComboSpec.normalize_fields(combo_name_config)
+                    normalized_config = ComboSpec.normalize_fields(combo_name_config.copy())
+                    # RMK uses trigger_keys, not key_positions - remove any positions from config
+                    normalized_config.pop("p", None)
+                    combo |= normalized_config
 
                 combos.append(ComboSpec(**combo))
             except Exception as err:
