@@ -46,6 +46,11 @@ class RmkKeymapParser(KeymapParser):
     ):
         super().__init__(config, columns, base_keymap, layer_names, virtual_layers)
         self.hold_taps = {"MT": ["&kp", "&kp"], "LT": ["&mo", "&kp"]}
+        self._prefix_re: re.Pattern | None
+        if prefixes := self.cfg.rmk_remove_keycode_prefix:
+            self._prefix_re = re.compile(r"^(" + "|".join(re.escape(prefix) for prefix in set(prefixes)) + ")")
+        else:
+            self._prefix_re = None
 
     def _str_to_key(
         self,
@@ -66,17 +71,23 @@ class RmkKeymapParser(KeymapParser):
 
         def mapped(key: str) -> LayoutKey:
             """Map a keycode to a LayoutKey using the configuration."""
+            # First, strip any configured prefixes (e.g., "Kc")
+            if self._prefix_re is not None:
+                key = self._prefix_re.sub("", key)
+
+            # Check keycode map for direct match
             if entry := self.cfg.rmk_keycode_map.get(key):
                 return LayoutKey.from_key_spec(entry)
-            key, mods = self.parse_modifier_fns(key)
 
-            mapped = LayoutKey.from_key_spec(self.cfg.rmk_keycode_map.get(key, key))
+            # Parse modifier functions and check map again
+            stripped_key, mods = self.parse_modifier_fns(key)
+            result = LayoutKey.from_key_spec(self.cfg.rmk_keycode_map.get(stripped_key, stripped_key))
 
             if no_shifted:
-                mapped.shifted = ""
+                result.shifted = ""
             if mods:
-                mapped.apply_formatter(lambda key: self.format_modified_keys(key, mods))
-            return mapped
+                result.apply_formatter(lambda key: self.format_modified_keys(key, mods))
+            return result
 
         # Handle empty/transparent keys
         if not binding or binding == "__":
