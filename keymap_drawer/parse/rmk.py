@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 # balanced parentheses (for function calls like MT(C, LCtrl)), or underscores (for __)
 _KEY_SPEC_PATTERN = re.compile(r"\w+(?:\([^)]*\))?|_+")
 
+
 class RmkKeymapParser(KeymapParser):
     """Parser for RMK TOML keymap files."""
 
@@ -48,7 +49,9 @@ class RmkKeymapParser(KeymapParser):
         self.hold_taps = {"MT": ["&kp", "&kp"], "LT": ["&mo", "&kp"]}
         self._prefix_re: re.Pattern | None
         if prefixes := self.cfg.rmk_remove_keycode_prefix:
-            self._prefix_re = re.compile(r"^(" + "|".join(re.escape(prefix) for prefix in set(prefixes)) + ")")
+            self._prefix_re = re.compile(
+                r"^(" + "|".join(re.escape(prefix) for prefix in set(prefixes)) + ")"
+            )
         else:
             self._prefix_re = None
 
@@ -81,7 +84,9 @@ class RmkKeymapParser(KeymapParser):
 
             # Parse modifier functions and check map again
             stripped_key, mods = self.parse_modifier_fns(key)
-            result = LayoutKey.from_key_spec(self.cfg.rmk_keycode_map.get(stripped_key, stripped_key))
+            result = LayoutKey.from_key_spec(
+                self.cfg.rmk_keycode_map.get(stripped_key, stripped_key)
+            )
 
             if no_shifted:
                 result.shifted = ""
@@ -413,7 +418,9 @@ class RmkKeymapParser(KeymapParser):
                 # Use 'name' field if present, otherwise fall back to 'output'
                 combo_key = combo_data.get("name", output)
                 if combo_name_config := self.cfg.rmk_combos.get(combo_key):
-                    normalized_config = ComboSpec.normalize_fields(combo_name_config.copy())
+                    normalized_config = ComboSpec.normalize_fields(
+                        combo_name_config.copy()
+                    )
                     # RMK uses trigger_keys, not key_positions - remove any positions from config
                     normalized_config.pop("p", None)
                     combo |= normalized_config
