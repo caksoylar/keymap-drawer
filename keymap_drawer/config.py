@@ -296,8 +296,12 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
         left_gui: str = "Gui"  # Cmd/Win
         right_gui: str = "Gui"  # Cmd/Win
         keycode_combiner: str = "{mods}+{key}"  # pattern to join modifier functions with the modified keycode
-        mod_combiner: str = "{mod_1}+{mod_2}"  # pattern to join multiple modifier function strings
-        special_combinations: dict[str, str] = {  # special look-up for combinations of mods (mod order is ignored)
+        mod_combiner: str = (
+            "{mod_1}+{mod_2}"  # pattern to join multiple modifier function strings
+        )
+        special_combinations: dict[
+            str, str
+        ] = {  # special look-up for combinations of mods (mod order is ignored)
             "left_ctrl+left_alt+left_gui+left_shift": "Hyper",
             "left_ctrl+left_alt+left_shift": "Meh",
         }
@@ -488,16 +492,84 @@ class ParseConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # e.g. {"combo_esc": {"align": "top", "offset": 0.5}}
     zmk_combos: dict[str, dict] = {}
 
-    # additional combo fields for a given combo output in the RMK keymap,
-    # e.g. {"$": {"draw_separate": true}, "Escape": {"draw_separate": true}}
-    # Combos are identified by their 'output' value (the key that gets produced)
-    rmk_combos: dict[str, dict] = {}
-
     # prepend this to ZMK keymaps before processing to customize parsing output
     zmk_preamble: str = "#define KEYMAP_DRAWER"
 
     # additional zmk include paths to be added to the preprocessor
     zmk_additional_includes: list[str] = []
+
+    # remove these prefixes from RMK keycodes before further processing
+    # can be augmented with other locale prefixes, e.g. "DE_"
+    rmk_remove_keycode_prefix: list[str] = ["Kc"]
+
+    # convert RMK keycodes to their display forms
+    rmk_keycode_map: dict[str, str | dict] = {
+        # Special/empty keys
+        "No": "",
+        "__": "",
+        # Punctuation keys (actual RMK KeyCode names)
+        "Minus": "-",
+        "Equal": "=",
+        "LeftBracket": "[",
+        "RightBracket": "]",
+        "Backslash": "\\",
+        "NonusHash": "#",
+        "Semicolon": ";",
+        "Quote": "'",
+        "Grave": "`",
+        "Comma": ",",
+        "Dot": ".",
+        "Slash": "/",
+        "NonusBackslash": "\\",
+        # Shifted symbols (using RMK's SHIFTED(key) syntax)
+        "SHIFTED(Grave)": "~",
+        "SHIFTED(`)": "~",
+        "SHIFTED(Kc1)": "!",
+        "SHIFTED(1)": "!",
+        "SHIFTED(Kc2)": "@",
+        "SHIFTED(2)": "@",
+        "SHIFTED(Kc3)": "#",
+        "SHIFTED(3)": "#",
+        "SHIFTED(Kc4)": "$",
+        "SHIFTED(4)": "$",
+        "SHIFTED(Kc5)": "%",
+        "SHIFTED(5)": "%",
+        "SHIFTED(Kc6)": "^",
+        "SHIFTED(6)": "^",
+        "SHIFTED(Kc7)": "&",
+        "SHIFTED(7)": "&",
+        "SHIFTED(Kc8)": "*",
+        "SHIFTED(8)": "*",
+        "SHIFTED(Kc9)": "(",
+        "SHIFTED(9)": "(",
+        "SHIFTED(Kc0)": ")",
+        "SHIFTED(0)": ")",
+        "SHIFTED(Minus)": "_",
+        "SHIFTED(-)": "_",
+        "SHIFTED(Equal)": "+",
+        "SHIFTED(=)": "+",
+        "SHIFTED(LeftBracket)": "{",
+        "SHIFTED([)": "{",
+        "SHIFTED(RightBracket)": "}",
+        "SHIFTED(])": "}",
+        "SHIFTED(Backslash)": "|",
+        "SHIFTED(\\)": "|",
+        "SHIFTED(Semicolon)": ":",
+        "SHIFTED(;)": ":",
+        "SHIFTED(Quote)": '"',
+        "SHIFTED(')": '"',
+        "SHIFTED(Comma)": "<",
+        "SHIFTED(,)": "<",
+        "SHIFTED(Dot)": ">",
+        "SHIFTED(.)": ">",
+        "SHIFTED(Slash)": "?",
+        "SHIFTED(/)": "?",
+    }
+
+    # additional combo fields for a given combo output in the RMK keymap,
+    # e.g. {"$": {"draw_separate": true}, "Escape": {"draw_separate": true}}
+    # Combos are identified by their 'output' value (the key that gets produced)
+    rmk_combos: dict[str, dict] = {}
 
 
 class Config(BaseSettings, env_prefix="KEYMAP_"):
