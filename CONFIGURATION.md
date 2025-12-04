@@ -391,7 +391,6 @@ A more thorough example:
     "CapsLock":
       draw_separate: true
     "OSL(3)":
-      p: [9, 10, 11, 12, 13, 14]
       draw_separate: true
       key: $$mdi:arrow-u-down-left$$
     "OSM(LShift)":
