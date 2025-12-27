@@ -162,11 +162,12 @@ Each key in the output can show:
 - Corners (tl/tr/bl/br): tap values from specified layers
 
 Use `--list-layers` to see available layer names in your keymap.
+Use `--include-combos` to include combos from specific layers.
 The stacked output can be drawn with `keymap draw` like any other keymap YAML.
 
-![Stacked layers example](site/stacked.svg)
+![Stacked layers example](site/showcase_stacked.svg)
 
-See [STACKED.md](STACKED.md) for detailed usage, configuration, and CSS styling instructions.
+See [STACKED.md](STACKED.md) for detailed usage, combo options, configuration, and CSS styling instructions.
 
 ## Customization
 

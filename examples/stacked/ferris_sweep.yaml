@@ -346,10 +346,10 @@ combos:
   k: Paste
   l: [colemak_dh, qwerty, nav, num]
 - p: [16, 17]
-  k: {t: (, h: AltGr+⌘}
+  k: {t: ( }
   l: [colemak_dh, qwerty, num]
 - p: [17, 18]
-  k: {t: ), h: AltGr+⌃}
+  k: {t: ) }
   l: [colemak_dh, qwerty, num]
 - p: [16, 17]
   k: (<

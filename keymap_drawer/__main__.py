@@ -157,7 +157,8 @@ def stack(args: Namespace, config: Config) -> None:
         stack_config = StackConfig.parse_obj(stack_config.model_dump() | {"hidden_corner_legends": args.hidden_corner_legends})
 
     # Stack layers
-    stacked = stack_layers(yaml_data, args.center, corner_layers, stack_config)
+    combo_layers = args.include_combos if args.include_combos is not None else None
+    stacked = stack_layers(yaml_data, args.center, corner_layers, stack_config, combo_layers, args.separate_combo_layer)
 
     # Write output
     yaml.safe_dump(stacked, args.output, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
@@ -315,6 +316,17 @@ def main() -> None:
         "--hidden-corner-legends",
         nargs="+",
         help="Values to hide in corner positions (e.g., modifier symbols)",
+    )
+    stack_p.add_argument(
+        "--include-combos",
+        nargs="+",
+        metavar="LAYER",
+        help="Include combos from specified layers, remapped to 'stacked'",
+    )
+    stack_p.add_argument(
+        "--separate-combo-layer",
+        action="store_true",
+        help="Add a 'stacked_combos' layer for separate combo diagram",
     )
     stack_p.add_argument(
         "--list-layers",

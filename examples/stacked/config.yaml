@@ -6,7 +6,13 @@ draw_config:
   # Corner positioning is influenced by these settings:
   small_pad: 4.0  # corner_pad = small_pad 
   svg_extra_style: |
+    /* Combo styling */
+    rect.combo { fill: white; stroke: #888; }
+    text.combo { fill: #333; }
+    path.combo { stroke: #888; }
+
     /* Layer activator key colors */
+    /* Defined after Combo styling to override */
     .held-tl rect, .layer-tl rect { fill: #F93827; }
     .held-tr rect, .layer-tr rect { fill: #2563EB; }
     .held-bl rect, .layer-bl rect { fill: #16A34A; }
@@ -30,6 +36,8 @@ draw_config:
     use.tr { fill: #2563EB; }
     use.bl { fill: #16A34A; }
     use.br { fill: #FF9D23; }
+
+    
   glyph_tap_size: 14
   glyph_hold_size: 12
   glyph_shifted_size: 10

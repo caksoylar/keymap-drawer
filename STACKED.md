@@ -2,13 +2,13 @@
 
 The `keymap stack-layers` command combines multiple keyboard layers into a single diagram with corner legends. This creates compact reference diagrams showing up to 5 layers at once.
 
-![Stacked layers example](site/stacked.svg)
+![Stacked layers example](site/showcase_stacked.svg)
 
 ## Usage
 
 ```sh
 keymap stack-layers --center Base --tl Fun --tr Sys --bl Num --br Nav keymap.yaml > stacked.yaml
-keymap draw stacked.yaml > stacked.svg
+keymap draw stacked.yaml > showcase_stacked.svg
 ```
 
 ### Options
@@ -21,6 +21,8 @@ keymap draw stacked.yaml > stacked.svg
 | `--bl` | Layer name for bottom-left corner |
 | `--br` | Layer name for bottom-right corner |
 | `--hidden-corner-legends` | Values to hide in corners (e.g., modifier symbols) |
+| `--include-combos LAYER...` | Include combos from specified layers, deduplicated |
+| `--separate-combo-layer` | Separate combos to `stacked_combos` layer below |
 | `--list-layers` | List available layer names and exit |
 | `-o, --output` | Output file (default: stdout) |
 
@@ -30,12 +32,40 @@ Stack and draw in a single pipeline:
 
 ```sh
 keymap -c config.yaml stack-layers --center colemak_dh --tl fun --tr sys --bl num --br nav keymap.yaml | \
-  keymap -c config.yaml draw -k "ferris/sweep" - -o stacked.svg
+  keymap -c config.yaml draw -k "ferris/sweep" - -o showcase_stacked.svg
 ```
 
 **Important:** Pass `-c config.yaml` to both commands:
 - `stack-layers` uses `stack_config.hidden_corner_legends` for filtering
 - `draw` uses `draw_config.svg_extra_style` for styling
+
+### Including Combos
+
+Include combos from specific layers in the stacked output:
+
+```sh
+keymap stack-layers --center colemak_dh --tl fun --tr sys --bl num --br nav \
+  keymap.yaml --include-combos colemak_dh nav num -o stacked.yaml
+```
+
+Note: Put the input file before `--include-combos` to avoid argument parsing issues.
+
+- Combos are filtered to only those appearing on the specified layers
+- Duplicate combos (same position + key) are removed
+- Combo layers are remapped to `stacked` (or `stacked_combos` if using `--separate-combo-layer`)
+
+### Separate Combo Diagram
+
+Use `--separate-combo-layer` to create a separate layer for combos:
+
+```sh
+keymap stack-layers --center colemak_dh --tl fun --tr sys --bl num --br nav \
+  keymap.yaml --include-combos colemak_dh nav num --separate-combo-layer -o stacked.yaml
+```
+
+This creates:
+- `stacked` - the main stacked diagram
+- `stacked_combos` - empty keys with combos overlaid
 
 ## Configuration
 
@@ -113,6 +143,21 @@ raw_binding_map:
   "&mo NAV": { t: Nav, type: layer-br }
 ```
 
+### Combo Styling
+
+Style combo boxes, text, and connecting lines:
+
+```css
+/* Combo box */
+rect.combo { fill: #e0e0e0; stroke: #888; }
+
+/* Combo text */
+text.combo { fill: #333; }
+
+/* Combo connecting lines (dendrons) */
+path.combo { stroke: #888; }
+```
+
 ## Corner Positioning
 
 Corner legend positioning is controlled by these `draw_config` settings:
@@ -158,6 +203,11 @@ draw_config:
     use.tr { fill: #2563EB; }
     use.bl { fill: #16A34A; }
     use.br { fill: #FF9D23; }
+
+    /* Combos */
+    rect.combo { fill: #e0e0e0; stroke: #888; }
+    text.combo { fill: #333; }
+    path.combo { stroke: #888; }
 
 stack_config:
   hidden_corner_legends:

@@ -144,6 +144,8 @@ def stack_layers(
     center_layer: str,
     corner_layers: CornerLayers,
     stack_config: StackConfig | None = None,
+    include_combos: list[str] | None = None,
+    combo_layer: bool = False,
 ) -> dict[str, Any]:
     """Stack multiple layers into a single layer with multi-position legends.
 
@@ -161,9 +163,11 @@ def stack_layers(
         center_layer: Layer name for center position (primary layer)
         corner_layers: CornerLayers specifying tl/tr/bl/br layer names
         stack_config: Optional StackConfig with hide settings
+        include_combos: List of layer names to include combos from (empty list = all layers, None = no combos)
+        combo_layer: If True, add a 'stacked_combos' layer for separate combo diagram
 
     Returns:
-        New keymap dict with single 'stacked' layer
+        New keymap dict with single 'stacked' layer (and optionally 'stacked_combos')
     """
     if stack_config is None:
         stack_config = StackConfig()
@@ -196,7 +200,49 @@ def stack_layers(
         )
         stacked_keys.append(key_def)
 
-    return {
+    layers_out = {"stacked": stacked_keys}
+
+    # Add stacked_combos layer if requested
+    if combo_layer:
+        # Empty keys for combo layer (combos drawn on top)
+        layers_out["stacked_combos"] = [""] * num_keys
+
+    result = {
         "layout": keymap.get("layout", {}),
-        "layers": {"stacked": stacked_keys},
+        "layers": layers_out,
     }
+
+    if include_combos is not None and (combos := keymap.get("combos")):
+        # Filter by layer if specific layers provided
+        layer_filter = set(include_combos) if include_combos else None
+
+        # Track seen combos to deduplicate (by position + key)
+        seen = set()
+        remapped_combos = []
+
+        # Target layer for combos
+        target_layer = "stacked_combos" if combo_layer else "stacked"
+
+        for combo in combos:
+            # Filter by layer
+            combo_layers = combo.get("l", [])
+            if layer_filter and not any(layer in layer_filter for layer in combo_layers):
+                continue
+
+            # Deduplicate by position and key
+            positions = tuple(combo.get("p", []))
+            key = str(combo.get("k", ""))
+            combo_id = (positions, key)
+            if combo_id in seen:
+                continue
+            seen.add(combo_id)
+
+            # Remap to target layer
+            combo_copy = dict(combo)
+            combo_copy["l"] = [target_layer]
+            remapped_combos.append(combo_copy)
+
+        if remapped_combos:
+            result["combos"] = remapped_combos
+
+    return result
