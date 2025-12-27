@@ -1,0 +1,467 @@
+layout: {zmk_keyboard: "ferris_sweep"}
+layers:
+  colemak_dh:
+  - Q
+  - W
+  - F
+  - P
+  - B
+  - J
+  - L
+  - U
+  - Y
+  - ''''
+  - {t: A, h: ⇧, type: mod}
+  - {t: R, h: ⌃, type: mod}
+  - {t: S, h: ⌥, type: mod}
+  - {t: T, h: ⌘, type: mod}
+  - G
+  - M
+  - {t: N, h: ⌘, type: mod}
+  - {t: E, h: ⌥, type: mod}
+  - {t: I, h: ⌃, type: mod}
+  - {t: O, h: ⇧, type: mod}
+  - Z
+  - X
+  - C
+  - D
+  - V
+  - K
+  - H
+  - {t: ',', s: ;}
+  - {t: ., s: ':'}
+  - /
+  - {t: Nav, type: layer-br}
+  - Spc
+  - {t: ⇧, s: Caps Word}
+  - {t: Smart-num, type: layer-bl}
+  qwerty:
+  - Q
+  - W
+  - E
+  - R
+  - T
+  - Y
+  - U
+  - I
+  - O
+  - P
+  - {t: A, h: ⇧, type: mod}
+  - {t: S, h: ⌃, type: mod}
+  - {t: D, h: ⌥, type: mod}
+  - {t: F, h: ⌘, type: mod}
+  - G
+  - H
+  - {t: J, h: ⌘, type: mod}
+  - {t: K, h: ⌥, type: mod}
+  - {t: L, h: ⌃, type: mod}
+  - {t: ;, h: ⇧, type: mod}
+  - Z
+  - X
+  - C
+  - V
+  - B
+  - N
+  - M
+  - CMMA
+  - .
+  - /
+  - {t: Nav, type: layer-br}
+  - Spc
+  - {t: ⇧, s: Caps Word}
+  - {t: Smart-num, type: layer-bl}
+  num:
+  - ''
+  - '7'
+  - '8'
+  - '9'
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - '0'
+  - '4'
+  - '5'
+  - '6'
+  - ''
+  - ''
+  - {t: ⌘, h: sticky, type: mod}
+  - {t: ⌥, h: sticky, type: mod}
+  - {t: ⌃, h: sticky, type: mod}
+  - {t: ⇧, h: sticky, type: mod}
+  - ''
+  - '1'
+  - '2'
+  - '3'
+  - ''
+  - ''
+  - Ck
+  - $$mdi:menu$$
+  - ''
+  - ;
+  - ''
+  - ''
+  - ''
+  - ''
+  nav:
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - PgUp
+  - Bspc
+  - ↑
+  - Del
+  - ''
+  - {t: ⇧, h: sticky, type: mod}
+  - {t: ⌃, h: sticky, type: mod}
+  - {t: ⌥, h: sticky, type: mod}
+  - {t: ⌘, h: sticky, type: mod}
+  - ''
+  - PgDn
+  - ←
+  - ↓
+  - →
+  - $$mdi:keyboard-return$$
+  - ''
+  - ''
+  - ''
+  - Ck
+  - ''
+  - INSERT
+  - Home
+  - Tab
+  - End
+  - ''
+  - ''
+  - ''
+  - CANCEL
+  - {t: num, h: sticky}
+  fun:
+  - F12
+  - F7
+  - F8
+  - F9
+  - PSCRN
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - F11
+  - F4
+  - F5
+  - F6
+  - SLCK
+  - $$mdi:play-pause$$
+  - {t: ⌘, h: sticky, type: mod}
+  - {t: ⌥, h: sticky, type: mod}
+  - {t: ⌃, h: sticky, type: mod}
+  - {t: ⇧, h: sticky, type: mod}
+  - F10
+  - F1
+  - F2
+  - F3
+  - $$mdi:pause$$
+  - $$mdi:skip-backward$$
+  - $$mdi:skip-forward$$
+  - $$mdi:volume-off$$
+  - $$mdi:volume-medium$$
+  - $$mdi:volume-high$$
+  - {t: Nav, type: layer-br}
+  - Spc
+  - ''
+  - ''
+  sys:
+  - {t: Qwrty, type: layer}
+  - {t: Gam, type: layer}
+  - {t: CmkDh, type: layer}
+  - $$mdi:bluetooth$$
+  - $$mdi:usb$$
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - BT1
+  - BT2
+  - BT3
+  - BT4
+  - BT5
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - $$mdi:bluetooth-off$$
+  - ''
+  - ''
+  - $$mdi:restart$$
+  - $$mdi:progress-download$$
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  gam:
+  - Tab
+  - Q
+  - W
+  - E
+  - R
+  - Y
+  - U
+  - I
+  - O
+  - P
+  - LSHIFT
+  - A
+  - S
+  - D
+  - F
+  - H
+  - J
+  - K
+  - L
+  - ;
+  - ⌃
+  - Z
+  - X
+  - C
+  - V
+  - N
+  - M
+  - CMMA
+  - .
+  - /
+  - {t: gam_ra, h: ⌥}
+  - Spc
+  - {t: Fun, type: layer-tl}
+  - {t: gam_ra, h: sticky}
+  gam_num:
+  - ⌘
+  - '7'
+  - '8'
+  - '9'
+  - T
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - '0'
+  - '4'
+  - '5'
+  - '6'
+  - G
+  - ''
+  - {t: ⌘, h: sticky, type: mod}
+  - {t: ⌥, h: sticky, type: mod}
+  - {t: ⌃, h: sticky, type: mod}
+  - {t: ⇧, h: sticky, type: mod}
+  - Esc
+  - '1'
+  - '2'
+  - '3'
+  - B
+  - ''
+  - ''''
+  - '`'
+  - ''
+  - CAPS
+  - ''
+  - Spc
+  - ''
+  - ''
+  gam_ra:
+  - Y
+  - U
+  - I
+  - O
+  - P
+  - Bspc
+  - PgUp
+  - ↑
+  - PgDn
+  - Del
+  - H
+  - J
+  - K
+  - L
+  - ;
+  - ''
+  - ←
+  - ↓
+  - →
+  - KP ENTER
+  - N
+  - M
+  - CMMA
+  - .
+  - /
+  - INSERT
+  - Home
+  - Tab
+  - End
+  - ''
+  - {type: held}
+  - Spc
+  - ''
+  - ''
+  Combos: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+  Gaming: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+combos:
+- p: [13, 14]
+  k: {t: Sys, type: layer-tr}
+  l: [colemak_dh, qwerty, nav, num]
+- p: [15, 16]
+  k: {t: Sys, type: layer-tr}
+  l: [colemak_dh, qwerty, nav, num]
+- p: [1, 2]
+  k: '&key_repeat'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [2, 3]
+  k: Tab
+  l: [colemak_dh, qwerty, nav, num]
+- p: [11, 12]
+  k: Esc
+  l: [colemak_dh, qwerty, nav, num]
+- p: [12, 13]
+  k: $$mdi:keyboard-return$$
+  l: [colemak_dh, qwerty, nav, num]
+- p: [21, 23]
+  k: Cut
+  l: [colemak_dh, qwerty, nav, num]
+- p: [21, 22]
+  k: Copy
+  l: [colemak_dh, qwerty, nav, num]
+- p: [22, 23]
+  k: Paste
+  l: [colemak_dh, qwerty, nav, num]
+- p: [16, 17]
+  k: {t: (, h: AltGr+⌘}
+  l: [colemak_dh, qwerty, num]
+- p: [17, 18]
+  k: {t: ), h: AltGr+⌃}
+  l: [colemak_dh, qwerty, num]
+- p: [16, 17]
+  k: (<
+  l: [nav]
+- p: [17, 18]
+  k: )>
+  l: [nav]
+- p: [26, 27]
+  k: '['
+  l: [colemak_dh, qwerty, num]
+- p: [27, 28]
+  k: ']'
+  l: [colemak_dh, qwerty, num]
+- p: [26, 27]
+  k: '[{'
+  l: [nav]
+- p: [27, 28]
+  k: ']}'
+  l: [nav]
+- p: [32, 33]
+  k: {t: Fun, type: layer-tl}
+  l: [colemak_dh, qwerty, nav]
+- p: [1, 11]
+  k: '@'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [2, 12]
+  k: '#'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [3, 13]
+  k: $
+  l: [colemak_dh, qwerty, nav, num]
+- p: [4, 14]
+  k: '%'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [5, 15]
+  k: ^
+  l: [colemak_dh, qwerty, nav, num]
+- p: [6, 16]
+  k: +
+  l: [colemak_dh, qwerty, nav, num]
+- p: [7, 17]
+  k: '*'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [8, 18]
+  k: '&'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [11, 21]
+  k: '`'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [12, 22]
+  k: \
+  l: [colemak_dh, qwerty, nav, num]
+- p: [13, 23]
+  k: '='
+  l: [colemak_dh, qwerty, nav, num]
+- p: [14, 24]
+  k: '~'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [15, 25]
+  k: _
+  l: [colemak_dh, qwerty, nav, num]
+- p: [16, 26]
+  k: '-'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [17, 27]
+  k: '!'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [18, 28]
+  k: '|'
+  l: [colemak_dh, qwerty, nav, num]
+- p: [0, 10]
+  k: '1'
+  l: [gam]
+- p: [1, 11]
+  k: '2'
+  l: [gam]
+- p: [2, 12]
+  k: '3'
+  l: [gam]
+- p: [3, 13]
+  k: '4'
+  l: [gam]
+- p: [4, 14]
+  k: '5'
+  l: [gam]
+- p: [10, 20]
+  k: '6'
+  l: [gam]
+- p: [11, 21]
+  k: '7'
+  l: [gam]
+- p: [12, 22]
+  k: '8'
+  l: [gam]
+- p: [13, 23]
+  k: '9'
+  l: [gam]
+- p: [14, 24]
+  k: '0'
+  l: [gam]
+- p: [3, 4]
+  k: T
+  l: [gam]
+- p: [13, 14]
+  k: G
+  l: [gam]
+- p: [23, 24]
+  k: B
+  l: [gam]
+- p: [0, 1]
+  k: Esc
+  l: [gam]
+- p: [20, 21]
+  k: ⌘
+  l: [gam]

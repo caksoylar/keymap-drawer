@@ -1,0 +1,37 @@
+layout: {zmk_keyboard: ferris_sweep}
+layers:
+  stacked:
+  - {t: Q, tl: F12, tr: Qwrty}
+  - {t: W, tl: F7, tr: Gam, bl: '7'}
+  - {t: F, tl: F8, tr: CmkDh, bl: '8'}
+  - {t: P, tl: F9, tr: '$$mdi:bluetooth$$', bl: '9'}
+  - {t: B, tl: PSCRN, tr: '$$mdi:usb$$'}
+  - {t: J, br: PgUp}
+  - {t: L, br: Bspc}
+  - {t: U, br: ↑}
+  - {t: Y, br: Del}
+  - ''''
+  - {t: A, h: ⇧, type: mod, tl: F11, tr: BT1, bl: '0'}
+  - {t: R, h: ⌃, type: mod, tl: F4, tr: BT2, bl: '4'}
+  - {t: S, h: ⌥, type: mod, tl: F5, tr: BT3, bl: '5'}
+  - {t: T, h: ⌘, type: mod, tl: F6, tr: BT4, bl: '6'}
+  - {t: G, tl: SLCK, tr: BT5}
+  - {t: M, tl: '$$mdi:play-pause$$', br: PgDn}
+  - {t: N, h: ⌘, type: mod, br: ←}
+  - {t: E, h: ⌥, type: mod, br: ↓}
+  - {t: I, h: ⌃, type: mod, br: →}
+  - {t: O, h: ⇧, type: mod, br: '$$mdi:keyboard-return$$'}
+  - {t: Z, tl: F10, tr: '$$mdi:bluetooth-off$$'}
+  - {t: X, tl: F1, bl: '1'}
+  - {t: C, tl: F2, bl: '2'}
+  - {t: D, tl: F3, tr: '$$mdi:restart$$', bl: '3', br: Ck}
+  - {t: V, tl: '$$mdi:pause$$', tr: '$$mdi:progress-download$$'}
+  - {t: K, tl: '$$mdi:skip-backward$$', br: INSERT}
+  - {t: H, tl: '$$mdi:skip-forward$$', bl: Ck, br: Home}
+  - {t: ',', s: ;, tl: '$$mdi:volume-off$$', bl: '$$mdi:menu$$', br: Tab}
+  - {t: ., s: ':', tl: '$$mdi:volume-medium$$', br: End}
+  - {t: /, tl: '$$mdi:volume-high$$', bl: ;}
+  - {t: Nav, type: layer-br}
+  - Spc
+  - {t: ⇧, s: Caps Word, br: CANCEL}
+  - {t: Smart-num, type: layer-bl}
