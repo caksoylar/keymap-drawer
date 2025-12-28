@@ -47,7 +47,7 @@ class GlyphMixin:
         def find_key_glyph_names(key: LayoutKey) -> set[str]:
             return {
                 glyph
-                for field in (key.tap, key.hold, key.shifted, key.left, key.right)
+                for field in (key.tap, key.hold, key.shifted, key.left, key.right, key.tl, key.tr, key.bl, key.br)
                 if (glyph := self._legend_to_name(field))
             }
 
@@ -156,6 +156,26 @@ class GlyphMixin:
                 width = w * height / h
                 d_x = width
                 d_y = 0.5 * height
+            case "tl":  # top-left corner
+                height = self.cfg.glyph_shifted_size
+                width = w * height / h
+                d_x = 0
+                d_y = 0
+            case "tr":  # top-right corner
+                height = self.cfg.glyph_shifted_size
+                width = w * height / h
+                d_x = width
+                d_y = 0
+            case "bl":  # bottom-left corner
+                height = self.cfg.glyph_shifted_size
+                width = w * height / h
+                d_x = 0
+                d_y = height
+            case "br":  # bottom-right corner
+                height = self.cfg.glyph_shifted_size
+                width = w * height / h
+                d_x = width
+                d_y = height
             case _:
                 raise ValueError("Unsupported legend_type for glyph")
 

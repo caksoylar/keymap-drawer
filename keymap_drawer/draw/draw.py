@@ -119,6 +119,35 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             legend_type="right",
         )
 
+        # Corner legends
+        corner_pad = self.cfg.small_pad
+        corner_x = w / 2 - self.cfg.inner_pad_w - corner_pad
+        corner_y = h / 2 - self.cfg.inner_pad_h - corner_pad
+        self._draw_legend(
+            Point(-corner_x, -corner_y),
+            [l_key.tl],
+            classes=["key", l_key.type],
+            legend_type="tl",
+        )
+        self._draw_legend(
+            Point(corner_x, -corner_y),
+            [l_key.tr],
+            classes=["key", l_key.type],
+            legend_type="tr",
+        )
+        self._draw_legend(
+            Point(-corner_x, corner_y),
+            [l_key.bl],
+            classes=["key", l_key.type],
+            legend_type="bl",
+        )
+        self._draw_legend(
+            Point(corner_x, corner_y),
+            [l_key.br],
+            classes=["key", l_key.type],
+            legend_type="br",
+        )
+
         self.out.write("</g>\n")
 
     def print_layers(  # pylint: disable=too-many-locals

@@ -26,6 +26,12 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
     left: str = ""
     right: str = ""
 
+    # Corner positions for multi-legend keys
+    tl: str = ""  # top-left corner
+    tr: str = ""  # top-right corner
+    bl: str = ""  # bottom-left corner
+    br: str = ""  # bottom-right corner
+
     type: str = ""  # pre-defined types: "held" | "ghost"
 
     @classmethod
@@ -45,7 +51,7 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
     @model_serializer
     def serialize_model(self) -> str | dict[str, str]:
         """Custom serializer to output string-only for simple legends."""
-        if self.hold or self.shifted or self.left or self.right or self.type:
+        if self.hold or self.shifted or self.left or self.right or self.tl or self.tr or self.bl or self.br or self.type:
             return {
                 k: v
                 for k, v in (
@@ -54,6 +60,10 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
                     ("s", self.shifted),
                     ("left", self.left),
                     ("right", self.right),
+                    ("tl", self.tl),
+                    ("tr", self.tr),
+                    ("bl", self.bl),
+                    ("br", self.br),
                     ("type", self.type),
                 )
                 if v
@@ -62,7 +72,7 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
 
     def full_serializer(self) -> dict[str, str]:
         """Custom serializer that always outputs a dict."""
-        return {k: v for k in ("tap", "hold", "shifted", "left", "right", "type") if (v := getattr(self, k))}
+        return {k: v for k in ("tap", "hold", "shifted", "left", "right", "tl", "tr", "bl", "br", "type") if (v := getattr(self, k))}
 
     def apply_formatter(self, formatter: Callable[[str], str]) -> None:
         """Add a formatter function (str -> str) to all non-empty fields."""
@@ -76,6 +86,14 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
             self.left = formatter(self.left)
         if self.right:
             self.right = formatter(self.right)
+        if self.tl:
+            self.tl = formatter(self.tl)
+        if self.tr:
+            self.tr = formatter(self.tr)
+        if self.bl:
+            self.bl = formatter(self.bl)
+        if self.br:
+            self.br = formatter(self.br)
 
 
 class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
