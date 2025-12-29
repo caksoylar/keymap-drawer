@@ -160,25 +160,25 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
             }
 
             /* styling for combo tap, and key non-tap label text */
-            text.combo, text.hold, text.shifted, text.left, text.right {
+            text.combo, text.hold, text.shifted, text.left, text.right, text.tl, text.tr, text.bl, text.br {
                 font-size: 11px;
             }
 
-            text.hold {
+            text.hold, text.bl, text.br {
                 text-anchor: middle;
                 dominant-baseline: auto;
             }
 
-            text.shifted {
+            text.shifted, text.tl, text.tr {
                 text-anchor: middle;
                 dominant-baseline: hanging;
             }
 
-            text.left {
+            text.left, text.tl, text.bl {
                 text-anchor: start;
             }
 
-            text.right {
+            text.right, text.tr, text.br {
                 text-anchor: end;
             }
 
