@@ -49,13 +49,12 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         Print SVG code for a rectangle with text representing the key, which is described by its physical
         representation (p_key) and what it does in the given layer (l_key).
         """
-        p, w, h, r = (
+        p, w, h = (
             p_key.pos,
             p_key.width,
             p_key.height,
-            p_key.rotation,
         )
-        rotate_str = f" rotate({r})" if r != 0 else ""
+        rotate_str = f" rotate({p_key.rotation})" if p_key.rotation != 0 else ""
         transform_attr = f' transform="translate({round(p.x)}, {round(p.y)}){rotate_str}"'
         class_str = self._to_class_str(["key", l_key.type, f"keypos-{key_ind}"])
         self.out.write(f"<g{transform_attr}{class_str}>\n")
@@ -87,6 +86,9 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
         if self.cfg.draw_key_sides:
             tap_shift -= Point(self.cfg.key_side_pars.rel_x, self.cfg.key_side_pars.rel_y)
 
+        x_offset = w / 2 - self.cfg.inner_pad_w - self.cfg.small_pad
+        y_offset = h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad
+
         self._draw_legend(
             tap_shift,
             tap_words,
@@ -95,54 +97,51 @@ class KeymapDrawer(ComboDrawerMixin, UtilsMixin):
             shift=shift,
         )
         self._draw_legend(
-            Point(0, h / 2 - self.cfg.inner_pad_h - self.cfg.small_pad),
+            Point(0, y_offset),
             [l_key.hold],
             classes=["key", l_key.type],
             legend_type="hold",
         )
         self._draw_legend(
-            Point(0, -h / 2 + self.cfg.inner_pad_h + self.cfg.small_pad),
+            Point(0, -y_offset),
             [l_key.shifted],
             classes=["key", l_key.type],
             legend_type="shifted",
         )
         self._draw_legend(
-            Point(-w / 2 + self.cfg.inner_pad_w + self.cfg.small_pad, 0),
+            Point(-x_offset, 0),
             [l_key.left],
             classes=["key", l_key.type],
             legend_type="left",
         )
         self._draw_legend(
-            Point(w / 2 - self.cfg.inner_pad_w - self.cfg.small_pad, 0),
+            Point(x_offset, 0),
             [l_key.right],
             classes=["key", l_key.type],
             legend_type="right",
         )
 
-        # Corner legends
-        corner_pad = self.cfg.small_pad
-        corner_x = w / 2 - self.cfg.inner_pad_w - corner_pad
-        corner_y = h / 2 - self.cfg.inner_pad_h - corner_pad
+        # corner legends
         self._draw_legend(
-            Point(-corner_x, -corner_y),
+            Point(-x_offset, -y_offset),
             [l_key.tl],
             classes=["key", l_key.type],
             legend_type="tl",
         )
         self._draw_legend(
-            Point(corner_x, -corner_y),
+            Point(x_offset, -y_offset),
             [l_key.tr],
             classes=["key", l_key.type],
             legend_type="tr",
         )
         self._draw_legend(
-            Point(-corner_x, corner_y),
+            Point(-x_offset, y_offset),
             [l_key.bl],
             classes=["key", l_key.type],
             legend_type="bl",
         )
         self._draw_legend(
-            Point(corner_x, corner_y),
+            Point(x_offset, y_offset),
             [l_key.br],
             classes=["key", l_key.type],
             legend_type="br",

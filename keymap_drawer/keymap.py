@@ -14,7 +14,9 @@ from keymap_drawer.config import Config
 from keymap_drawer.physical_layout import PhysicalLayout, PhysicalLayoutGenerator
 
 
-class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, extra="forbid"):
+class LayoutKey(
+    BaseModel, populate_by_name=True, coerce_numbers_to_str=True, extra="forbid"
+):  # pylint: disable=too-many-instance-attributes
     """
     Represents a binding in the keymap, which has a tap property by default and
     can optionally have hold or shifted properties, left or right labels, or be "held" or be a "ghost" key.
@@ -25,8 +27,6 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
     shifted: str = Field(validation_alias=AliasChoices("shifted", "s"), serialization_alias="s", default="")
     left: str = ""
     right: str = ""
-
-    # Corner positions for multi-legend keys
     tl: str = ""  # top-left corner
     tr: str = ""  # top-right corner
     bl: str = ""  # bottom-left corner
@@ -51,7 +51,7 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
     @model_serializer
     def serialize_model(self) -> str | dict[str, str]:
         """Custom serializer to output string-only for simple legends."""
-        if self.hold or self.shifted or self.left or self.right or self.tl or self.tr or self.bl or self.br or self.type:
+        if any((self.hold, self.shifted, self.left, self.right, self.tl, self.tr, self.bl, self.br, self.type)):
             return {
                 k: v
                 for k, v in (
@@ -72,7 +72,11 @@ class LayoutKey(BaseModel, populate_by_name=True, coerce_numbers_to_str=True, ex
 
     def full_serializer(self) -> dict[str, str]:
         """Custom serializer that always outputs a dict."""
-        return {k: v for k in ("tap", "hold", "shifted", "left", "right", "tl", "tr", "bl", "br", "type") if (v := getattr(self, k))}
+        return {
+            k: v
+            for k in ("tap", "hold", "shifted", "left", "right", "tl", "tr", "bl", "br", "type")
+            if (v := getattr(self, k))
+        }
 
     def apply_formatter(self, formatter: Callable[[str], str]) -> None:
         """Add a formatter function (str -> str) to all non-empty fields."""
