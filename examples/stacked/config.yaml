@@ -1,0 +1,56 @@
+# parse_config:
+# parse_config is not needed here since ferris_sweep.yaml is already parsed.
+# Include parse_config when parsing raw ZMK/QMK keymap files.
+
+draw_config:
+  # Corner positioning is influenced by these settings:
+  small_pad: 4.0  # corner_pad = small_pad 
+  svg_extra_style: |
+    /* Combo styling */
+    rect.combo { fill: white; stroke: #888; }
+    text.combo { fill: #333; }
+    path.combo { stroke: #888; }
+
+    /* Layer activator key colors */
+    /* Defined after Combo styling to override */
+    .held-tl rect, .layer-tl rect { fill: #F93827; }
+    .held-tr rect, .layer-tr rect { fill: #2563EB; }
+    .held-bl rect, .layer-bl rect { fill: #16A34A; }
+    .held-br rect, .layer-br rect { fill: #FF9D23; }
+
+    /* Text on colored layer activator keys */
+    .held-tl text, .layer-tl text { fill: white; }
+    .held-tr text, .layer-tr text { fill: white; }
+    .held-bl text, .layer-bl text { fill: white; }
+    .held-br text, .layer-br text { fill: white; }
+
+    /* Corner legend text colors, sizing, and alignment */
+    /* text grows inward toward key center */
+    text.tl { fill: #F93827; font-size: 8px; text-anchor: start; dominant-baseline: hanging; }
+    text.tr { fill: #2563EB; font-size: 8px; text-anchor: end; dominant-baseline: hanging; }
+    text.bl { fill: #16A34A; font-size: 8px; text-anchor: start; dominant-baseline: auto; }
+    text.br { fill: #FF9D23; font-size: 8px; text-anchor: end; dominant-baseline: auto; }
+
+    /* Corner glyph colors */
+    use.tl { fill: #F93827; }
+    use.tr { fill: #2563EB; }
+    use.bl { fill: #16A34A; }
+    use.br { fill: #FF9D23; }
+
+    
+  glyph_tap_size: 14
+  glyph_hold_size: 12
+  glyph_shifted_size: 10
+
+# Used in keymap stack-layers
+stack_config:
+  hidden_corner_legends:
+    - ⇧
+    - ⌃
+    - ⌥
+    - ⌘
+    - Nav
+    - Spc
+    - sticky
+    - num
+    # - $$mdi:play-pause$$

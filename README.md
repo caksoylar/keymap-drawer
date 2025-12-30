@@ -38,6 +38,7 @@ It also decouples the physical keyboard layout from the keymap (i.e., layer and 
   - [Bootstrapping your keymap representation](#bootstrapping-your-keymap-representation)
   - [Tweaking the produced keymap representation](#tweaking-the-produced-keymap-representation)
   - [Producing the SVG](#producing-the-svg)
+  - [Stacking layers](#stacking-layers)
 - [Customization](#customization)
 - [Miscellanea](#miscellanea)
   - [Custom SVG glyphs](#custom-svg-glyphs)
@@ -146,6 +147,27 @@ And you are done! You can view the output SVG on your browser or use a tool like
 > For instance you can provide a QMK keyboard name with `-k`/`--qmk-keyboard` and layout with `-l`/`--layout-name`,
 > or an ortho layout with `--ortho-layout` (using YAML syntax for the value) or `-n`/`--cols-thumbs-notation`.
 > See `keymap draw --help` for details.
+
+### Stacking layers
+
+The **`keymap stack-layers`** command combines multiple layers into a single multi-position legend layer.
+This is useful for creating compact reference diagrams showing multiple layers at once.
+
+```sh
+keymap stack-layers --center Base --tl Fun --tr Sys --bl Num --br Nav keymap.yaml >stacked.yaml
+```
+
+Each key in the output can show:
+- Center: primary layer tap/hold/shifted values
+- Corners (tl/tr/bl/br): tap values from specified layers
+
+Use `--list-layers` to see available layer names in your keymap.
+Use `--include-combos` to include combos from specific layers.
+The stacked output can be drawn with `keymap draw` like any other keymap YAML.
+
+![Stacked layers example](site/showcase_stacked.svg)
+
+See [STACKED.md](STACKED.md) for detailed usage, combo options, configuration, and CSS styling instructions.
 
 ## Customization
 

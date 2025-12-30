@@ -16,6 +16,7 @@ from keymap_drawer import logger
 from keymap_drawer.config import Config, DrawConfig
 from keymap_drawer.draw import KeymapDrawer
 from keymap_drawer.keymap import KeymapData
+from keymap_drawer.stack import CornerLayers, StackConfig, stack_layers
 from keymap_drawer.parse import KanataKeymapParser, QmkJsonParser, ZmkKeymapParser
 
 
@@ -126,6 +127,41 @@ def dump_config(args: Namespace, config: Config) -> None:
 
     yaml.representer.SafeRepresenter.add_representer(str, cfg_str_representer)
     yaml.safe_dump(config.model_dump(), args.output, sort_keys=False, allow_unicode=True)
+
+
+def stack(args: Namespace, config: Config) -> None:
+    """Stack multiple layers into a single multi-position legend layer."""
+    yaml_data = yaml.safe_load(args.keymap_yaml)
+
+    # List layers mode
+    if args.list_layers:
+        layers = yaml_data.get("layers", {})
+        print("Available layers:")
+        for name in layers.keys():
+            print(f"  - {name}")
+        return
+
+    # Build corner layers config
+    corner_layers = CornerLayers(
+        tl=args.tl,
+        tr=args.tr,
+        bl=args.bl,
+        br=args.br,
+    )
+
+    # Build stack config: global config -> YAML override -> CLI args
+    stack_config = config.stack_config
+    if custom_config := yaml_data.get("stack_config"):
+        stack_config = StackConfig.parse_obj(stack_config.model_dump() | custom_config)
+    if args.hidden_corner_legends:
+        stack_config = StackConfig.parse_obj(stack_config.model_dump() | {"hidden_corner_legends": args.hidden_corner_legends})
+
+    # Stack layers
+    combo_layers = args.include_combos if args.include_combos is not None else None
+    stacked = stack_layers(yaml_data, args.center, corner_layers, stack_config, combo_layers, args.separate_combo_layer)
+
+    # Write output
+    yaml.safe_dump(stacked, args.output, width=160, sort_keys=False, default_flow_style=None, allow_unicode=True)
 
 
 def main() -> None:
@@ -258,6 +294,53 @@ def main() -> None:
         default=sys.stdout,
     )
 
+    stack_p = subparsers.add_parser(
+        "stack-layers",
+        help="stack multiple layers into a single multi-position legend layer",
+    )
+    stack_p.add_argument(
+        "keymap_yaml",
+        help="YAML file containing keymap with layers to stack",
+        type=FileType("rt", encoding="utf-8"),
+    )
+    stack_p.add_argument(
+        "--center",
+        required=True,
+        help="Layer name for center position (primary layer)",
+    )
+    stack_p.add_argument("--tl", help="Layer name for top-left corner")
+    stack_p.add_argument("--tr", help="Layer name for top-right corner")
+    stack_p.add_argument("--bl", help="Layer name for bottom-left corner")
+    stack_p.add_argument("--br", help="Layer name for bottom-right corner")
+    stack_p.add_argument(
+        "--hidden-corner-legends",
+        nargs="+",
+        help="Values to hide in corner positions (e.g., modifier symbols)",
+    )
+    stack_p.add_argument(
+        "--include-combos",
+        nargs="+",
+        metavar="LAYER",
+        help="Include combos from specified layers, remapped to 'stacked'",
+    )
+    stack_p.add_argument(
+        "--separate-combo-layer",
+        action="store_true",
+        help="Add a 'stacked_combos' layer for separate combo diagram",
+    )
+    stack_p.add_argument(
+        "--list-layers",
+        action="store_true",
+        help="List available layers and exit",
+    )
+    stack_p.add_argument(
+        "-o",
+        "--output",
+        help="Output to path instead of stdout",
+        type=FileType("wt", encoding="utf-8"),
+        default=sys.stdout,
+    )
+
     dump_p = subparsers.add_parser(
         "dump-config", help="dump default draw and parse config to stdout that can be passed to -c/--config option"
     )
@@ -281,6 +364,8 @@ def main() -> None:
             draw(args, config)
         case "parse":
             parse(args, config)
+        case "stack-layers":
+            stack(args, config)
         case "dump-config":
             dump_config(args, config)
 
