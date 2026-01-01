@@ -364,6 +364,44 @@ _Type:_ `dict[str, str | dict]`
 
 _Default:_ See [`config.py`](keymap_drawer/config.py)
 
+#### `rmk_combos`
+  
+Mapping to augment the output field for parsed combos. Combos are identified by their 'output' value (the key that gets produced) in the keymap and the value is a dict containing fields from the [`ComboSpec`](KEYMAP_SPEC.md#combos) 
+
+E.g. `{"Esc": {"align": "top", "offset": 0.5}}` would add these two fields to the output for the combo defined as:
+
+```rust
+[behavior.combo]
+timeout = "25ms"
+combos = [
+    { actions = [
+        "MT(S, LAlt)",
+        "MT(T, LGui)",
+    ], output = "Esc", layer = 0 },
+]
+```
+
+A more thorough example:
+
+```yaml
+  # RMK combo configuration for better visual separation
+  rmk_combos:
+    "WM(V, LGui)":
+      key: $$mdi:content-paste$$
+    "CapsLock":
+      draw_separate: true
+    "OSL(3)":
+      draw_separate: true
+      key: $$mdi:arrow-u-down-left$$
+    "OSM(LShift)":
+      draw_separate: true
+      key: $$mdi:apple-keyboard-shift$$
+```
+
+_Type:_ `dict[str, dict]`
+
+_Default:_ `{}`
+
 #### `zmk_remove_keycode_prefix`
 
 Remove these prefixes from ZMK keycodes before further processing.
