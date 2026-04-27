@@ -1,5 +1,6 @@
 """Layer stacking logic for combining multiple keymap layers into one."""
 
+import json
 import sys
 from typing import Any
 
@@ -137,6 +138,51 @@ def _stack_key(
         return ""
 
     return key_def
+
+
+def _serialize_stacked_keys(stacked_keys: list) -> str:
+    """Serialize stacked keys to a string for deduplication comparison."""
+    return json.dumps(stacked_keys, sort_keys=True)
+
+
+def stack_layers_multi(
+    keymap: dict[str, Any],
+    center_layers: list[str],
+    corner_layers: CornerLayers,
+    stack_config: StackConfig | None = None,
+    include_combos: list[str] | None = None,
+    combo_layer: bool = False,
+) -> list[tuple[str, dict[str, Any]]]:
+    """Stack multiple center layers, deduplicating identical outputs.
+
+    Args:
+        keymap: Full keymap dict with 'layers' key
+        center_layers: List of layer names to use as center layers
+        corner_layers: CornerLayers specifying tl/tr/bl/br layer names
+        stack_config: Optional StackConfig with hide settings
+        include_combos: List of layer names to include combos from
+        combo_layer: If True, add a 'stacked_combos' layer for separate combo diagram
+
+    Returns:
+        List of (center_layer_name, stacked_keymap) tuples, deduplicated by content
+    """
+    seen_outputs: dict[str, str] = {}  # serialized output -> first center layer name
+    results: list[tuple[str, dict[str, Any]]] = []
+
+    for center_layer in center_layers:
+        stacked = stack_layers(
+            keymap, center_layer, corner_layers, stack_config, include_combos, combo_layer
+        )
+        serialized = _serialize_stacked_keys(stacked.get("layers", {}).get("stacked", []))
+
+        if serialized in seen_outputs:
+            # Skip duplicate output
+            continue
+
+        seen_outputs[serialized] = center_layer
+        results.append((center_layer, stacked))
+
+    return results
 
 
 def stack_layers(
