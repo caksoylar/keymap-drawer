@@ -52,7 +52,7 @@ class KanataKeymapParser(KeymapParser):
         self.vars: dict[str, str | pp.ParseResults] = {}
         self.physical_layout: dict | None = None
         self.defsrc_indices: list[int] | None = None
-        self.defsrc_to_pos: dict[str, int] | None = None
+        self.defsrc_to_pos: dict[str | None, int] | None = None
 
     @classmethod
     def _parse_cfg(cls, cfg_str: str, file_path: Path | None) -> list[pp.ParseResults]:
@@ -78,23 +78,32 @@ class KanataKeymapParser(KeymapParser):
         return "(" + " ".join(cls._element_to_str(sub) for sub in elt) + ")"
 
     @classmethod
-    def _canonicalize_defsrc(cls, val: str) -> str:
+    def _canonicalize_defsrc(cls, val: str) -> str | None:
         if (canonical := cls._canonical_defsrcs.get(val)) is not None:
             return canonical
-        raise ValueError(f'Unknown defsrc item "{val}"!')
+        logger.debug('"%s" in defsrc is not supported, ignoring for parsing', val)
+        return None
 
     def _find_physical_layout(self, defsrc: list[str], extra_defsrc: Iterable[str] | None = None) -> None:
-        canonical = [self._canonicalize_defsrc(val) for val in defsrc]
-        extra = [] if extra_defsrc is None else [self._canonicalize_defsrc(val) for val in extra_defsrc]
+        canonical_with_ignored = [self._canonicalize_defsrc(val) for val in defsrc]
+        canonical = [val for val in canonical_with_ignored if val is not None]
+        extra = (
+            []
+            if extra_defsrc is None
+            else [out for val in extra_defsrc if (out := self._canonicalize_defsrc(val)) is not None]
+        )
 
         for layout in self._available_layouts:
             if all(val in layout["defsrc_index"] for val in (canonical + extra)):
-                self.defsrc_to_pos = {key: pos for pos, key in enumerate(layout["defsrc"])}
-                self.defsrc_indices = [self.defsrc_to_pos[val] for val in canonical]
+                self.defsrc_to_pos = {key: pos for pos, key in enumerate(layout["defsrc"])} | {
+                    None: -1
+                }  # augment with ignored pos
+                self.defsrc_indices = [self.defsrc_to_pos[val] for val in canonical_with_ignored]
                 self.physical_layout = layout["physical_layout"]
                 return
 
         logger.debug("missing: %s", set(canonical + extra) - self._available_layouts[-1]["defsrc_index"])
+
         raise ValueError("Cannot find a physical layout that contains all items in defsrc")
 
     def _get_aliases_vars(self, nodes: list[pp.ParseResults]) -> None:
@@ -187,8 +196,11 @@ class KanataKeymapParser(KeymapParser):
         def create_from_deflayer(ind: int, name: str, keys: list[pp.ParseResults]) -> list[LayoutKey]:
             assert self.defsrc_indices is not None
             assert self.defsrc_to_pos is not None
-            layer = [LayoutKey() for _ in range(len(self.defsrc_to_pos))]
+            layer = [LayoutKey() for _ in range(len(self.defsrc_to_pos) - 1)]
             for key_pos, key in zip(self.defsrc_indices, keys):
+                if key_pos < 0:
+                    logger.debug('ignoring "%s" in deflayer because it corresponds to an ignored position', key)
+                    continue
                 try:
                     layer[key_pos] = self._str_to_key(key, ind, [key_pos])
                 except Exception as err:
@@ -200,7 +212,7 @@ class KanataKeymapParser(KeymapParser):
         def create_from_deflayermap(ind: int, name: str, mappings: list[pp.ParseResults]) -> list[LayoutKey]:
             assert self.defsrc_to_pos is not None
             default_action = LayoutKey()
-            layer: list[LayoutKey | None] = [None for _ in range(len(self.defsrc_to_pos))]
+            layer: list[LayoutKey | None] = [None for _ in range(len(self.defsrc_to_pos) - 1)]
             for input_elt, action_elt in batched(mappings, 2):
                 try:
                     match input_elt:
@@ -209,6 +221,9 @@ class KanataKeymapParser(KeymapParser):
                             default_action = self._str_to_key(action_elt, ind, [])
                         case _:
                             assert isinstance(input_elt, str)
+                            if input_elt not in self._canonical_defsrcs:
+                                logger.debug('ignoring "%s" in deflayermap', input_elt)
+                                continue
                             key_pos = self.defsrc_to_pos[self._canonicalize_defsrc(input_elt)]
                             layer[key_pos] = self._str_to_key(action_elt, ind, [key_pos])
                 except Exception as err:
@@ -236,6 +251,10 @@ class KanataKeymapParser(KeymapParser):
             key_pos = [self.defsrc_to_pos.get(self._canonicalize_defsrc(val)) for val in pos_node]
             assert all(pos is not None for pos in key_pos)
 
+            if any(pos < 0 for pos in key_pos):  # type: ignore
+                logger.debug('"%s" in combo contains ignored element', pos_node)
+                continue
+
             try:
                 parsed_key = self._str_to_key(action_node, None, key_pos)  # type: ignore
             except Exception as err:
@@ -259,12 +278,20 @@ class KanataKeymapParser(KeymapParser):
             logger.warning("deflocalkeys is not currently supported")
 
         defsrc = next(node[1:] for node in nodes if node[0] == "defsrc")
+        if any(val not in self._canonical_defsrcs for val in defsrc):
+            logger.warning("found non-supported items in defsrc, ignoring")
+
         raw_combo_nodes = list(
             chain.from_iterable(
                 batched(node[1:], 5) for node in nodes if node[0] in ("defchordsv2", "defchordsv2-experimental")
             )
         )
-        deflayermap_srcs = chain.from_iterable(node[2::2] for node in nodes if node[0] == "deflayermap")
+        if any(pos not in self._canonical_defsrcs for combo_def in raw_combo_nodes for pos in combo_def[0]):
+            logger.warning("found non-supported positions in combo pos, ignoring")
+
+        deflayermap_srcs = list(chain.from_iterable(node[2::2] for node in nodes if node[0] == "deflayermap"))
+        if any(val not in self._canonical_defsrcs for val in deflayermap_srcs):
+            logger.warning("found non-supported items in deflayermap, ignoring")
 
         self._find_physical_layout(
             defsrc,

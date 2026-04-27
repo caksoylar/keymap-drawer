@@ -48,7 +48,9 @@ class ComboDrawerMixin(UtilsMixin):
         line = f"l{round(diff.x)},{round(diff.y)}"
         self.out.write(f'<path d="{start} {line}" class="combo"/>\n')
 
-    def print_combo(self, combo: ComboSpec, combo_ind: int) -> tuple[Point, Point]:  # pylint: disable=too-many-locals
+    def print_combo(  # pylint: disable=too-many-locals,too-many-branches
+        self, combo: ComboSpec, combo_ind: int
+    ) -> tuple[Point, Point]:
         """
         Print SVG code for a rectangle with text representing a combo specification, which contains the key positions
         that trigger it and what it does when triggered. The position of the rectangle depends on the alignment

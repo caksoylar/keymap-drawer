@@ -74,7 +74,7 @@ class ZmkKeymapParser(KeymapParser):
                 del self.raw_binding_map[old]
         logger.debug("updated raw_binding_map: %s", self.raw_binding_map)
 
-    def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals
+    def _str_to_key(  # pylint: disable=too-many-return-statements,too-many-locals,too-many-branches
         self, binding: str, current_layer: int | None, key_positions: Sequence[int], no_shifted: bool = False
     ) -> LayoutKey:
         if binding in self.raw_binding_map:

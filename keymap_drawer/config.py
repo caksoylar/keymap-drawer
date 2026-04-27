@@ -91,8 +91,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
     # if you do not need to remove existing definitions, consider using svg_extra_style instead
     svg_style: str = Field(
         exclude=True,
-        default=dedent(
-            """\
+        default=dedent("""\
             /* inherit to force styles through use tags */
             svg path {
                 fill: inherit;
@@ -217,15 +216,13 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
                 visibility: hidden;
             }
             /* End Tabler Icons Cleanup */
-            """
-        ),
+            """),
     )
 
     # style CSS to override colors for dark mode
     svg_style_dark: str = Field(
         exclude=True,
-        default=dedent(
-            """\
+        default=dedent("""\
             svg.keymap { fill: #d1d6db; }
             rect.key { fill: #3f4750; }
             rect.key, rect.combo { stroke: #60666c; }
@@ -234,8 +231,7 @@ class DrawConfig(BaseSettings, env_prefix="KEYMAP_", extra="ignore"):
             text.label, text.footer { stroke: black; }
             text.trans { fill: #7e8184; }
             path.combo { stroke: #7f7f7f; }
-            """
-        ),
+            """),
     )
 
     # extra CSS to be appended to svg_style

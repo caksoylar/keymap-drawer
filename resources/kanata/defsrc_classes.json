@@ -1,5 +1,5 @@
 [
-    ["grv", "ˋ", "Backquote", "˜", "grave"],
+    ["grv", "ˋ", "`", "Backquote", "˜", "~", "grave"],
     ["1", "Digit1"],
     ["2", "Digit2"],
     ["3", "Digit3"],
@@ -67,8 +67,6 @@
     ["kp*", "NumpadMultiply", "🔢∗"],
     ["kp-", "NumpadSubtract", "🔢₋"],
     ["kp.", "NumpadDecimal", "🔢．"],
-    ["kp,", "NumpadComma", "🔢⸴"],
-    ["sys", "ssrq"],
     ["nubs", "IntlBackslash", "102d", "lsgt", "nonusbslash", "﹨", "<"],
     ["prtsc", "PrintScreen",  "prnt"],
     ["scrlck", "ScrollLock", "slck", "⇳🔒"],
