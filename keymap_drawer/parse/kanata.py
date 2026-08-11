@@ -17,6 +17,14 @@ logger = logging.getLogger(__name__)
 DEFSRC_CLASSES = Path(__file__).parent.parent.parent / "resources" / "kanata" / "defsrc_classes.json"
 PHYSICAL_LAYOUTS = Path(__file__).parent.parent.parent / "resources" / "kanata" / "layout_srcs.json"
 
+# double-quoted or Rust-like raw strings (used in kanata.kbd)
+KANATA_STRING = pp.Regex(r'r(?P<hashes>#+)"(?s:.*?)"(?P=hashes)') | pp.dbl_quoted_string
+
+# keep strings as is with priority, transform comments to whitespace
+KANATA_COMMENT = KANATA_STRING | (pp.Regex(r";;[^\r\n]*") | pp.Regex(r"#\|(?s:.*?)\|#")).set_parse_action(
+    lambda tokens: "".join(char if char in "\r\n" else " " for char in tokens[0])
+)
+
 
 def _get_canonical_defsrc_lookup() -> dict[str, str]:
     with open(DEFSRC_CLASSES, "rb") as f:
@@ -56,12 +64,9 @@ class KanataKeymapParser(KeymapParser):
 
     @classmethod
     def _parse_cfg(cls, cfg_str: str, file_path: Path | None) -> list[pp.ParseResults]:
-        parsed = (
-            pp.nested_expr("(", ")", ignore_expr=None)  # type: ignore
-            .ignore(";;" + pp.SkipTo(pp.lineEnd))
-            .ignore("#|" + pp.SkipTo("|#", include=True))
-            .parse_string("(" + cfg_str + ")")[0]
-        )
+        # preprocess to get rid of comments first, while preserving strings
+        cfg_str = KANATA_COMMENT.transform_string(cfg_str)
+        parsed = pp.nested_expr("(", ")", ignore_expr=None).parse_string("(" + cfg_str + ")")[0]  # type: ignore
         if file_path is None:
             return parsed
         includes = [node[1] for node in parsed if isinstance(node, pp.ParseResults) and node[0] == "include"]
