@@ -185,11 +185,17 @@ class KanataKeymapParser(KeymapParser):
         assert self.defsrc_indices is not None
         assert self.defsrc_to_pos is not None
 
+        def str_or_first_item(elt: str | pp.ParseResults) -> str:
+            return elt if isinstance(elt, str) else elt[0]
+
+        # special case: deflayermap layer name can specified via both (xxx [...]) or xxx
         layer_names = [
-            node[1] if node[0] == "deflayer" else node[1][0] for node in nodes if node[0] in ("deflayer", "deflayermap")
+            node[1] if node[0] == "deflayer" else str_or_first_item(node[1])
+            for node in nodes
+            if node[0] in ("deflayer", "deflayermap")
         ]
         layer_nodes = {node[1]: node[2:] for node in nodes if node[0] == "deflayer"}
-        layermap_nodes = {node[1][0]: node[2:] for node in nodes if node[0] == "deflayermap"}
+        layermap_nodes = {str_or_first_item(node[1]): node[2:] for node in nodes if node[0] == "deflayermap"}
 
         self.update_layer_names(layer_names)
 
