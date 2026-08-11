@@ -53,6 +53,7 @@ plugins = "pydantic.mypy"
 
 [tool.black]
 line-length = 120
+target-version = ["py312"]
 
 [tool.isort]
 src_paths = ["keymap_drawer"]
