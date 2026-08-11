@@ -349,20 +349,22 @@ If you use `keymap-drawer`, tag your Github repo with the [`keymap-drawer` topic
 
 ## Development
 
-This project requires Python 3.12+ and uses [Poetry](https://python-poetry.org/) for packaging.
+This project requires Python 3.12+ and uses [uv](https://docs.astral.sh/uv/) for project and dependency management.
 
-To get started, [install Poetry](https://python-poetry.org/docs/#installation), clone this repo, then install dependencies with the `poetry` command:
+To get started, [install uv](https://docs.astral.sh/uv/getting-started/installation/), clone this repo, then sync the project environment:
 
 ```sh
 git clone https://github.com/caksoylar/keymap-drawer.git
 cd keymap-drawer
-poetry install  # -E dev -E lsp (optional dependencies)
+uv sync              # installs base + dev group by default
+uv sync --group lsp  # _also_ installs the lsp server
 ```
 
-Activate a virtual environment with the `keymap_drawer` module in Python path and `keymap` executable available by running the output of `poetry env activate`.
+Run commands in the project environment with `uv run`, for example `uv run keymap --help`. You can also activate it with `source .venv/bin/activate` (or using your shell's variant in that folder).
 Changes you make in the source code will be reflected when using the module or the command.
+Run lint checks locally with `uv run black --check keymap_drawer`, `uv run pylint keymap_drawer`, `uv run mypy keymap_drawer`, and `uv run deptry .`.
 
-If you prefer not to use Poetry, you can get an editable install with `pip install --editable .` inside the `keymap-drawer` folder.
+If you prefer not to use uv, you can get an editable install with `pip install --editable .` inside the `keymap-drawer` folder.
 
 The source code for the Streamlit app lives in the [`keymap-drawer-web`](https://github.com/caksoylar/keymap-drawer-web) repo.
 

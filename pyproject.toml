@@ -17,8 +17,8 @@ dependencies = [
     "pyparsing ~= 3.2"
 ]
 
-[project.optional-dependencies]
-dev = ["mypy", "pylint", "black", "pylint-pydantic", "types-pyyaml", "deptry (>=0.22.0)", "hjson"]
+[dependency-groups]
+dev = ["mypy", "pylint", "black", "pylint-pydantic", "types-pyyaml", "deptry>=0.22.0", "hjson"]
 lsp = ["python-lsp-server"]
 
 [project.scripts]
@@ -31,12 +31,11 @@ issues = "https://github.com/caksoylar/keymap-drawer/issues"
 releasenotes = "https://github.com/caksoylar/keymap-drawer/releases"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-include = [{path = "resources", format = ["sdist", "wheel"]}]
+[tool.hatch.build.targets.wheel.force-include]
+resources = "resources"
 
 [tool.pylint.master]
 extension-pkg-whitelist = "pydantic"
@@ -59,6 +58,3 @@ line-length = 120
 src_paths = ["keymap_drawer"]
 profile = "black"
 line_length = 120
-
-[tool.deptry]
-pep621_dev_dependency_groups = ["dev", "lsp"]
