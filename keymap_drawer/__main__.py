@@ -16,7 +16,7 @@ from keymap_drawer import logger
 from keymap_drawer.config import Config, DrawConfig
 from keymap_drawer.draw import KeymapDrawer
 from keymap_drawer.keymap import KeymapData
-from keymap_drawer.parse import KanataKeymapParser, QmkJsonParser, ZmkKeymapParser
+from keymap_drawer.parse import KanataKeymapParser, QmkJsonParser, RmkKeymapParser, ZmkKeymapParser
 
 
 def _merge_keymaps(base: dict, new: dict) -> dict:
@@ -104,6 +104,14 @@ def parse(args: Namespace, config: Config) -> None:
             layer_names=args.layer_names,
             virtual_layers=args.virtual_layers,
         ).parse(args.zmk_keymap)
+    elif args.rmk_keymap:
+        parsed = RmkKeymapParser(
+            config.parse_config,
+            args.columns,
+            base_keymap=base,
+            layer_names=args.layer_names,
+            virtual_layers=args.virtual_layers,
+        ).parse(args.rmk_keymap)
     else:
         parsed = KanataKeymapParser(
             config.parse_config,
@@ -212,7 +220,7 @@ def main() -> None:
     )
 
     parse_p = subparsers.add_parser(
-        "parse", help="parse a QMK/ZMK keymap to YAML representation to stdout, to be used with the `draw` command"
+        "parse", help="parse a QMK/ZMK/Kanata/RMK keymap to YAML representation to stdout, to be used with the `draw` command"
     )
     keymap_srcs = parse_p.add_mutually_exclusive_group(required=True)
     keymap_srcs.add_argument(
@@ -225,6 +233,12 @@ def main() -> None:
         "-k",
         "--kanata-keymap",
         help="Path to Kanata *.cfg to parse (experimental!)",
+        type=FileType("rt", encoding="utf-8"),
+    )
+    keymap_srcs.add_argument(
+        "-r",
+        "--rmk-keymap",
+        help="Path to RMK *.toml to parse",
         type=FileType("rt", encoding="utf-8"),
     )
     parse_p.add_argument(

@@ -166,6 +166,16 @@ class ComboSpec(BaseModel, populate_by_name=True, extra="forbid"):
         assert not val or len(val) >= 2, f"Need at least two trigger keys for combo but got {val}"
         return val
 
+    @model_serializer(mode="wrap")
+    def serialize_combo(self, handler) -> dict:
+        """Exclude key_positions from serialization when trigger_keys was used."""
+        result = handler(self)
+        # If trigger_keys was specified, don't serialize the resolved key_positions
+        if self.trigger_keys:
+            result.pop("p", None)
+            result.pop("key_positions", None)
+        return result
+
 
 class KeymapData(BaseModel):
     """Represents all data pertaining to a keymap, including layers, combos and physical layout."""
