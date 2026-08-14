@@ -1,0 +1,169 @@
+name: Draw QMK keymaps from C file (Reusable - Using pip)
+
+on:
+  workflow_call:
+    inputs:
+      # --- Required Inputs ---
+      qmk_keymap_c_path: { description: 'Path to the QMK keymap.c file within the calling repository', type: string, required: true }
+      qmk_keyboard: { description: 'QMK keyboard name (e.g., cantor, planck/rev6)', type: string, required: true }
+      qmk_keymap: { description: 'QMK keymap name (e.g., default, repparw)', type: string, required: true }
+
+      # --- Optional Inputs ---
+      output_folder: { description: 'Output folder for SVG/YAML files', type: string, default: 'keymap-drawer' }
+      parse_args: { description: 'Extra arguments string for `keymap parse`', type: string, default: '' }
+      draw_args: { description: 'Extra arguments string for `keymap draw`', type: string, default: '' }
+      commit_message: { description: 'Commit message for updated diagram', type: string, default: 'docs: Autogenerate keymap layout diagram' }
+      amend_commit: { description: 'Amend last commit instead of creating new', type: boolean, default: false }
+      install_branch: { description: 'Install keymap-drawer from git branch', type: string, default: '' }
+      install_repo: { description: 'Git remote for installing keymap-drawer', type: string, default: 'https://github.com/caksoylar/keymap-drawer.git' }
+      install_version: { description: 'Install keymap-drawer PyPI version', type: string }
+      destination: { description: 'Output destination: `commit`, `artifact`, or `both`', type: string, default: 'commit' }
+      artifact_name: { description: 'Name for the artifact', type: string, default: 'drawings' }
+      fail_on_error: { description: 'Fail action on parse/draw error', type: boolean, default: false }
+      debug_mode: { description: 'Enable debug mode (set -x)', type: boolean, default: false }
+      qmk_cli_version: { description: 'Install specific QMK CLI version using pip', type: string }
+      qmk_user_overlay_dir: { description: 'Path to the QMK user overlay directory', type: string, default: '' }
+
+    outputs:
+      drawings_artifact_id:
+        description: 'ID of the drawings artifact'
+        value: ${{ jobs.draw.outputs.drawings_artifact_id }}
+
+permissions:
+  contents: write
+
+jobs:
+  draw:
+    name: Draw QMK C Keymap (Using pip for qmk and keymap-drawer)
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout the repository *calling* this workflow
+      - name: Checkout Calling Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ (inputs.amend_commit == true && 2) || 1 }}
+
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # 3. Install QMK CLI using pip
+      - name: Install QMK CLI (pip)
+        run: pip install "qmk-cli${{ (inputs.qmk_cli_version != '' && '==' || '') }}${{ inputs.qmk_cli_version }}"
+
+      # 4. Run QMK Setup
+      - name: Run QMK Setup
+        run: qmk setup
+
+      # 5. Configure QMK User Overlay Directory
+      - name: Configure QMK User Overlay Directory
+        if: inputs.qmk_user_overlay_dir != ''
+        run: qmk config user.overlay_dir "${{ inputs.qmk_user_overlay_dir }}"
+
+      # 6. Install keymap-drawer using pip
+      - name: Install keymap-drawer (pip)
+        run: pip install "keymap-drawer${{ (inputs.install_version != '' && '==' || '') }}${{ inputs.install_version }}"
+
+      # 7. Define Output Paths based on inputs
+      - name: Define Output Paths
+        id: paths
+        run: |
+          filename=$(basename "${{ inputs.qmk_keymap_c_path }}" .c)
+          echo "output_yaml=${{ inputs.output_folder }}/${filename}_parsed.yaml" >> $GITHUB_OUTPUT
+          echo "output_svg=${{ inputs.output_folder }}/${filename}.svg" >> $GITHUB_OUTPUT
+
+      # 8. Check for Keymap C File
+      - name: Check for Keymap C File
+        id: check_keymap
+        uses: andstor/file-existence-action@v3
+        with:
+          files: "${{ inputs.qmk_keymap_c_path }}"
+
+      # 9. Convert C to JSON and Parse (using qmk command from pip)
+      - name: Convert C to JSON and Parse
+        id: parse_step
+        if: steps.check_keymap.outputs.files_exists == 'true'
+        continue-on-error: ${{ !inputs.fail_on_error }}
+        run: |
+          [ "${{ inputs.debug_mode }}" == "true" ] && set -x
+          parse_args_str="${{ inputs.parse_args }}"
+          qmk c2json -kb "${{ inputs.qmk_keyboard }}" -km "${{ inputs.qmk_keymap }}" "${{ inputs.qmk_keymap_c_path }}" | \
+          keymap parse -q - ${parse_args_str} > "${{ steps.paths.outputs.output_yaml }}"
+
+      # 10. Check for Parsed YAML
+      - name: Check for Parsed YAML
+        id: check_yaml
+        if: steps.check_keymap.outputs.files_exists == 'true' && (steps.parse_step.outcome == 'success' || !inputs.fail_on_error)
+        uses: andstor/file-existence-action@v3
+        with:
+          files: "${{ steps.paths.outputs.output_yaml }}"
+
+      # 11. Draw SVG (using keymap tool installed with pip)
+      - name: Draw SVG from YAML using QMK layout
+        id: draw_step
+        if: steps.check_yaml.outputs.files_exists == 'true'
+        continue-on-error: ${{ !inputs.fail_on_error }}
+        run: |
+          [ "${{ inputs.debug_mode }}" == "true" ] && set -x
+          draw_args_str="${{ inputs.draw_args }}"
+          keymap draw "${{ steps.paths.outputs.output_yaml }}" \
+            --qmk-keyboard "${{ inputs.qmk_keyboard }}" \
+            ${draw_args_str} \
+            > "${{ steps.paths.outputs.output_svg }}"
+
+      # 12. Check for Generated SVG
+      - name: Check for Generated SVG
+        id: check_svg
+        if: steps.check_yaml.outputs.files_exists == 'true' && (steps.draw_step.outcome == 'success' || !inputs.fail_on_error)
+        uses: andstor/file-existence-action@v3
+        with:
+          files: "${{ steps.paths.outputs.output_svg }}"
+
+      # 13. Setup Git User for Commit
+      - name: Setup Git User for Commit
+        if: (inputs.destination == 'commit' || inputs.destination == 'both') && steps.check_svg.outputs.files_exists == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      # 14. Get last commit message (for amend)
+      - name: Get last commit message (for amend)
+        id: last_commit_message
+        if: inputs.amend_commit == true && (inputs.destination == 'commit' || inputs.destination == 'both') && steps.check_svg.outputs.files_exists == 'true'
+        run: echo "msg=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
+
+      # 15. Commit updated diagram files
+      - name: Commit updated diagram files
+        if: (inputs.destination == 'commit' || inputs.destination == 'both') && steps.check_svg.outputs.files_exists == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          file_pattern: "${{ steps.paths.outputs.output_svg }} ${{ steps.paths.outputs.output_yaml }}"
+          commit_message: '${{ (inputs.amend_commit == true && steps.last_commit_message.outputs.msg) || inputs.commit_message }}'
+          commit_options: "--no-verify ${{ (inputs.amend_commit == true && '--amend --no-edit') || '' }}"
+          push_options: "${{ (inputs.amend_commit == true && '--force-with-lease') || '' }}"
+          skip_fetch: true
+          repository: '.'
+
+      # 16. Artifact upload
+      - name: Artifact upload
+        id: artifact-upload-step
+        if: (inputs.destination == 'artifact' || inputs.destination == 'both') && steps.check_svg.outputs.files_exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: '${{ inputs.artifact_name }}'
+          path: |
+            ${{ steps.paths.outputs.output_svg }}
+            ${{ steps.paths.outputs.output_yaml }}
+        outputs:
+          drawings_artifact_id: ${{ steps.artifact-upload-step.outputs.id }}
+
+      # 17. Check job success (if errors ignored)
+      - name: Check job success (if errors ignored)
+        if: ${{ !inputs.fail_on_error }}
+        run: |
+          if [ "${{ steps.parse_step.outcome }}" == "failure" ] || [ "${{ steps.draw_step.outcome }}" == "failure" ]; then
+            echo "ERROR: The parse or draw step failed. Please check the logs of those steps above!"
+            exit 1
+          fi
