@@ -411,3 +411,35 @@ Also used when parsing DTS format physical layouts specified with `--dts-layout`
 _Type:_ `list[str]`
 
 _Default:_ `[]`
+
+## Stack Configuration
+
+These settings are nested under the `stack_config` field and apply to the `keymap stack-layers` subcommand.
+This field can also be set in the keymap YAML which overrides the global configuration.
+
+#### `hidden_corner_legends`
+
+Values to hide in corner positions (e.g., modifier symbols like "sticky" or glyphs like `$$mdi:pause$$`).
+When a corner layer key's tap legend matches one of these values, it won't be displayed in the stacked output.
+
+_Type:_ `list[str]`
+
+_Default:_ `[]`
+
+#### `hidden_held_legends`
+
+Hold legend values to hide (e.g., "sticky").
+When a key's hold legend matches one of these values, it's removed from the output.
+
+_Type:_ `list[str]`
+
+_Default:_ `[]`
+
+#### `hidden_shifted_legends`
+
+Shifted legend values to hide.
+When a key's shifted legend matches one of these values, it's removed from the output.
+
+_Type:_ `list[str]`
+
+_Default:_ `[]`
