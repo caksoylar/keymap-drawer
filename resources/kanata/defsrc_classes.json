@@ -68,7 +68,7 @@
     ["kp-", "NumpadSubtract", "🔢₋"],
     ["kp.", "NumpadDecimal", "🔢．"],
     ["nubs", "IntlBackslash", "102d", "lsgt", "nonusbslash", "﹨", "<"],
-    ["prtsc", "PrintScreen",  "prnt"],
+    ["prtsc", "PrintScreen", "prnt"],
     ["scrlck", "ScrollLock", "slck", "⇳🔒"],
     ["pause", "Pause", "break", "brk"],
     ["esc", "Escape", "⎋"],
@@ -103,5 +103,6 @@
     ["f9", "F9"],
     ["f10", "F10"],
     ["f11", "F11"],
-    ["f12", "F12"]
+    ["f12", "F12"],
+    ["fn"]
 ]
