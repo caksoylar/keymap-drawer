@@ -24,7 +24,7 @@ class LayoutKey(
 
     tap: str = Field(validation_alias=AliasChoices("center", "t"), serialization_alias="t", default="")
     hold: str = Field(validation_alias=AliasChoices("bottom", "h"), serialization_alias="h", default="")
-    shifted: str = Field(validation_alias=AliasChoices("shifted", "s"), serialization_alias="s", default="")
+    shifted: str = Field(validation_alias=AliasChoices("top", "s"), serialization_alias="s", default="")
     left: str = ""
     right: str = ""
     tl: str = ""  # top-left corner
